@@ -5,6 +5,7 @@ target_compile_options(sandbox PUBLIC "/MP")
 #set(IMGUI_BACKENDS_DIR ${IMGUI_DIR}/backends)
 
 file(GLOB_RECURSE SANDBOX_CPP_FILES 
+    *.h
     *.cpp 
     *.cxx
     *.c
@@ -28,6 +29,11 @@ message("CMAKE_SOURCE_DIR " ${CMAKE_SOURCE_DIR})
 #endforeach()
 
 
+
+#source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SANDBOX_CPP_FILES})
+#foreach(CPP_FILE ${SANDBOX_CPP_FILES})
+#    message("found " ${CPP_FILE} )
+#endforeach()
 
 target_include_directories(sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 target_sources(sandbox PUBLIC ${SANDBOX_CPP_FILES})
@@ -66,6 +72,7 @@ endif(GLM_FOUND)
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(sandbox PRIVATE glfw)
+
 #if(GLFW_FOUND)
 #    message("found glfw3")
 #    target_include_directories(sandbox PRIVATE glfw)
@@ -73,3 +80,5 @@ target_link_libraries(sandbox PRIVATE glfw)
 #else(GLFW_FOUND)
 #    message(WARNING "found glfw3 failed!")
 #endif(GLFW_FOUND)
+
+

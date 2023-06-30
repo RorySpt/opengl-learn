@@ -6,10 +6,10 @@ file(GLOB SANDBOX_IMGUI_CPP_FILES
     backends/imgui_impl_glfw.cpp
     backends/imgui_impl_opengl3*.cpp
     )
-message("search " SANDBOX_IMGUI_CPP_FILES )
-foreach(CPP_FILE ${SANDBOX_IMGUI_CPP_FILES})
-    message("found " ${CPP_FILE} )
-endforeach()
+#message("search " SANDBOX_IMGUI_CPP_FILES )
+#foreach(CPP_FILE ${SANDBOX_IMGUI_CPP_FILES})
+#    message("found " ${CPP_FILE} )
+#endforeach()
 
 target_sources(
     ${_target} PRIVATE
