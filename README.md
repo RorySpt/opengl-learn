@@ -17,6 +17,8 @@
 #### 编译说明
 
 > ​	使用cmake 3.26+vs2022+vcpkg
+>
+> ​	暂时仅支持windows平台
 
 关于vcpkg的使用参考：[vcpkg-getting-started](https://vcpkg.io/en/getting-started.html)
 
