@@ -6,12 +6,36 @@
 #### 软件架构
 软件架构说明
 
+##### 第三方库说明
 
-#### 安装教程
+- opengl
+- glad
+- glfw 
+- glm
+- imgui
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+#### 编译说明
+
+> ​	使用cmake 3.26+vs2022+vcpkg
+
+关于vcpkg的使用参考：[vcpkg-getting-started](https://vcpkg.io/en/getting-started.html)
+
+1. 打开终端执行以下命令
+
+   ```powershell
+   vcpkg install glfw3:x64-windows glm:x64-windows imgui[docking-experimental]:x64-windows
+   ```
+
+2. 拉取项目 git clone git@gitee.com:roryspt/opengl-learn.git
+
+3. 进入项目文件夹，执行以下命令（将<your-vcpkg-directory>改为你的vcpkg项目所在路径）
+
+   ```bash
+   mkdir .build
+   cd .build
+   cmake .. -DCMAKE_TOOLCHAIN_FILE=<your-vcpkg-directory>\scripts\buildsystems\vcpkg.cmake
+   cmake . --build
+   ```
 
 #### 使用说明
 
