@@ -6,13 +6,15 @@
 #### 软件架构
 软件架构说明
 
-##### 第三方库说明
+##### 第三方库
 
 - opengl
 - glad
 - glfw 
 - glm
 - imgui
+
+资源文件暂时还没有整理，应该还运行不了
 
 #### 编译说明
 
@@ -38,6 +40,8 @@
    cmake .. -DCMAKE_TOOLCHAIN_FILE=<your-vcpkg-directory>\scripts\buildsystems\vcpkg.cmake
    cmake . --build
    ```
+
+
 
 #### 使用说明
 
