@@ -28,7 +28,7 @@
 
 2. 拉取项目 git clone git@gitee.com:roryspt/opengl-learn.git
 
-3. 进入项目文件夹，执行以下命令（将<your-vcpkg-directory>改为你的vcpkg项目所在路径）
+3. 进入项目文件夹，执行以下命令（将\<your-vcpkg-directory\>改为你的vcpkg项目所在路径）
 
    ```bash
    mkdir .build
