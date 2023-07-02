@@ -4,13 +4,19 @@ target_compile_options(sandbox PUBLIC "/MP")
 #set(IMGUI_DIR D:/WorkSpace/MyFile/ThirdParty/imgui)
 #set(IMGUI_BACKENDS_DIR ${IMGUI_DIR}/backends)
 
+
+
 file(GLOB_RECURSE SANDBOX_CPP_FILES 
-    *.h
     *.cpp 
     *.cxx
     *.c
     *.ixx
     )
+file(GLOB_RECURSE SANDBOX_HXX_FILES 
+    *.h
+)
+
+
 #file(GLOB SANDBOX_IMGUI_CPP_FILES 
 #    ${IMGUI_DIR}/*.cpp 
 #    ${IMGUI_BACKENDS_DIR}/imgui_impl_glfw.cpp
@@ -18,16 +24,7 @@ file(GLOB_RECURSE SANDBOX_CPP_FILES
 #    )
 set(SANDBOX_CPP_FILES ${SANDBOX_CPP_FILES})
 
-#list(REMOVE_ITEM SANDBOX_CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/IlluminationWidget.cpp)
-
-
-
 message("CMAKE_SOURCE_DIR " ${CMAKE_SOURCE_DIR})
-
-#foreach(CPP_FILE ${SANDBOX_CPP_FILES})
-#    message("found " ${CPP_FILE} )
-#endforeach()
-
 
 
 #source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SANDBOX_CPP_FILES})
@@ -36,17 +33,12 @@ message("CMAKE_SOURCE_DIR " ${CMAKE_SOURCE_DIR})
 #endforeach()
 
 target_include_directories(sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
-target_sources(sandbox PUBLIC ${SANDBOX_CPP_FILES})
+target_sources(sandbox PUBLIC ${SANDBOX_CPP_FILES} ${SANDBOX_HXX_FILES})
 
 
 target_link_libraries(sandbox PUBLIC
     imgui
-    #assimp-vc143-mt.lib
     opengl32.lib
-#    kernel32.lib
-#    user32.lib
-#    gdi32.lib
-#    shell32.lib
 )
 
 
@@ -82,3 +74,34 @@ target_link_libraries(sandbox PRIVATE glfw)
 #endif(GLFW_FOUND)
 
 
+set(SANDBOX_CXX_DIR_FILES ${SANDBOX_CPP_FILES})
+set(SANDBOX_HXX_DIR_FILES ${SANDBOX_HXX_FILES})
+
+set(SANDBOX_UTILS_HXX_DIR_FILES 
+    euler_angle_utils.h
+    frame_rate_calc.h
+    "flags.h"
+)
+set(SANDBOX_UTILS_CXX_DIR_FILES 
+    frame_rate_calc.cpp
+    "flags.cpp"
+)
+
+source_group("Header Files/utils" FILES ${SANDBOX_UTILS_HXX_DIR_FILES})
+source_group("Source Files/utils" FILES ${SANDBOX_UTILS_CXX_DIR_FILES})
+
+# 过滤出不包含在 SANDBOX_UTILS_DIR_FILES 中的文件
+foreach(SANDBOX_UTILS_FILE ${SANDBOX_UTILS_HXX_DIR_FILES})
+list(FILTER SANDBOX_HXX_DIR_FILES EXCLUDE REGEX "${SANDBOX_UTILS_FILE}")
+message("EXCLUDE " ${SANDBOX_UTILS_FILE} )
+endforeach()
+
+foreach(SANDBOX_UTILS_FILE ${SANDBOX_UTILS_CXX_DIR_FILES})
+list(FILTER SANDBOX_CXX_DIR_FILES EXCLUDE REGEX "${SANDBOX_UTILS_FILE}")
+message("EXCLUDE " ${SANDBOX_UTILS_FILE} )
+endforeach()
+
+
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "Header Files" FILES ${SANDBOX_HXX_DIR_FILES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "Source Files" FILES ${SANDBOX_CXX_DIR_FILES})

@@ -10,10 +10,9 @@ int main(int argc,char** argv)
         std::cout << argv[i] << std::endl;
     }
     CGLWindow w;
-     
+
     
     w.exec();
-
-
+    
     return 0;
 }
