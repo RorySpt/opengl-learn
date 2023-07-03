@@ -29,5 +29,5 @@ target_include_directories(${_target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE
 find_package(glfw3 CONFIG REQUIRED)
 #find_package(glm CONFIG REQUIRED)
 
-target_include_directories(${_target} PRIVATE ${GLFW_INCLUDE_DIR})
-#target_link_libraries(${_target} PRIVATE glfw glm::glm Freetype::Freetype)
+#target_include_directories(${_target} PRIVATE ${VCPKH})
+target_link_libraries(${_target} PRIVATE glfw)

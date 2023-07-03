@@ -4,7 +4,7 @@
 
 class IlluminationWidgetPrivate;
 class IlluminationWidget :
-    public CGLWindow
+    public DisplayWindow
 {
 	Q_DECLARE_PRIVATE(IlluminationWidget)
 public:

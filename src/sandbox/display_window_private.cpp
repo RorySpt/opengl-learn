@@ -15,79 +15,95 @@
 
 #include "Model.h"
 
+std::map<GLFWwindow*, DisplayWindow*> DisplayWindowPrivate::glfwWindowMap;
 
 
-void CGLWindowPrivate::init()
+bool WindowRect::Contains(int x, int y) const
 {
-	initGLFW();
-	ImGuiInit();
+	return x >= left && x < left + width && y >= top && y < top + height;
 }
 
-void CGLWindowPrivate::update()
+void DisplayWindowPrivate::initializeOpenGL()
 {
-	//ImGuiDefaultDraw();
-}
+	
 
-void CGLWindowPrivate::finish()
-{
-	ImGuiExit();
-}
-
-void CGLWindowPrivate::initGLFW()
-{
-	Q_Q(CGLWindow);
-	glfwSetErrorCallback(cb_error);
-	//初始化GLF
-	if (!glfwInit())
+	if(!openglInitialized)
 	{
-		throw(std::runtime_error(std::format("{} call glfwInit() failed! ", __FUNCTION__)));
+		glfwSetErrorCallback(handleErrorEvent);
+		//初始化GLF
+		if (!(::glfwInit()))
+		{
+			throw(std::runtime_error(std::format("{} call initializeOpenGL() failed! ", __FUNCTION__)));
+		}
+		//配置GLFW
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);//设置主版本号为3
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);//设置次版本号为3
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//使用核心模式
+
+		
+		//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+		openglInitialized = true;
 	}
-	//配置GLFW
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);//设置主版本号为3
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);//设置次版本号为3
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//使用核心模式
-	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+}
+
+void DisplayWindowPrivate::initGLFWWindow()
+{
+	initializeOpenGL();
+	Q_Q(DisplayWindow);
+	comm::const_cast_ref(window) = createGLFWWindow();
+	if (window != nullptr)
+		glfwWindowMap.emplace(window, q);
 
 
-	 //创建一个窗口对象
-	//comm::const_cast_ref(d->window)
+	
+}
+
+GLFWwindow* DisplayWindowPrivate::createGLFWWindow()
+{
+	Q_Q(DisplayWindow);
+	//创建一个窗口对象
+    //comm::const_cast_ref(d->window)
+	GLFWwindow* window;
 	comm::const_cast_ref(window) = glfwCreateWindow(1280, 720, "LearnOpenGL", NULL, NULL);
-	map_glfw_glw.insert(std::make_pair(window, q));
+
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
-		return;
+		return nullptr;
 	}
-	glfwMakeContextCurrent(window);
 	
-	//注册回调函数
-	glfwSetWindowCloseCallback(window, cb_close);
-	glfwSetKeyCallback(window, cb_key);
-
-	//GLAD是用来管理OpenGL的函数指针的，所以在调用任何OpenGL的函数之前初始化GLAD。
-	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
+	// 如果glad还没有加载opengl函数，执行加载，整个程序生命周期只会执行一次
+	if (!gladLoaded)
 	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return;
+		glfwMakeContextCurrent(window);
+		//GLAD是用来管理OpenGL的函数指针的，所以在调用任何OpenGL的函数之前初始化GLAD。
+		if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
+		{
+			std::cout << "Failed to initialize GLAD" << std::endl;
+			throw(std::runtime_error(std::format("{} Failed to initialize GLAD", __FUNCTION__)));
+		}
+		gladLoaded = true;
 	}
-	
-	//设置窗口的维度
-	glViewport(0, 0, 1280, 720);
-	//对窗口注册一个回调函数(Callback Function)
-	glfwSetFramebufferSizeCallback(window, cb_frame_buffer_size);
 
-	glfwSetCursorPosCallback(window, cb_mouse_move);
-	glfwSetScrollCallback(window, cb_scroll);
+	glfwMakeContextCurrent(window);
+	//设置opengl视口大小，跟实际窗口对应
+	glViewport(0, 0, 1280, 720);
+
+	//对窗口注册回调函数(Callback Function)
+	glfwSetWindowCloseCallback(window, handleCloseEvent);
+	glfwSetKeyCallback(window, handleKeyEvent);
+	glfwSetFramebufferSizeCallback(window, handleFrameBufferResizeEvent);
+	glfwSetCursorPosCallback(window, handleMouseMoveEvent);
+	glfwSetScrollCallback(window, handleScrollEvent);
 
 	glfwFocusWindow(window);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-
+	return window;
 }
 
-
-void CGLWindowPrivate::ImGuiInit()
+void DisplayWindowPrivate::initializeImGui()
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -129,9 +145,9 @@ void CGLWindowPrivate::ImGuiInit()
 	ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
-void CGLWindowPrivate::ImGuiDefaultDraw()
+void DisplayWindowPrivate::defaultImGuiDraw()
 {
-	Q_Q(CGLWindow);
+	Q_Q(DisplayWindow);
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	if (show_demo_window)
@@ -190,7 +206,7 @@ void CGLWindowPrivate::ImGuiDefaultDraw()
 	
 }
 
-void CGLWindowPrivate::ImGuiFrameBegin()
+void DisplayWindowPrivate::beginImGuiFrame()
 {
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
@@ -198,7 +214,7 @@ void CGLWindowPrivate::ImGuiFrameBegin()
 	ImGui::NewFrame();
 }
 
-void CGLWindowPrivate::ImGuiFrameEnd()
+void DisplayWindowPrivate::endImGuiFrame()
 {
 	// Rendering
 	ImGui::Render();
@@ -224,16 +240,21 @@ void CGLWindowPrivate::ImGuiFrameEnd()
 }
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
-void CGLWindowPrivate::ImGuiExit()
+void DisplayWindowPrivate::destroyImGui()
 {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
 
-std::map<GLFWwindow*, CGLWindow*> CGLWindowPrivate::map_glfw_glw;
+void DisplayWindowPrivate::handleErrorEvent(const int error, const char* description)
+{
+	std::cerr
+		<< std::format("Error({}): {}", error, description)
+		<< std::endl;
+}
 
-void CGLWindowPrivate::cb_frame_buffer_size(GLFWwindow* window, int width, int height)
+void DisplayWindowPrivate::handleFrameBufferResizeEvent(GLFWwindow* window, int width, int height)
 {
 	constexpr double inf = std::numeric_limits<double>::infinity();
 	constexpr double nan = std::numeric_limits<double>::quiet_NaN();
@@ -243,15 +264,10 @@ void CGLWindowPrivate::cb_frame_buffer_size(GLFWwindow* window, int width, int h
 	glfwMakeContextCurrent(current_window);
 
 	std::cout << std::format("{{{},{}}}", width, height) << std::endl;
-	map_glfw_glw[window]->on_resize(width, height);
+	glfwWindowMap[window]->resizeEvent(width, height);
 }
-void CGLWindowPrivate::cb_error(const int error, const char* description)
-{
-	std::cerr
-		<< std::format("Error({}): {}", error, description)
-		<< std::endl;
-}
-void CGLWindowPrivate::cb_close(GLFWwindow* glfwWindow)
+
+void DisplayWindowPrivate::handleCloseEvent(GLFWwindow* glfwWindow)
 {
 	//if (MessageBox(GetActiveWindow(), TEXT("是否关闭窗口？"), TEXT("Noticed"), MB_ICONQUESTION | MB_OKCANCEL) == IDCANCEL)
 	//{
@@ -262,22 +278,41 @@ void CGLWindowPrivate::cb_close(GLFWwindow* glfwWindow)
 	//}
 	glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
-void CGLWindowPrivate::cb_key(GLFWwindow* window, int key, int scanCode, int action, int mods)
+void DisplayWindowPrivate::handleKeyEvent(GLFWwindow* window, int key, int scanCode, int action, int mods)
 {
-	map_glfw_glw[window]->on_key(key, scanCode, action, mods);
+	glfwWindowMap[window]->keyEvent(key, scanCode, action, mods);
 }
 
-void CGLWindowPrivate::cb_mouse_move(GLFWwindow* window, double x_pos, double y_pos)
+// 将事件分发给对应窗口，并计算出变化量
+void DisplayWindowPrivate::handleMouseMoveEvent(GLFWwindow* window, double newX, double newY)
 {
-	static double lastX = x_pos, lastY = y_pos;
-	const float x_offset = static_cast<float>(x_pos - lastX);
-	const float y_offset = static_cast<float>(y_pos - lastY);
-	lastX = x_pos;
-	lastY = y_pos;
-	map_glfw_glw[window]->on_mouseMove(static_cast<float>(x_pos), static_cast<float>(y_pos), x_offset, y_offset);
+	// 一定会存在
+	const auto display = glfwWindowMap[window];
+	const auto& displayPrivate = display->d_ptr;
+	if(!displayPrivate->isFirst)
+	{
+		displayPrivate->lastMouseX = newX;
+		displayPrivate->lastMouseY = newY;
+		displayPrivate->isFirst = true;
+	}
+	const double lastX = displayPrivate->lastMouseX;
+	const double lastY = displayPrivate->lastMouseY;
+
+	const double deltaX = newX - lastX;
+	const double deltaY = newY - lastY;
+
+	displayPrivate->lastMouseX = newX;
+	displayPrivate->lastMouseY = newY;
+
+	display->mouseMoveEvent(
+		static_cast<float>(newX) 
+		, static_cast<float>(newY)
+		, static_cast<float>(deltaX)
+		, static_cast<float>(deltaY)
+	);
 }
 
-void CGLWindowPrivate::cb_scroll(GLFWwindow* window, double x_offset, double y_offset)
+void DisplayWindowPrivate::handleScrollEvent(GLFWwindow* window, double deltaX, double deltaY)
 {
-	map_glfw_glw[window]->on_scroll(static_cast<float>(x_offset), static_cast<float>(y_offset));
+	glfwWindowMap[window]->scrollEvent(static_cast<float>(deltaX), static_cast<float>(deltaY));
 }

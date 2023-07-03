@@ -14,6 +14,7 @@
 
 #include "common.h"
 
+// 统一设置GLfloat参数的glUniform重载函数
 inline void glUniform(GLint location, GLfloat v0) { glUniform1f(location, v0); }
 inline void glUniform(GLint location, GLfloat v0, GLfloat v1) { glUniform2f(location, v0, v1); }
 inline void glUniform(GLint location, GLfloat v0, GLfloat v1, GLfloat v2) { glUniform3f(location, v0, v1, v2); }
@@ -29,70 +30,85 @@ inline void glUniform(GLint location, const glm::mat4& mat) { glUniformMatrix4fv
 inline void glUniform(GLint location, const glm::mat3& mat) { glUniformMatrix3fv(location, 1, GL_FALSE, &mat[0].x); }
 inline void glUniform(GLint location, const glm::mat2& mat) { glUniformMatrix2fv(location, 1, GL_FALSE, &mat[0].x); }
 
+// 片段着色器类的前向声明
 class FragShader;
+// 顶点着色器类的前向声明
 class VertShader;
+
+// 着色器基类
 class ShaderBase
 {
 public:
-	enum shader_type
+	enum EShaderType
 	{
-		ST_Unknown,
-		ST_Frag,
-		ST_Vert
+		ST_Auto,// 自动识别类型
+		ST_Frag,// 片段着色器类型
+		ST_Vert // 顶点着色器类型
 	};
-	using path_type = std::filesystem::path;
-	friend class ShaderProgram;
-	CLASS_DEFAULT_COPY_AND_MOVE(ShaderBase)
+	using path_type = std::filesystem::path;// 文件路径类型
+	friend class ShaderProgram;				// 着色器程序类的友元
+	CLASS_DEFAULT_COPY_AND_MOVE(ShaderBase) // 默认的复制和移动构造函数
 
-	[[nodiscard]] unsigned int id() const;
-	[[nodiscard]] bool valid() const;
-	[[nodiscard]] shader_type type()const;
-	[[nodiscard]] virtual FragShader* asFragShader() { return nullptr; }
-	[[nodiscard]] virtual VertShader* asVertShader() { return nullptr; }
-	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByPath(const path_type& shaderPath, shader_type type = ST_Unknown);
-	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByName(const std::string& shaderName, shader_type type = ST_Unknown);
-	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByCode(const std::string& shaderCode, shader_type type);
+	[[nodiscard]] unsigned int id() const;	// 返回着色器ID
+	[[nodiscard]] bool valid() const;		// 判断着色器是否有效
+	[[nodiscard]] EShaderType type()const;	// 返回着色器类型
+	[[nodiscard]] virtual FragShader* asFragShader() { return nullptr; } // 返回片段着色器对象指针，默认返回nullptr
+	[[nodiscard]] virtual VertShader* asVertShader() { return nullptr; } // 返回顶点着色器对象指针，默认返回nullptr
+
+
+	// 通过路径创建片段着色器/顶点着色器（由传入类型决定），后需经过ShaderProgram链接
+	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByPath(const std::filesystem::path& shaderPath, EShaderType type = ST_Auto);
+	// 通过名字查找着色器代码
+	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByName(const std::string& shaderName, EShaderType type = ST_Auto);
+	// 使用存放着色器代码的字符串创建着色器类
+	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByCode(const std::string& shaderCode, EShaderType type);
 	virtual ~ShaderBase();
 
 protected:
-	ShaderBase(){}
+	ShaderBase() = default;
 
-	void compile(const std::string& shaderCode);
-	void checkCompileErrors();
-	[[nodiscard]] static shader_type identifyShaderByPath(const path_type& shaderPath);
-	
+	void compile(const std::string& shaderCode); // 编译着色器代码
+	void checkCompileErrors();					// 检查编译错误
+
+	// 通过路径识别着色器类型
+	[[nodiscard]] static EShaderType identifyShaderByPath(const path_type& shaderPath);
+
+
+	EShaderType m_type = ST_Auto;	// 着色器类型
 private:
-	unsigned int m_hShader = 0;
-	bool m_isValid = false;
-	shader_type m_type = ST_Unknown;
+	unsigned int m_hShader = 0;		// 着色器句柄
+	bool m_isValid = false;			// 着色器是否有效
 };
+
+
+// 片段着色器类
 class FragShader:public ShaderBase
 {
 public:
 	CLASS_DEFAULT_COPY_AND_MOVE(FragShader)
 
-	friend class ShaderBase;
-	[[nodiscard]] FragShader* asFragShader()override { return this; }
+	friend class ShaderBase; // 着色器基类为友元
+	[[nodiscard]] FragShader* asFragShader()override { return this; } // 返回自身指针
 	
 protected:
-	FragShader() = default;
+	FragShader() { m_type = ST_Frag; }; // 构造函数，设置着色器类型为片段着色器
 };
 class VertShader :public ShaderBase
 {
 public:
-	friend class ShaderBase;
-	[[nodiscard]] VertShader* asVertShader()override { return this; }
+	friend class ShaderBase;  // 着色器基类为友元
+	[[nodiscard]] VertShader* asVertShader()override { return this; }  // 返回自身指针
 	CLASS_DEFAULT_COPY_AND_MOVE(VertShader)
 protected:
-	VertShader() = default;
+	VertShader() { m_type = ST_Vert; }; // 构造函数，设置着色器类型为顶点着色器
 };
 
 
-
+// 着色器程序类
 class ShaderProgram
 {
 public:
-	using path_type = std::filesystem::path;
+	using path_type = std::filesystem::path;// 文件路径类型
 	// 程序ID;
 	unsigned int ID{};
 
@@ -101,22 +117,24 @@ public:
 	ShaderProgram(const VertShader &vert, const FragShader &frag);
 	// 使用/激活
 	void use() const;
-	[[nodiscard]] int location(std::string_view) const;
+	[[nodiscard]] int location(std::string_view) const; // 获取着色器变量的位置
 
 	template <typename ...T>
-	void glUniform(std::string_view, T ... args)const;
+	void glUniform(std::string_view, T ... args)const; // 设置着色器变量的值
 
+	// 提供直接创建着色器程序方法，推荐使用
 	[[nodiscard]] static std::shared_ptr<ShaderProgram> makeShaderByPath(const path_type& vertexPath, const path_type& fragmentPath);
 	[[nodiscard]] static std::shared_ptr<ShaderProgram> makeShaderByName(const std::string& vertexName, const std::string& fragmentName);
 private:
-	void compile(const std::string& vertexCode, const std::string& fragmentCode);
-	void compile(const VertShader& vert, const FragShader& frag);
-	void checkCompileErrors(unsigned int shader, const std::string& type) const;
+	void compile(const std::string& vertexCode, const std::string& fragmentCode);	// 编译链接着色器代码
+	void compile(const VertShader& vert, const FragShader& frag);					// 链接顶点着色器和片段着色器
+	void checkCompileErrors(unsigned int shader, const std::string& type) const;	// 检查编译错误
 
-	void construct(const path_type& vertexPath, const path_type& fragmentPath);
-	void construct(const VertShader& vert, const FragShader& frag);
+	void construct(const path_type& vertexPath, const path_type& fragmentPath);		// 构建着色器程序
+	void construct(const VertShader& vert, const FragShader& frag);					// 构建着色器程序
 };
 
+// 获取着色器变量的位置
 inline int ShaderProgram::location(const std::string_view string_view) const
 {
 	return glGetUniformLocation(ID, string_view.data());
@@ -132,38 +150,15 @@ void ShaderProgram::glUniform(const std::string_view string, T ... args)const
 		);
 }
 
-inline std::shared_ptr<ShaderProgram> ShaderProgram::makeShaderByPath(const path_type& vertexPath,
-                                                                      const path_type& fragmentPath)
-{
-	const std::shared_ptr vert = ShaderBase::makeShaderByPath(vertexPath, ShaderBase::ST_Vert);
-	const std::shared_ptr frag = ShaderBase::makeShaderByPath(fragmentPath, ShaderBase::ST_Frag);
-	std::shared_ptr<ShaderProgram> program;
-	if (vert && frag)
-	{
-		program = std::make_shared<ShaderProgram>(*vert->asVertShader(), *frag->asFragShader());
-	}
-	return program;
-}
 
-inline std::shared_ptr<ShaderProgram> ShaderProgram::makeShaderByName(const std::string& vertexName,
-	const std::string& fragmentName)
-{
-	const std::shared_ptr vert = ShaderBase::makeShaderByName(vertexName, ShaderBase::ST_Vert);
-	const std::shared_ptr frag = ShaderBase::makeShaderByName(fragmentName, ShaderBase::ST_Frag);
 
-	std::shared_ptr<ShaderProgram> program;
-	if (vert && frag)
-	{
-		program = std::make_shared<ShaderProgram>(*vert->asVertShader(), *frag->asFragShader());
-	}
-	return program;
-}
-
+// 着色器管理类，用于管理共享着色器，共享着色器需要使用ShaderManager里面的方法创建
 class ShaderManager
 {
 public:
-	using path_type = std::filesystem::path;
-	static std::list<path_type> m_searchPathList;
+	
+	using Path = std::filesystem::path; // 文件路径类型
+	static std::list<Path> m_searchPathList; // 着色器搜索路径列表
 
 	static ShaderManager* hInst()
 	{
@@ -174,12 +169,14 @@ public:
 		}
 		return shader;
 	}
-	[[nodiscard]] std::shared_ptr<FragShader> getOrCreateFragShader(const std::string& path);
-	[[nodiscard]] std::shared_ptr<VertShader> getOrCreateVertShader(const std::string& path);
-	[[nodiscard]] std::shared_ptr<ShaderProgram> getOrCreateShaderProgram(const std::string& fragPath, const std::string& vertPath);
-	[[nodiscard]] std::shared_ptr<ShaderProgram> getOrCreateShaderProgram(const VertShader&, const FragShader&);
+	[[nodiscard]] std::shared_ptr<FragShader> getOrCreateFragShader(const std::string& path); // 获取或创建片段着色器
+	[[nodiscard]] std::shared_ptr<VertShader> getOrCreateVertShader(const std::string& path); // 获取或创建顶点着色器
+	[[nodiscard]] std::shared_ptr<ShaderProgram> getOrCreateShaderProgram(const std::string& fragPath, const std::string& vertPath);  // 获取或创建着色器程序
+	[[nodiscard]] std::shared_ptr<ShaderProgram> getOrCreateShaderProgram(const VertShader&, const FragShader&); // 获取或创建着色器程序
 
-	static const std::list<path_type>& searchPathList() { return m_searchPathList; }
+
+	// shader的搜索路径
+	static const std::list<Path>& searchPathList() { return m_searchPathList; }
 protected:
 	ShaderManager() = default;
 

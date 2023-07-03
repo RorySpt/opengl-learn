@@ -10,7 +10,7 @@ private:
 	IlluminationWidget* q_ptr;
 };
 IlluminationWidget::IlluminationWidget()
-	: CGLWindow()
+	: DisplayWindow()
 	, d_ptr(std::make_shared<IlluminationWidgetPrivate>(this))
 {
 
@@ -18,15 +18,15 @@ IlluminationWidget::IlluminationWidget()
 
 void IlluminationWidget::render_init()
 {
-	//CGLWindow::render_init();
+	//DisplayWindow::render_init();
 }
 
 void IlluminationWidget::render_exit()
 {
-	//CGLWindow::render_exit();
+	//DisplayWindow::render_exit();
 }
 
 void IlluminationWidget::render_loop(float delta_time)
 {
-	//CGLWindow::render_loop(delta_time);
+	//DisplayWindow::render_loop(delta_time);
 }

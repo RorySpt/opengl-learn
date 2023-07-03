@@ -9,18 +9,18 @@ unsigned ShaderBase::id() const
 bool ShaderBase::valid() const
 { return m_isValid; }
 
-ShaderBase::shader_type ShaderBase::type() const
+ShaderBase::EShaderType ShaderBase::type() const
 { return m_type; }
 
-std::shared_ptr<ShaderBase> ShaderBase::makeShaderByPath(const ShaderBase::path_type& shaderPath, shader_type type)
+std::shared_ptr<ShaderBase> ShaderBase::makeShaderByPath(const std::filesystem::path& shaderPath, EShaderType type)
 {
     std::string shaderCode;
     std::ifstream shaderFile;
     shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    if (type == ST_Unknown)
+    if (type == ST_Auto)
     {
         type = identifyShaderByPath(shaderPath);
-        if (type == ST_Unknown)
+        if (type == ST_Auto)
         {
             std::cout << "ERROR::SHADER::UNKNOWN_SHADER_TYPE " << shaderPath << std::endl;
             return nullptr;
@@ -48,9 +48,9 @@ std::shared_ptr<ShaderBase> ShaderBase::makeShaderByPath(const ShaderBase::path_
     return makeShaderByCode(shaderCode, type);
 }
 
-std::shared_ptr<ShaderBase> ShaderBase::makeShaderByName(const std::string& shaderName, shader_type type)
+std::shared_ptr<ShaderBase> ShaderBase::makeShaderByName(const std::string& shaderName, EShaderType type)
 {
-    if(type == shader_type::ST_Unknown)
+    if(type == EShaderType::ST_Auto)
     {
         std::cout << "ERROR::SHADER::UNKNOWN_SHADER_TYPE " << shaderName << std::endl;
         return nullptr;
@@ -75,17 +75,17 @@ std::shared_ptr<ShaderBase> ShaderBase::makeShaderByName(const std::string& shad
 
 }
 
-std::shared_ptr<ShaderBase> ShaderBase::makeShaderByCode(const std::string& shaderCode, shader_type type)
+std::shared_ptr<ShaderBase> ShaderBase::makeShaderByCode(const std::string& shaderCode, EShaderType type)
 {
     std::shared_ptr<ShaderBase> shader;
     switch (type)
     {
     case ST_Frag:shader = std::shared_ptr<ShaderBase>(new FragShader);break;
     case ST_Vert:shader = std::shared_ptr<ShaderBase>(new VertShader);break;
-    case ST_Unknown:
+    case ST_Auto:
     default:return nullptr;
     }
-    shader->m_type = type;
+    //shader->m_type = type;
     shader->compile(shaderCode);
     return shader;
 }
@@ -98,20 +98,20 @@ ShaderBase::~ShaderBase()
 	}
 }
 
-ShaderBase::shader_type ShaderBase::identifyShaderByPath(const ShaderBase::path_type& shaderPath)
+ShaderBase::EShaderType ShaderBase::identifyShaderByPath(const ShaderBase::path_type& shaderPath)
 {
 	const auto extension = shaderPath.extension().string();
     if (extension == (".frag"))
-        return shader_type::ST_Frag;
+        return EShaderType::ST_Frag;
     else if (extension == (".vert"))
-        return shader_type::ST_Vert;
+        return EShaderType::ST_Vert;
     else
-        return shader_type::ST_Unknown;
+        return EShaderType::ST_Auto;
 }
 
 void ShaderBase::compile(const std::string& shaderCode)
 {
-    if (type() == ST_Unknown)
+    if (type() == ST_Auto)
         return;
     m_hShader = glCreateShader(type() == ST_Vert ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
     const char* vShaderCode = shaderCode.c_str();
@@ -242,6 +242,35 @@ void ShaderProgram::checkCompileErrors(unsigned shader, const std::string& type)
    
 }
 
+std::shared_ptr<ShaderProgram> ShaderProgram::makeShaderByPath(const path_type& vertexPath,
+    const path_type& fragmentPath)
+{
+    const std::shared_ptr vert = ShaderBase::makeShaderByPath(vertexPath, ShaderBase::ST_Vert);
+    const std::shared_ptr frag = ShaderBase::makeShaderByPath(fragmentPath, ShaderBase::ST_Frag);
+    std::shared_ptr<ShaderProgram> program;
+    if (vert && frag)
+    {
+        program = std::make_shared<ShaderProgram>(*vert->asVertShader(), *frag->asFragShader());
+    }
+    return program;
+}
+
+std::shared_ptr<ShaderProgram> ShaderProgram::makeShaderByName(const std::string& vertexName,
+    const std::string& fragmentName)
+{
+    const std::shared_ptr vert = ShaderBase::makeShaderByName(vertexName, ShaderBase::ST_Vert);
+    const std::shared_ptr frag = ShaderBase::makeShaderByName(fragmentName, ShaderBase::ST_Frag);
+
+    std::shared_ptr<ShaderProgram> program;
+    if (vert && frag)
+    {
+        program = std::make_shared<ShaderProgram>(*vert->asVertShader(), *frag->asFragShader());
+    }
+    return program;
+}
+
+
+
 std::shared_ptr<FragShader> ShaderManager::getOrCreateFragShader(const std::string& path)
 {
     auto& ref = m_shader_map[path];
@@ -288,12 +317,12 @@ std::shared_ptr<ShaderProgram> ShaderManager::getOrCreateShaderProgram(const Ver
 }
 
 
-std::list<ShaderManager::path_type> ShaderManager::m_searchPathList;
+std::list<ShaderManager::Path> ShaderManager::m_searchPathList;
 
 class _SearchPathListAdder
 {
 public:
-    _SearchPathListAdder(ShaderManager::path_type path)
+    _SearchPathListAdder(ShaderManager::Path path)
 	{
         ShaderManager::m_searchPathList.emplace_back(path);
 	}

@@ -4,10 +4,12 @@
 #include "IlluminantModel.h"
 #include "material.h"
 
-struct CGLWindowData;
-class CGLWindowPrivate;
+// window just window, The rest of the logic is stripped out
 
-struct CGLWindowData
+struct DisplayWindowData;
+class DisplayWindowPrivate;
+
+struct DisplayWindowData
 {
 	std::shared_ptr<BoxModel> boxModel;
 	//光源模型
@@ -20,10 +22,10 @@ struct CGLWindowData
 	std::vector<std::tuple<glm::vec3, double, Material>> boxArguments;
 };
 
-class CGLWindow 
+class DisplayWindow 
 {
-	Q_DECLARE_PRIVATE(CGLWindow)
-	CLASS_NO_COPY_AND_MOVE(CGLWindow)
+	Q_DECLARE_PRIVATE(DisplayWindow)
+	CLASS_NO_COPY_AND_MOVE(DisplayWindow)
 
 	using Clock = std::chrono::high_resolution_clock;
 	using Duration = std::chrono::duration<float>;
@@ -35,8 +37,8 @@ public:
 		Enabled,
 		Disabled
 	};
-	CGLWindow();
-	virtual ~CGLWindow();
+	DisplayWindow();
+	virtual ~DisplayWindow();
 
 
 	int exec();
@@ -44,6 +46,8 @@ protected:
 	// These will invoke by exec.
 	void render_init();
 	void render_exit();
+	void render_tick(float deltaTime);
+
 	void render_draw(float deltaTime); // specific invoke by processDraw
 
 	void processFrameBegin(float deltaTime);
@@ -54,12 +58,19 @@ protected:
 	
 
 	// These will invoke by glfw event.
-	void on_resize(int width, int height);
-	void on_key(int key, int scan_code, int action, int mods);
-	void on_mouseMove(float x_pos, float y_pos, float x_offset, float y_offset);
-	void on_scroll(float x_offset, float y_offset);
+	void resizeEvent(int width, int height);
+	void keyEvent(int keyCode, int scanCode, int keyAction, int keyModifiers);
+	void mouseMoveEvent(float mouseX, float mouseY, float deltaX, float deltaY);
+	void scrollEvent(float deltaX, float deltaY);
+
+
+	void toggleFullscreenMode();
+	void toggleMouseMode();
+
+	GLFWmonitor* findMonitorByPosition(int centerX, int centerY);
+	
 private:
-	std::unique_ptr<CGLWindowPrivate> d_ptr;
-	std::unique_ptr<CGLWindowData> data;
+	std::unique_ptr<DisplayWindowPrivate> d_ptr;
+	std::unique_ptr<DisplayWindowData> data;
 };
 
