@@ -2,6 +2,8 @@
 
 #include "shader.h"
 
+#include "configure.h"
+
 
 unsigned ShaderBase::id() const
 { return m_hShader; }
@@ -328,4 +330,4 @@ public:
 	}
 };
 
-_SearchPathListAdder _adder(comm::dir_shader);
+_SearchPathListAdder _adder(PROJECT_SHADER_PATH);

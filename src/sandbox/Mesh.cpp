@@ -41,9 +41,9 @@ void Mesh::Draw(const ShaderProgram& shader) const
 {
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
-	shader.glUniform("material.""enable_""diffuseTex", true);
-	shader.glUniform("material.""enable_""specularTex", true);
-	shader.glUniform("material.""enable_""emissionTex", true);
+	shader.glUniform("material.""diffuse", 0);
+	shader.glUniform("material.""specular", 0);
+	shader.glUniform("material.""emission", 0);
 	shader.glUniform("material.""diffuseTex", 0);
 	shader.glUniform("material.""specularTex", 0);
 	shader.glUniform("material.""emissionTex", 0);
@@ -63,7 +63,7 @@ void Mesh::Draw(const ShaderProgram& shader) const
 		}
 		if(number == "1")
 		{
-			shader.glUniform("material.""enable_" + name, true);
+			//shader.glUniform("material.""enable_" + name, true);
 			shader.glUniform("material." + name, static_cast<int>(i));
 		}
 		shader.glUniform("material." + name.append(number), static_cast<int>(i));

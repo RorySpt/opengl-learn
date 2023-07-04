@@ -6,4 +6,6 @@ project(opengl-learn
     LANGUAGES C CXX
 )
 
+set(PROJECT_SHADER_PATH "${CMAKE_SOURCE_DIR}/data/shader")
+
 add_subdirectory(src)

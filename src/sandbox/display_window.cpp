@@ -230,7 +230,7 @@ void DisplayWindow::render_draw(float deltaTime)
 		data->lightModel->draw(data->camera, wMat);
 	}
 	{
-		static auto shader = ShaderProgram::makeShaderByName("lightingShader.vert", "lightingShader3.frag");
+		static auto shader = ShaderProgram::makeShaderByName("common.vert", "common.frag");
 		static Model model(R"(C:/Users/zhang/Pictures/Material/nanosuit/nanosuit.obj)");
 		shader->use();
 		shader->glUniform("lights[0].type", 1);

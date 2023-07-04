@@ -1,6 +1,6 @@
 #pragma once
 #include "light.h"
-#include "Actor.h"
+#include "actor.h"
 
 #include <map>
 #include <set>

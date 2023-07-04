@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Actor.h"
+#include "actor.h"
 #include "World.h"
 Actor::Actor(World* world): _world(world)
 {
