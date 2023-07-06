@@ -33,8 +33,8 @@ public:
 	EulerAngle _world_rotation_cache;
 	glm::vec3 _world_scale3d_cache;
 
-	glm::mat4 _local_to_parent_cache = {};
-	glm::mat4 _local_to_world = {};
+	glm::mat4 _local_to_parent_cache;
+	glm::mat4 _local_to_world;
 
 	SceneComponent* _attach_parent = nullptr;
 	std::vector<std::unique_ptr<SceneComponent>> _attach_children;

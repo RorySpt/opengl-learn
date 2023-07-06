@@ -10,16 +10,17 @@ _GL_MATH_BEGIN
 
 
 // The default unit should be radius
-struct EulerAngle
+struct EulerAngle  // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
 	union
 	{
-		struct { float pitch, yaw, row; };  // NOLINT(clang-diagnostic-nested-anon-types)
+		struct { float pitch, yaw, row; };   // NOLINT(clang-diagnostic-nested-anon-types)
 		glm::vec3 data;
 	};
 
 public:
-	EulerAngle(const float pitch, const float yaw, const float row)
+	EulerAngle() = default;
+	EulerAngle(const float pitch, const float yaw, const float row)  // NOLINT(cppcoreguidelines-pro-type-member-init)
 		: pitch(pitch),
 		  yaw(yaw),
 		  row(row)
