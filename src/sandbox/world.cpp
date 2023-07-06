@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "world.h"
-
+#include "actor.h"
 void World::BeginPlay()
 {
 	DealActorDel();
@@ -33,14 +33,20 @@ void World::Tick(float deltaTime)
 	}
 }
 
+bool World::Within(Actor* actor) const
+{
+	return _workActors.empty() ? _actors.contains(actor)
+	: _actors.contains(actor) || std::ranges::find(_workActors , actor) != std::end(_workActors);
+}
+
 void World::DealActorAdd()
 {
 	if (!_newActors.empty())
 	{
 		_workActors.insert_range(std::end(_workActors), std::move(_newActors));
 		_actors.insert_range(_workActors 
-			| std::views::transform([](const std::shared_ptr<Actor>& actor){
-				return actor.get();
+			| std::views::transform([](Actor* actor){
+				return std::pair{ actor, std::unique_ptr<Actor>()};
 			}));
 
 		_newActors.clear();
@@ -52,13 +58,14 @@ void World::DealActorDel()
 	
 	if (!_delActors.empty())
 	{
-		std::ranges::remove_if(_workActors, [&](std::shared_ptr<Actor>& actor)
+		std::erase_if(_workActors, [&](Actor* actor)
 			{
 				return std::ranges::find(_delActors, actor) != std::end(_delActors);
 			});
-		for (const auto& actor : _delActors)
+		for (const auto actor : _delActors)
 		{
-			_actors.erase(actor.get());
+			// ´¥·¢actorÏú»Ù
+			_actors.erase(actor);
 		}
 
 		_delActors.clear();
