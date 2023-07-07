@@ -10,8 +10,8 @@ class SceneComponent;
 class Actor
 {
 public:
-	template<typename ActorType>
-	friend std::weak_ptr<ActorType> SpawnActor(World* world);
+	template<typename ActorType> requires std::is_base_of_v<Actor, ActorType>
+	friend ActorType* SpawnActor(World* world);
 	friend class World;
 	
 
@@ -24,8 +24,6 @@ public:
 	virtual void Destroy();	// 申请销毁
 	World* GetWorld() const;
 
-	[[nodiscard]] const glm::mat4& localToWorld(const glm::mat4& mat) const { return _localToWorld; }
-	void setLocalToWorld(const glm::mat4& mat) { _localToWorld = mat; }
 
 protected:
 
@@ -33,8 +31,6 @@ protected:
 
 	std::unique_ptr<SceneComponent> _root_component;
 	std::vector<std::unique_ptr<ActorComponent>> _components;
-
-	glm::mat4 _localToWorld = {};
 };
 
 
@@ -42,11 +38,11 @@ protected:
 template<typename ActorType> requires std::is_base_of_v<Actor,ActorType>
 ActorType* SpawnActor(World* world)
 {
-	return world->SpawnActor([world]()
+	return world->SpawnActor<ActorType>([world, actor_world_address  = &ActorType::_world]()
 	{
 		// 定义生成actor的方法
 		auto actor = new ActorType;
-		actor->_world = world;
+		actor->*actor_world_address = world;
 		return actor;
 	});
 }

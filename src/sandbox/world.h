@@ -18,8 +18,9 @@ public:
 	template<typename ActorType> requires std::is_base_of_v<Actor, ActorType>
 	ActorType* SpawnActor();
 
-	template<typename ActorType> requires std::is_base_of_v<Actor, ActorType>
-	ActorType* SpawnActor(ActorType* (*generateActor)());
+	template <typename ActorType, typename GenerateActorFunc>
+		requires std::is_base_of_v<Actor, ActorType>&& std::is_invocable_r_v<ActorType*, GenerateActorFunc>
+	ActorType* SpawnActor(GenerateActorFunc generateActor);
 	
 
 	std::vector<Actor*> _newActors;	// 新生成的Actor列表
@@ -51,12 +52,13 @@ ActorType* World::SpawnActor()
 	return ::SpawnActor<ActorType>(this);
 }
 
-template <typename ActorType> requires std::is_base_of_v<Actor, ActorType>
-ActorType* World::SpawnActor(ActorType* (* generateActor)())
+template <typename ActorType, typename GenerateActorFunc>
+	requires std::is_base_of_v<Actor, ActorType>&&std::is_invocable_r_v<ActorType*,GenerateActorFunc>
+ActorType* World::SpawnActor(GenerateActorFunc generateActor)
 {
 	auto actor = generateActor();
 	assert(actor != nullptr);
-	this->_newActors.insert(actor);
+	this->_newActors.emplace_back(actor);
 	return actor;
 }
 
