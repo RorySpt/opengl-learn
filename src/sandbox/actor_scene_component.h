@@ -5,17 +5,24 @@
 #include "actor_component.h"
 #include "euler_angle_utils.h"
 
+// SceneComponent 类是用于管理场景中角色组件的类。
+// 它是 ActorComponent 类的派生类，并提供了组件附加、分离以及变换关系的管理功能。
+// 通过管理组件的层级关系和变换关系，SceneComponent类提供了一种灵活而强大的方式来构建和管理场景中的角色组件。
+
 class SceneComponent : public ActorComponent
 {
 public:
     virtual void TickComponent(float deltaTime) override;
 
-    bool AttachToComponent(SceneComponent* parent);     // 将当前组件附加到指定的父组件
-    void DetachFromParent();                            // 将当前组件从父组件中分离
+    // 将当前组件附加到指定的父组件
+    bool AttachToComponent(SceneComponent* parent);
+    // 将当前组件从父组件中分离
+    void DetachFromParent();                            
 
-    SceneComponent* GetAttachParent() const;            // 获取当前组件的父组件
-
-    int GetNumChildrenComponents() const;               // 获取当前组件的子组件数量
+    // 获取当前组件的父组件
+    SceneComponent* GetAttachParent() const;           
+    // 获取当前组件的子组件数量
+    int GetNumChildrenComponents() const;               
     SceneComponent* GetChildComponent(int ChildIndex) const;                // 获取指定索引的子组件
     void GetChildrenComponents(std::vector<SceneComponent*>& Children);     // 获取所有子组件的列表
     std::vector<SceneComponent*> GetAttachChildren();                       // 获取所有附加的子组件

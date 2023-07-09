@@ -6,6 +6,8 @@
 #### 软件架构
 软件架构说明
 
+我把一些更详细的说明放到了[这里](https://roryspt.github.io/2023/07/04/learn-opengl/project-details/)
+
 ##### 第三方库
 
 - opengl
