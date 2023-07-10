@@ -131,9 +131,12 @@ LightBoxModel2::LightBoxModel2()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+	auto container2_diffuse = comm::loadTexture(std::string(comm::dir_picture) + "/container2.png");
+	auto container2_specular = comm::loadTexture(std::string(comm::dir_picture) + "/container2_specular.png");
+
 	setMaterial({ GetRandomRabbitTexture(),
-		comm::loadTexture(std::string(comm::dir_picture) + "/container2.png")
-		,comm::loadTexture(std::string(comm::dir_picture) + "/container2_specular.png")
+		container2_diffuse
+		,container2_specular
 		,32.0f });
 }
 
@@ -180,15 +183,15 @@ void LightBoxModel2::drawBegin()
 	glBindVertexArray(VAO);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, std::get<Material3::Maps>(_material.diffuse));
+	glBindTexture(GL_TEXTURE_2D, std::get<Material3::TextureID>(_material.diffuse));
 	shader->glUniform("material.diffuseTex", 0);
 	shader->glUniform("material.enable_diffuseTex", true);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, std::get<Material3::Maps>(_material.specular));
+	glBindTexture(GL_TEXTURE_2D, std::get<Material3::TextureID>(_material.specular));
 	shader->glUniform("material.specularTex", 1);
 	shader->glUniform("material.enable_specularTex", true);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, std::get<Material3::Maps>(_material.emission));
+	glBindTexture(GL_TEXTURE_2D, std::get<Material3::TextureID>(_material.emission));
 	shader->glUniform("material.emissionTex", 2);
 	shader->glUniform("material.enable_emissionTex", true);
 

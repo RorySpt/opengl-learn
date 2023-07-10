@@ -23,13 +23,13 @@ struct Material2 {
 struct Material3
 {
 	using Color = glm::vec3;
-	using Maps = unsigned int;
-	using ColorOrMaps = std::variant<Color, Maps>;
+	using TextureID = unsigned int;
+	using ColorOrTexture = std::variant<Color, TextureID>;
 
 
-	ColorOrMaps emission;
-	ColorOrMaps diffuse;
-	ColorOrMaps specular;
+	ColorOrTexture emission;
+	ColorOrTexture diffuse;
+	ColorOrTexture specular;
 	float shininess{};
 };
 //void applyMaterial3ToShader(const Material3& material, const ShaderProgram& shader,std::array<int,3> loc = {0,1,2});
@@ -56,3 +56,30 @@ private:
 
 	std::map<std::string, Material> m_map;
 };
+
+namespace Materials {
+	extern Material emerald;       // 翠绿色
+	extern Material jade;          // 玉石绿
+	extern Material obsidian;      // 黑曜石
+	extern Material pearl;         // 珍珠白
+	extern Material ruby;          // 红宝石
+	extern Material turquoise;     // 绿松石
+	extern Material brass;         // 黄铜
+	extern Material bronze;        // 青铜
+	extern Material chrome;        // 铬
+	extern Material copper;        // 铜
+	extern Material gold;          // 黄金
+	extern Material silver;        // 银
+	extern Material black_plastic; // 黑色塑料
+	extern Material cyan_plastic;  // 青色塑料
+	extern Material green_plastic; // 绿色塑料
+	extern Material red_plastic;   // 红色塑料
+	extern Material white_plastic; // 白色塑料
+	extern Material yellow_plastic;// 黄色塑料
+	extern Material black_rubber;  // 黑色橡皮
+	extern Material cyan_rubber;   // 青色橡皮
+	extern Material green_rubber;  // 绿色橡皮
+	extern Material red_rubber;    // 红色橡皮
+	extern Material white_rubber;  // 白色橡皮
+	extern Material yellow_rubber; // 黄色橡皮
+}
