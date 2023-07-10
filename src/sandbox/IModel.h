@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <glm/glm.hpp>
-#include "camera.h"
+class Camera;
 class IModel
 {
 public:

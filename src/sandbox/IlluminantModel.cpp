@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "IlluminantModel.h"
 
+#include "camera.h"
 #include "vertices.h"
 
 

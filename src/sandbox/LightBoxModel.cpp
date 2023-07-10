@@ -2,6 +2,7 @@
 #include "LightBoxModel.h"
 #include "common.h"
 #include "vertices.h"
+#include "camera.h"
 LightBoxModel::LightBoxModel()
 {
 	
