@@ -73,8 +73,10 @@ public:
 	static void handleFrameBufferResizeEvent(GLFWwindow* window, int width, int height);
 	static void handleCloseEvent(GLFWwindow* glfwWindow);
 	static void handleKeyEvent(GLFWwindow* window, int key, int scanCode, int action, int mods);
+	static void handleMouseButtonEvent(GLFWwindow* window, int button, int action, int mods);
 	static void handleMouseMoveEvent(GLFWwindow* window, double newX, double newY);
 	static void handleScrollEvent(GLFWwindow* window, double deltaX, double deltaY);
+	
 
 	// 每个glfwWindow对应的DisplayWindow
 	static std::map<GLFWwindow*, DisplayWindow*> glfwWindowMap;

@@ -386,6 +386,24 @@ void DisplayWindow::keyEvent(int keyCode, int scanCode, int keyAction, int keyMo
 
 }
 
+void DisplayWindow::mouseButtonEvent(int buttonCode, int keyAction, int keyModifiers)
+{
+	switch (buttonCode)
+	{
+	case GLFW_MOUSE_BUTTON_LEFT:
+
+		break;
+	case GLFW_MOUSE_BUTTON_RIGHT:
+
+		break;
+	case GLFW_MOUSE_BUTTON_MIDDLE:
+
+		break;
+	default:
+		break;
+	}
+}
+
 void DisplayWindow::mouseMoveEvent(float mouseX, float mouseY, float deltaX, float deltaY)
 {
 	Q_D(DisplayWindow);

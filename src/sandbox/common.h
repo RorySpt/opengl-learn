@@ -18,17 +18,17 @@ _COMM_BEGIN
     Class& operator=(const Class & other) = Set;\
     Class& operator=(Class && other) noexcept = Set;  
 
-#define CLASS_NO_COPY(Class) CLASS_CONSTRUCTOR_COPY(##Class, delete)
-#define CLASS_NO_MOVE(Class) CLASS_CONSTRUCTOR_MOVE(##Class, delete)
+#define CLASS_NO_COPY(Class) CLASS_CONSTRUCTOR_COPY(Class, delete)
+#define CLASS_NO_MOVE(Class) CLASS_CONSTRUCTOR_MOVE(Class, delete)
 #define CLASS_NO_COPY_AND_MOVE(Class)\
-	CLASS_CONSTRUCTOR_COPY(##Class, delete)\
-	CLASS_CONSTRUCTOR_MOVE(##Class, delete)
+	CLASS_CONSTRUCTOR_COPY(Class, delete)\
+	CLASS_CONSTRUCTOR_MOVE(Class, delete)
 
-#define CLASS_DEFAULT_COPY(Class) CLASS_CONSTRUCTOR_COPY(##Class, default)
-#define CLASS_DEFAULT_MOVE(Class) CLASS_CONSTRUCTOR_MOVE(##Class, default)
+#define CLASS_DEFAULT_COPY(Class) CLASS_CONSTRUCTOR_COPY(Class, default)
+#define CLASS_DEFAULT_MOVE(Class) CLASS_CONSTRUCTOR_MOVE(Class, default)
 #define CLASS_DEFAULT_COPY_AND_MOVE(Class)\
-	CLASS_CONSTRUCTOR_COPY(##Class, default)\
-	CLASS_CONSTRUCTOR_MOVE(##Class, default)
+	CLASS_CONSTRUCTOR_COPY(Class, default)\
+	CLASS_CONSTRUCTOR_MOVE(Class, default)
 
 #define CLASS_NO_COPY_DEFAULT_MOVE(Class)\
 	CLASS_NO_COPY(Class)\

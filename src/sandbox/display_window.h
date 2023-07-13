@@ -60,6 +60,7 @@ protected:
 	// These will invoke by glfw event.
 	void resizeEvent(int width, int height);
 	void keyEvent(int keyCode, int scanCode, int keyAction, int keyModifiers);
+	void mouseButtonEvent(int buttonCode, int keyAction, int keyModifiers);
 	void mouseMoveEvent(float mouseX, float mouseY, float deltaX, float deltaY);
 	void scrollEvent(float deltaX, float deltaY);
 

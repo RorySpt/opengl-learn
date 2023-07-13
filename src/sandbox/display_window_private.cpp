@@ -96,6 +96,7 @@ GLFWwindow* DisplayWindowPrivate::createGLFWWindow()
 	glfwSetFramebufferSizeCallback(window, handleFrameBufferResizeEvent);
 	glfwSetCursorPosCallback(window, handleMouseMoveEvent);
 	glfwSetScrollCallback(window, handleScrollEvent);
+	glfwSetMouseButtonCallback(window, handleMouseButtonEvent);
 
 	glfwFocusWindow(window);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -281,6 +282,11 @@ void DisplayWindowPrivate::handleCloseEvent(GLFWwindow* glfwWindow)
 void DisplayWindowPrivate::handleKeyEvent(GLFWwindow* window, int key, int scanCode, int action, int mods)
 {
 	glfwWindowMap[window]->keyEvent(key, scanCode, action, mods);
+}
+
+void DisplayWindowPrivate::handleMouseButtonEvent(GLFWwindow* window, int button, int action, int mods)
+{
+	glfwWindowMap[window]->mouseButtonEvent(button, action, mods);
 }
 
 // 将事件分发给对应窗口，并计算出变化量

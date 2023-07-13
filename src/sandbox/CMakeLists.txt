@@ -1,6 +1,6 @@
 add_executable(sandbox)
 target_compile_features(sandbox PUBLIC cxx_std_23)
-target_compile_options(sandbox PUBLIC "/MP")
+target_compile_options(sandbox PUBLIC "/MP" "/Zc:preprocessor")
 #set(IMGUI_DIR D:/WorkSpace/MyFile/ThirdParty/imgui)
 #set(IMGUI_BACKENDS_DIR ${IMGUI_DIR}/backends)
 
@@ -121,8 +121,24 @@ source_group("Source Files/render" FILES ${SANDBOX_RENDER_CXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_HXX_DIR_FILES ${SANDBOX_RENDER_HXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_RENDER_CXX_DIR_FILES})
 
+# gameplay文件夹
+file(GLOB SANDBOX_GAMEPLAY_HXX_DIR_FILES "*_component.h")
+file(GLOB SANDBOX_GAMEPLAY_CXX_DIR_FILES "*_component.cpp")
 
-
+list(PREPEND SANDBOX_GAMEPLAY_HXX_DIR_FILES 
+    object.h
+    world.h
+    actor.h
+)
+list(PREPEND SANDBOX_GAMEPLAY_CXX_DIR_FILES 
+    object.cpp
+    world.cpp
+    actor.cpp
+)
+source_group("Header Files/gameplay" FILES ${SANDBOX_GAMEPLAY_HXX_DIR_FILES})
+source_group("Source Files/gameplay" FILES ${SANDBOX_GAMEPLAY_CXX_DIR_FILES})
+list(APPEND SANDBOX_EXCLUDE_HXX_DIR_FILES ${SANDBOX_GAMEPLAY_HXX_DIR_FILES})
+list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_GAMEPLAY_CXX_DIR_FILES})
 
 # 过滤出不包含在 SANDBOX_UTILS_DIR_FILES 中的文件
 foreach(SANDBOX_EXCLUDE_FILE ${SANDBOX_EXCLUDE_HXX_DIR_FILES})
