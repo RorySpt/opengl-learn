@@ -3,9 +3,10 @@
 #include "common.h"
 #include "IlluminantModel.h"
 #include "material.h"
-
+#include "world.h"
 // window just window, The rest of the logic is stripped out
 
+class InputManager;
 struct DisplayWindowData;
 class DisplayWindowPrivate;
 
@@ -18,9 +19,11 @@ struct DisplayWindowData
 	std::shared_ptr<IlluminantModel> illuminantModel;
 
 	Camera camera;
-
+	World world;
+	InputManager* input;
 	std::vector<std::tuple<glm::vec3, double, Material>> boxArguments;
 };
+
 
 class DisplayWindow 
 {

@@ -1,12 +1,13 @@
 #pragma once
 #include <glm/glm.hpp>
-
+#include <memory>
 #include "world.h"
 #include "actor_component.h"
 
 class World;
 class ActorComponent;
 class SceneComponent;
+class InputComponent;
 class Actor
 {
 public:
@@ -18,6 +19,8 @@ public:
 	Actor();
 	virtual ~Actor();
 
+	virtual void SetupPlayerInputComponent(InputComponent *input_component);
+
 	virtual void BeginPlay();
 	virtual void EndPlay();
 	virtual void Tick(float deltaTime);
@@ -28,7 +31,7 @@ public:
 protected:
 
 	World* _world;
-
+	InputComponent* _input_component = nullptr;
 	std::unique_ptr<SceneComponent> _root_component;
 	std::vector<std::unique_ptr<ActorComponent>> _components;
 };

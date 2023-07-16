@@ -3,7 +3,7 @@
 
 #include "camera.h"
 #include "vertices.h"
-
+#include "shader.h"
 
 IlluminantModel::IlluminantModel()
 {

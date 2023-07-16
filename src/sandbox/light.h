@@ -1,7 +1,7 @@
 #pragma once
-#include "shader.h"
 
 
+class ShaderProgram;
 
 struct LightSourceBase
 {

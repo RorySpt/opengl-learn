@@ -3,6 +3,7 @@
 #include "common.h"
 #include "vertices.h"
 #include "camera.h"
+#include "shader.h"
 LightBoxModel::LightBoxModel()
 {
 	

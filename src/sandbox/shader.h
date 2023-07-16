@@ -1,9 +1,11 @@
 #pragma once
+#include "stdafx.h"
 #include <chrono>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <random>
 #include <type_traits>
 #include <glad/glad.h>

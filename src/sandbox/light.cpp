@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "light.h"
-
+#include "shader.h"
 void applyLightToShader(const LightSource& light, const ShaderProgram& shader, int channel)
 {
 	const std::string lightChannel = std::format("lights[{}].", channel);

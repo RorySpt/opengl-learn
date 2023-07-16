@@ -1,7 +1,6 @@
 #include "stdafx.h"
-
 #include "display_window.h"
-#include "shader.h"
+
 
 int main(int argc,char** argv)
 {

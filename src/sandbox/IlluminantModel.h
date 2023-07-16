@@ -2,7 +2,7 @@
 #include "common.h"
 #include "LightBoxModel.h"
 #include "IModel.h"
-#include "shader.h"
+
 
 class IlluminantModel :
     public IModel

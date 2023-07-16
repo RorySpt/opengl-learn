@@ -5,7 +5,6 @@ target_compile_options(sandbox PUBLIC "/MP" "/Zc:preprocessor")
 #set(IMGUI_BACKENDS_DIR ${IMGUI_DIR}/backends)
 
 
-
 file(GLOB_RECURSE SANDBOX_CPP_FILES 
     *.cpp 
     *.cxx
@@ -14,7 +13,9 @@ file(GLOB_RECURSE SANDBOX_CPP_FILES
     )
 file(GLOB_RECURSE SANDBOX_HXX_FILES 
     *.h
+    *.hpp
 )
+#target_precompile_headers(sandbox PUBLIC stdafx.h)
 
 
 #file(GLOB SANDBOX_IMGUI_CPP_FILES 
@@ -22,6 +23,11 @@ file(GLOB_RECURSE SANDBOX_HXX_FILES
 #    ${IMGUI_BACKENDS_DIR}/imgui_impl_glfw.cpp
 #    ${IMGUI_BACKENDS_DIR}/imgui_impl_opengl3*.cpp
 #    )
+
+#foreach(CPP_FILE ${SANDBOX_CPP_FILES})
+#    set_source_files_properties(${CPP_FILE} PROPERTIES COMPILE_FLAGS "/Yu")
+#endforeach()
+set_source_files_properties(stdafx.cpp PROPERTIES COMPILE_FLAGS "/Yc")
 set(SANDBOX_CPP_FILES ${SANDBOX_CPP_FILES})
 
 message("CMAKE_SOURCE_DIR " ${CMAKE_SOURCE_DIR})
@@ -32,7 +38,10 @@ message("CMAKE_SOURCE_DIR " ${CMAKE_SOURCE_DIR})
 #    message("found " ${CPP_FILE} )
 #endforeach()
 
-target_include_directories(sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
+target_include_directories(sandbox PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/third-party
+    ${CMAKE_CURRENT_SOURCE_DIR}/third-party/magic_enum
+)
 target_sources(sandbox PUBLIC ${SANDBOX_CPP_FILES} ${SANDBOX_HXX_FILES})
 
 
@@ -74,10 +83,15 @@ target_link_libraries(sandbox PRIVATE glfw)
 #endif(GLFW_FOUND)
 
 
+
+
+
+
 # 开始组织文件结构
 
 set(SANDBOX_CXX_DIR_FILES ${SANDBOX_CPP_FILES})
 set(SANDBOX_HXX_DIR_FILES ${SANDBOX_HXX_FILES})
+
 
 # utils文件夹
 set(SANDBOX_UTILS_HXX_DIR_FILES 
@@ -129,26 +143,33 @@ list(PREPEND SANDBOX_GAMEPLAY_HXX_DIR_FILES
     object.h
     world.h
     actor.h
+    player_controller.h
 )
 list(PREPEND SANDBOX_GAMEPLAY_CXX_DIR_FILES 
     object.cpp
     world.cpp
     actor.cpp
+    player_controller.cpp
 )
 source_group("Header Files/gameplay" FILES ${SANDBOX_GAMEPLAY_HXX_DIR_FILES})
 source_group("Source Files/gameplay" FILES ${SANDBOX_GAMEPLAY_CXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_HXX_DIR_FILES ${SANDBOX_GAMEPLAY_HXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_GAMEPLAY_CXX_DIR_FILES})
 
+
 # 过滤出不包含在 SANDBOX_UTILS_DIR_FILES 中的文件
 foreach(SANDBOX_EXCLUDE_FILE ${SANDBOX_EXCLUDE_HXX_DIR_FILES})
-list(FILTER SANDBOX_HXX_DIR_FILES EXCLUDE REGEX "${SANDBOX_EXCLUDE_FILE}")
-message("EXCLUDE " ${SANDBOX_EXCLUDE_FILE} )
+file(GLOB FULL_DIR_FILES "${SANDBOX_EXCLUDE_FILE}")
+#list(FILTER SANDBOX_HXX_DIR_FILES EXCLUDE REGEX "${FULL_DIR_FILES}")
+list(REMOVE_ITEM SANDBOX_HXX_DIR_FILES "${FULL_DIR_FILES}")
+message("EXCLUDE " ${FULL_DIR_FILES} )
 endforeach()
 
 foreach(SANDBOX_EXCLUDE_FILE ${SANDBOX_EXCLUDE_CXX_DIR_FILES})
-list(FILTER SANDBOX_CXX_DIR_FILES EXCLUDE REGEX "${SANDBOX_EXCLUDE_FILE}")
-message("EXCLUDE " ${SANDBOX_EXCLUDE_FILE} )
+file(GLOB FULL_DIR_FILES "${SANDBOX_EXCLUDE_FILE}")
+#list(FILTER SANDBOX_CXX_DIR_FILES EXCLUDE REGEX "${FULL_DIR_FILES}")
+list(REMOVE_ITEM SANDBOX_CXX_DIR_FILES "${FULL_DIR_FILES}")
+message("EXCLUDE " ${FULL_DIR_FILES} )
 endforeach()
 
 

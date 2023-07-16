@@ -52,3 +52,5 @@ unsigned comm::loadTexture(std::string_view fileName, std::string_view directory
 {
 	return loadTexture(std::string(directory).append("/").append(fileName));
 }
+
+

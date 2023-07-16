@@ -24,7 +24,9 @@ public:
 	static_assert(sizeof(Enum) <= sizeof(int) && std::is_enum_v<Enum>,"Enum is only usable on enumeration types.");
 	constexpr flags(Enum flags) noexcept : i(static_cast<Int>(flags)) {}
 	constexpr inline flags(flag flag) noexcept : i(flag) {}
-	constexpr flags(std::initializer_list<Enum> flags) noexcept : i(static_cast<Int>(flags)) {}
+	constexpr flags(std::initializer_list<Enum> flags) noexcept{
+		for (auto f : flags){ *this |= f; }
+	}
 
 	constexpr inline flags& operator&=(const int mask) noexcept { i &= mask; return *this; }
 	constexpr inline flags& operator&=(const unsigned mask) noexcept { i &= mask; return *this; }
@@ -67,3 +69,18 @@ private:
 };
 #define Q_DECLARE_FLAGS(Flags, Enum)\
 typedef flags<Enum> (Flags);
+
+
+template<typename EnumType, typename CallBack>
+	requires std::is_invocable_v<CallBack, EnumType>
+auto DecomposeFlags(flags<EnumType> mods, CallBack cb)
+{
+	for (int i = 0, max = sizeof(int) * 8;
+		i < max; ++i)
+	{
+		if (mods & (1u << i))
+		{
+			cb(static_cast<EnumType>(1u << i));
+		}
+	}
+}

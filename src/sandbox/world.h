@@ -1,12 +1,16 @@
 #pragma once
-#include "light.h"
+#include "stdafx.h"
 #include <map>
 #include <set>
+#include <memory>
+#include "actor_component.h"
 
 class Actor;
-class World
+class PlayerController;
+class World final
 {
 public:
+	World();
 	virtual ~World() = default;
 
 	virtual void BeginPlay();
@@ -22,6 +26,10 @@ public:
 		requires std::is_base_of_v<Actor, ActorType>&& std::is_invocable_r_v<ActorType*, GenerateActorFunc>
 	ActorType* SpawnActor(GenerateActorFunc generateActor);
 	
+	PlayerController* GetPlayerController() const;
+
+
+
 
 	std::vector<Actor*> _newActors;	// 新生成的Actor列表
 	std::vector<Actor*> _delActors;	// 待删除Actor列表
@@ -30,7 +38,7 @@ public:
 	std::map<Actor*, std::unique_ptr<Actor>> _actors;
 
 
-
+	PlayerController* _playerController;
 
 
 	//std::array<std::optional<LightSource>, 16> _lights;
@@ -39,7 +47,7 @@ private:
 	void DealActorAdd();
 	void DealActorDel();
 };
-inline static World GWorld;
+extern World GWorld;
 
 // 声明从世界生成Actor, 由Actor实现该方法
 template<typename ActorType> requires std::is_base_of_v<Actor, ActorType>

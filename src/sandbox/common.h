@@ -73,7 +73,17 @@ unsigned int loadTexture(std::string_view path);
 unsigned int loadTexture(std::string_view fileName, std::string_view directory);
 
 
+inline std::string GetCurrentTimeString(std::format_string<std::chrono::zoned_time<std::chrono::system_clock::duration>> fmt)
+{
+    const std::chrono::zoned_time cur_time{ std::chrono::current_zone(),
+        std::chrono::system_clock::now() };
 
+    return std::vformat(fmt.get(), std::make_format_args(cur_time));
+}
+inline std::string GetCurrentTimeString()
+{
+    return GetCurrentTimeString("{:L%F %H:%M:%S}");
+}
 
 _COMM_END
 

@@ -3,6 +3,9 @@
 #include "display_window.h"
 #include <mmsystem.h>
 #include <ranges>
+
+#include "actor_input_component.h"
+#include "player_controller.h"
 #include "BoxModel.h"
 #include "camera.h"
 #include "common.h"
@@ -16,9 +19,10 @@
 #include "shader.h"
 
 #include "Model.h"
+#include "input_defines.h"
+#include "magic_enum.hpp"
 
 #pragma comment(lib,"Winmm.lib") 
-
 
 
 DisplayWindow::DisplayWindow()
@@ -103,8 +107,11 @@ void DisplayWindow::render_init()
 		pos = { urd(d->mt) * (uid(d->mt) ? 1 : -1), (scale - 1) / 2, urd(d->mt) * (uid(d->mt) ? 1 : -1) };
 		data->boxArguments.emplace_back(std::make_tuple(pos, scale, materials[n]));
 	}
-
-
+	
+	data->world.BeginPlay();
+	data->input = &data->world.GetPlayerController()->_input_component->inputManager;
+	data->input->SetWindow(d->window);
+	data->input->EnableInput();
 }
 
 void DisplayWindow::render_exit()
@@ -113,7 +120,7 @@ void DisplayWindow::render_exit()
 	//glDeleteBuffers(1, &d->VAO);
 	//glDeleteBuffers(1, &d->VBO);
 	//glDeleteBuffers(1, &d->EBO);
-
+	data->world.EndPlay();
 }
 
 void DisplayWindow::render_tick(float deltaTime)
@@ -282,6 +289,7 @@ void DisplayWindow::processInput(float deltaTime)
 void DisplayWindow::processUpdate(float deltaTime)
 {
 	data->camera.update(deltaTime);
+	data->world.Tick(deltaTime);
 }
 
 void DisplayWindow::processDraw(float deltaTime)
@@ -310,7 +318,18 @@ void DisplayWindow::resizeEvent(int width, int height)
 		data->camera.resizeViewport(width, height);
 	}
 }
+template<typename EnumType>
+auto FormatModifiers(flags<EnumType> mods)
+{
 
+	std::string result;
+	DecomposeFlags(mods, [&](EnumType e)
+		{
+			if (!result.empty()) result += ", ";
+			result += magic_enum::enum_name(e);
+		});
+	return result;
+};
 /**
  * @brief 处理键盘事件的回调函数。
  *
@@ -321,9 +340,21 @@ void DisplayWindow::resizeEvent(int width, int height)
  */
 void DisplayWindow::keyEvent(int keyCode, int scanCode, int keyAction, int keyModifiers)
 {
+	data->input->keyEvent(keyCode, keyAction, keyModifiers);
 	Q_D(DisplayWindow);
 	GLFWwindow* window = d->window;
-	//std::cout << std::format("key({}),code({}),action({}),mode({})", key, scan_code, action, mods)
+
+	
+	auto EmptyThen = [](std::string_view s, std::string_view then)
+	{
+		return s.empty() ? then : s;
+	};
+
+	//std::cout << std::format("keyCode({}),scanCode({}),keyAction({}),keyModifiers({})\n"
+	//	, EmptyThen(magic_enum::enum_name(static_cast<EKeyCode>(keyCode)), std::to_string(keyCode))
+	//	, scanCode
+	//	, EmptyThen(magic_enum::enum_name(static_cast<EKeyAction>(keyAction)), std::to_string(keyAction))
+	//	, FormatModifiers(EKeyMods(keyModifiers)));
 	//	<< std::endl;
 	//static int left, top, width, height;
 
@@ -388,6 +419,7 @@ void DisplayWindow::keyEvent(int keyCode, int scanCode, int keyAction, int keyMo
 
 void DisplayWindow::mouseButtonEvent(int buttonCode, int keyAction, int keyModifiers)
 {
+	data->input->keyEvent(buttonCode, keyAction, keyModifiers);
 	switch (buttonCode)
 	{
 	case GLFW_MOUSE_BUTTON_LEFT:
@@ -406,6 +438,7 @@ void DisplayWindow::mouseButtonEvent(int buttonCode, int keyAction, int keyModif
 
 void DisplayWindow::mouseMoveEvent(float mouseX, float mouseY, float deltaX, float deltaY)
 {
+	data->input->mouseMoveEvent(deltaX, deltaY);
 	Q_D(DisplayWindow);
 	if (d->mouseMode == MouseMode::Enabled)return;
 	data->camera.processMouseMove(deltaX, -deltaY);
@@ -413,6 +446,7 @@ void DisplayWindow::mouseMoveEvent(float mouseX, float mouseY, float deltaX, flo
 
 void DisplayWindow::scrollEvent(float deltaX, float deltaY)
 {
+	data->input->scrollEvent(deltaX, deltaY);
 	Q_D(DisplayWindow);
 	if (d->mouseMode == MouseMode::Enabled)return;
 	data->camera.processMouseScroll(deltaY);

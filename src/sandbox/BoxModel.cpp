@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "BoxModel.h"
+#include "shader.h"
 
 BoxModel::BoxModel()
 {

@@ -2,7 +2,7 @@
 #include "common.h"
 #include "material.h"
 #include "IModel.h"
-#include "shader.h"
+
 #include "light.h"
 
 struct Light {

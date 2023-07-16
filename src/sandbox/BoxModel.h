@@ -3,9 +3,9 @@
 #include "common.h"
 #include "vertices.h"
 #include "IModel.h"
-#include "shader.h"
 
 
+class ShaderProgram;
 
 class BoxModel:public IModel
 {

@@ -1,12 +1,19 @@
 #include "stdafx.h"
 #include "world.h"
 #include "actor.h"
+#include "player_controller.h"
+
+World::World()
+{
+	_playerController = SpawnActor<PlayerController>();
+}
+
 void World::BeginPlay()
 {
+	
+
 	DealActorDel();
 	DealActorAdd();
-
-	
 
 	for (const auto& actor : _workActors)
 	{
@@ -24,6 +31,7 @@ void World::EndPlay()
 
 void World::Tick(float deltaTime)
 {
+
 	DealActorDel();
 	DealActorAdd();
 
@@ -37,6 +45,11 @@ bool World::Within(Actor* actor) const
 {
 	return _workActors.empty() ? _actors.contains(actor)
 	: _actors.contains(actor) || std::ranges::find(_workActors , actor) != std::end(_workActors);
+}
+
+PlayerController* World::GetPlayerController() const
+{
+	return _playerController;
 }
 
 void World::DealActorAdd()
@@ -71,3 +84,5 @@ void World::DealActorDel()
 		_delActors.clear();
 	}
 }
+
+World GWorld;
