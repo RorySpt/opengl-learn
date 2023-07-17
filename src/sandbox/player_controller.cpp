@@ -42,13 +42,42 @@ void PlayerController::SetupPlayerInputComponent(InputComponent* input_component
 			std::cout << comm::GetCurrentTimeString() <<" PlayerController:Jump!!\n";
 		});
 
-	static float distance = 0;
-	input_component->BindAxis("MoveForward", this, [](float value)
-		{
-			if(value>0)
-			{
-				std::cout << std::format("{} PlayerController:MoveForward: {}, Total: {}\n"
-					, comm::GetCurrentTimeString(), value, (distance += value));
-			}
-		});
+	//static float distance = 0;
+	//input_component->BindAxis("MoveForward", this, [](float value)
+	//	{
+	//		if(value>0)
+	//		{
+	//			std::cout << std::format("{} PlayerController:MoveForward: {}, Total: {}\n"
+	//				, comm::GetCurrentTimeString(), value, (distance += value));
+	//		}
+	//	});
+	input_component->BindAxis("MoveForward", this, &PlayerController::OnMoveForward);
+	//std::invoke(&PlayerController::OnMoveForward, dynamic_cast<Actor*>( this), 0);
+
+	//auto mmf = std::mem_fn(&OnMoveForward);
+	//auto func = std::bind(OnMoveForward, this, std::placeholders::_1);
+	//func(0);
+	//auto func = &PlayerController::OnMoveForward;
+	//(this->*func)(0);
 }
+
+void PlayerController::OnMoveForward(float value) const
+{
+	static float distance = 0;
+	if (value > 0)
+	{
+		std::cout << std::format("{} PlayerController:MoveForward: {}, Total: {}\n"
+			, comm::GetCurrentTimeString(), value, (distance += value));
+	}
+}
+
+
+//void test()
+//{
+//	void (PlayerController::*func)(float value) = &PlayerController::OnMoveForward;
+//	PlayerController controller;
+//	std::function<void(float)> f = std::bind_front(std::mem_fn(&PlayerController::OnMoveForward),&controller) ;
+//	f(0);
+//	//_Is_memfunptr<decltype(func)>::_Class_type
+//
+//}

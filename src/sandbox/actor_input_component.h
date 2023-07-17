@@ -66,6 +66,26 @@ public:
 			KeyActionActionBindings.emplace_back(ActionName.data(), std::forward<ResponseMethod>(Func));
 	}
 
+	// 成员函数版本
+	template<typename ResponseMethod>
+		requires std::is_member_function_pointer_v<ResponseMethod>
+	&& std::is_base_of_v<Actor, typename std::_Is_memfunptr<ResponseMethod>::_Class_type>
+		void BindAction(std::string_view AxisName, const EKeyAction KeyEvent, Actor* ActorObject, ResponseMethod&& Func)
+	{
+		BindAction(AxisName, KeyEvent, ActorObject,
+			std::bind_front(std::mem_fn(std::forward<ResponseMethod>(Func))
+				, dynamic_cast<typename std::_Is_memfunptr<ResponseMethod>::_Class_type*>(ActorObject)));
+	}
+	template<typename ResponseMethod>
+		requires std::is_member_function_pointer_v<ResponseMethod>
+	&& std::is_base_of_v<Actor, typename std::_Is_memfunptr<ResponseMethod>::_Class_type>
+		void BindAction(std::string_view AxisName, Actor* ActorObject, ResponseMethod&& Func)
+	{
+		BindAction(AxisName, ActorObject,
+			std::bind_front(std::mem_fn(std::forward<ResponseMethod>(Func))
+				, dynamic_cast<typename std::_Is_memfunptr<ResponseMethod>::_Class_type*>(ActorObject)));
+	}
+
 	template<typename ResponseMethod>
 		requires std::is_invocable_v<ResponseMethod, glm::vec2>
 	void BindAxis(std::string_view AxisName, Actor* ActorObject, ResponseMethod&& Func)
@@ -88,7 +108,16 @@ public:
 				FloatInputAxisBinding.emplace_back(AxisName.data(), std::forward<ResponseMethod>(Func));
 		}
 	}
-
+	// 成员函数版本
+	template<typename ResponseMethod>
+		requires std::is_member_function_pointer_v<ResponseMethod>
+		&& std::is_base_of_v<Actor, typename std::_Is_memfunptr<ResponseMethod>::_Class_type>
+	void BindAxis(std::string_view AxisName, Actor* ActorObject, ResponseMethod&& Func)
+	{
+			BindAxis(AxisName, ActorObject, 
+				std::bind_front(std::mem_fn(std::forward<ResponseMethod>(Func))
+					, dynamic_cast<typename std::_Is_memfunptr<ResponseMethod>::_Class_type*>(ActorObject)));
+	}
 	void TickComponent(float deltaTime) override;
 
 	void RemoveBindings();

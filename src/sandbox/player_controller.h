@@ -12,6 +12,8 @@ public:
 
 	// test
 	void SetupPlayerInputComponent(InputComponent* input_component) override;
+	void OnMoveForward(float value) const;
+
 
 	Actor* _processActor = nullptr;
 	InputComponent* _input_component;
