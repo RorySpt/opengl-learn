@@ -20,6 +20,7 @@
 
 #include "Model.h"
 #include "input_defines.h"
+#include "igui.h"
 #include "magic_enum.hpp"
 
 #pragma comment(lib,"Winmm.lib") 
@@ -112,6 +113,11 @@ void DisplayWindow::render_init()
 	data->input = &data->world.GetPlayerController()->_input_component->inputManager;
 	data->input->SetWindow(d->window);
 	data->input->EnableInput();
+
+	for(const auto& render: GlobalRenderList())
+	{
+		render->init();
+	}
 }
 
 void DisplayWindow::render_exit()
@@ -121,6 +127,11 @@ void DisplayWindow::render_exit()
 	//glDeleteBuffers(1, &d->VBO);
 	//glDeleteBuffers(1, &d->EBO);
 	data->world.EndPlay();
+
+	for (const auto& render : GlobalRenderList())
+	{
+		render->exit();
+	}
 }
 
 void DisplayWindow::render_tick(float deltaTime)
@@ -290,11 +301,19 @@ void DisplayWindow::processUpdate(float deltaTime)
 {
 	data->camera.update(deltaTime);
 	data->world.Tick(deltaTime);
+	for (const auto& render : GlobalRenderList())
+	{
+		render->tick(deltaTime);
+	}
 }
 
 void DisplayWindow::processDraw(float deltaTime)
 {
 	render_draw(deltaTime);
+	for (const auto& render : GlobalRenderList())
+	{
+		render->draw(deltaTime);
+	}
 }
 
 void DisplayWindow::processFrameBegin(float deltaTime)
