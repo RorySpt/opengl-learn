@@ -12,16 +12,7 @@ class DisplayWindowPrivate;
 
 struct DisplayWindowData
 {
-	std::shared_ptr<BoxModel> boxModel;
-	//光源模型
-	std::shared_ptr<LightBoxModel> lightModel;
-	std::shared_ptr<LightBoxModel2> lightModel2;
-	std::shared_ptr<IlluminantModel> illuminantModel;
-
-	Camera camera;
-	World world;
-	InputManager* input;
-	std::vector<std::tuple<glm::vec3, double, Material>> boxArguments;
+	
 };
 
 

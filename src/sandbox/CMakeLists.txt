@@ -125,10 +125,14 @@ list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_DATA_CXX_DIR_FILES})
 
 # renderÎÄ¼þ¼Ð
 set(SANDBOX_RENDER_HXX_DIR_FILES 
-    irender.h
+    igui.h
+    demo0_rs.h
+    test_render_surface.h
 )
 set(SANDBOX_RENDER_CXX_DIR_FILES 
-    irender.cpp
+    igui.cpp
+    demo0_rs.cpp
+    test_render_surface.cpp
 )
 source_group("Header Files/render" FILES ${SANDBOX_RENDER_HXX_DIR_FILES})
 source_group("Source Files/render" FILES ${SANDBOX_RENDER_CXX_DIR_FILES})

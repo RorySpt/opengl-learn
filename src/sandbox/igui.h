@@ -2,6 +2,8 @@
 #include <memory>
 #include <vector>
 
+#include "GLFW/glfw3.h"
+
 /**
  * \brief ผฬณะ IRender 
  */
@@ -9,7 +11,7 @@ class GUIInterface
 {
 public:
 	virtual ~GUIInterface() = default;
-	virtual void init() = 0;
+	virtual void init(GLFWwindow*) = 0;
 	virtual void exit() = 0;
 	virtual void tick(float deltaTime) = 0;
 	virtual void draw(float deltaTime) = 0; // specific invoke by processDraw
