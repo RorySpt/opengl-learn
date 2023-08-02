@@ -137,6 +137,11 @@ void InputManager::SetWindow(GLFWwindow* window)
 	_window = window;
 }
 
+GLFWwindow* InputManager::GetWindow() const
+{
+	return _window;
+}
+
 InputManager::Axis InputManager::mergeAxis(std::queue<Axis>& axes)
 {
 	Axis _axis{0,0};

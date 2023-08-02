@@ -31,6 +31,12 @@ public:
 	void scrollEvent(float deltaX, float deltaY) override;
 
 private:
+	void UI_CameraTest();
+	void UI_Scene();
+
+	// “¿¿µ_window
+	void InitWorld();
+
 	GLFWwindow* _window = nullptr;
 
 

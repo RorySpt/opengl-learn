@@ -8,9 +8,15 @@ World::World()
 	_playerController = SpawnActor<PlayerController>();
 }
 
+void World::init(GLFWwindow* w)
+{
+	_playerController->_input_component->inputManager.SetWindow(w);
+}
+
 void World::BeginPlay()
 {
-	
+	assert(!bHasBegunPlay);
+	bHasBegunPlay = true;
 
 	DealActorDel();
 	DealActorAdd();
@@ -51,6 +57,8 @@ PlayerController* World::GetPlayerController() const
 {
 	return _playerController;
 }
+
+
 
 void World::DealActorAdd()
 {

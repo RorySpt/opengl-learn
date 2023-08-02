@@ -46,6 +46,8 @@ using InputAxisBinding_Float = InputAxisBinding<std::function<void(float)>>;
 class InputComponent :
     public ActorComponent
 {
+	ClassMetaDeclare(InputComponent)
+
 public:
 	InputComponent();
 

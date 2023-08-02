@@ -2,6 +2,16 @@
 #include "actor_scene_component.h"
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+
+SceneComponent::SceneComponent(): _relative_location(), _relative_rotation(), _relative_scale3d(1),
+                                  _world_location_cache(),
+                                  _world_rotation_cache(),
+                                  _world_scale3d_cache(1),
+                                  _local_to_parent_cache(1),
+                                  _local_to_world(1)
+{
+}
+
 void SceneComponent::TickComponent(float deltaTime)
 {
 	ActorComponent::TickComponent(deltaTime);
@@ -10,7 +20,7 @@ void SceneComponent::TickComponent(float deltaTime)
 
 bool SceneComponent::AttachToComponent(SceneComponent* parent)
 {
-	if (!IsValid(parent))return false;
+	if (!IsValid(parent)|| parent == this)return false;
 	this->_attach_parent = parent;
 	parent->_attach_children.emplace_back(this);
 
@@ -26,10 +36,10 @@ void SceneComponent::DetachFromParent()
 	const auto result = 
 		std::ranges::find_if(_attach_parent->_attach_children, [&](auto& component)
 		{
-			return component.get() == this;
+			return component == this;
 		});
-	if (result != _attach_parent->_attach_children.end())
-		_CRT_UNUSED(result->release());
+	//if (result != _attach_parent->_attach_children.end())
+	//	_CRT_UNUSED(result->release());
 	_attach_parent->_attach_children.erase(result);
 	_attach_parent = nullptr;
 
@@ -59,7 +69,7 @@ SceneComponent* SceneComponent::GetChildComponent(int ChildIndex) const
 		throw std::out_of_range(std::format("SceneComponent::GetChild called with an out of range ChildIndex: {}; Number of children is {}.", ChildIndex, AttachedChildren.size()).c_str());
 		return nullptr;
 	}
-	return AttachedChildren[ChildIndex].get();
+	return AttachedChildren[ChildIndex];
 }
 
 void SceneComponent::GetChildrenComponents(std::vector<SceneComponent*>& Children)
@@ -68,7 +78,7 @@ void SceneComponent::GetChildrenComponents(std::vector<SceneComponent*>& Childre
 	Children.insert_range(Children.end(), _attach_children 
 		| std::ranges::views::transform([](auto& component)
 		{
-			return component.get();
+			return component;
 		}));
 }
 
@@ -77,7 +87,7 @@ std::vector<SceneComponent*> SceneComponent::GetAttachChildren()
 	auto children_view = _attach_children
 		| std::ranges::views::transform([](auto& component)
 			{
-				return component.get();
+				return component;
 			});
 	
 	return { std::from_range, children_view };
@@ -117,6 +127,16 @@ glm::vec3 SceneComponent::GetRelativeLocation() const
 	return _relative_location;
 }
 
+void SceneComponent::SetWorldLocation(glm::vec3 worldLocation)
+{
+	SetRelativeLocation(glm::inverse(_local_to_world) * glm::vec4(worldLocation, 1) - glm::vec4(_relative_location,1));
+}
+
+glm::vec3 SceneComponent::GetWorldLocation() const
+{
+	return _local_to_world[3];
+}
+
 void SceneComponent::SetRelativeRotation(glm::quat relativeRotation)
 {
 	_relative_rotation = relativeRotation;
@@ -128,9 +148,21 @@ glm::quat SceneComponent::GetRelativeRotation() const
 	return _relative_rotation;
 }
 
+void SceneComponent::SetWorldRotation(glm::quat worldRotation)
+{
+	SetRelativeRotation(_relative_rotation + worldRotation - _world_rotation_cache);
+	//SetRelativeRotation(glm::inverse(_relative_rotation) * glm::quat_cast(glm::inverse(_local_to_world)) * worldRotation);
+}
+
+glm::quat SceneComponent::GetWorldRotation() const
+{
+	return glm::quat_cast(_local_to_world);
+}
+
 void SceneComponent::SetRelativeScale3d(glm::vec3 relativeScale3d)
 {
 	_relative_scale3d = relativeScale3d;
+	RelativeScale3dChanged();
 }
 
 glm::vec3 SceneComponent::GetRelativeScale3d() const
@@ -138,6 +170,15 @@ glm::vec3 SceneComponent::GetRelativeScale3d() const
 	return _relative_scale3d;
 }
 
+void SceneComponent::SetWorldScale3d(glm::vec3 relativeScale3d)
+{
+	SetRelativeScale3d(relativeScale3d - _world_scale3d_cache);
+}
+
+glm::vec3 SceneComponent::GetWorldScale3d() const
+{
+	return _world_scale3d_cache;
+}
 
 void SceneComponent::ParentTransformChanged()
 {
@@ -185,6 +226,10 @@ void SceneComponent::LocalToWorldChanged()
 
 void SceneComponent::RelativeTransformChanged()
 {
+	glm::vec3 skew;
+	glm::vec4 perspective;
+	glm::decompose(_local_to_parent_cache, _relative_scale3d, _relative_rotation, _relative_location, skew, perspective);
+
 	if (IsValid(_attach_parent))
 	{
 		_local_to_world = _attach_parent->GetComponentToWorld() * _local_to_parent_cache;
@@ -200,10 +245,6 @@ void SceneComponent::RelativeTransformChanged()
 		_world_scale3d_cache = _relative_scale3d;
 	}
 
-	glm::vec3 skew;
-	glm::vec4 perspective;
-	glm::decompose(_local_to_parent_cache, _relative_scale3d, _relative_rotation, _relative_location, skew, perspective);
-
 	for (const auto& child : _attach_children)
 	{
 		child->ParentTransformChanged();
@@ -213,7 +254,7 @@ void SceneComponent::RelativeTransformChanged()
 void SceneComponent::RelativeLocationChanged()
 {
 	_local_to_parent_cache =
-		glm::translate(glm::mat4(1.0f), _relative_scale3d)
+		glm::translate(glm::mat4(1.0f), _relative_location)
 		* glm::mat4_cast(_relative_rotation)
 		* glm::scale(glm::mat4(1.0f), _relative_scale3d);
 

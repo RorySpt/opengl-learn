@@ -53,8 +53,12 @@ public:
 // Such as:
 DEF_InputAction_WithModifier( Jump, EKeyCode::K_Space,EKeyMod::Mod_Shift);
 DEF_InputAxis( LookUpDown, EKeyCode::K_MouseMove_Y, 1.0f );
+DEF_InputAxis( LookLeftRight, EKeyCode::K_MouseMove_X, 1.0f);
+DEF_InputAxis( LookAround, EKeyCode::K_MouseMove_XY, 1.0f);
 DEF_InputAxis( MoveForward, EKeyCode::K_W, 1.0f);
-
+DEF_InputAxis( MoveBack, EKeyCode::K_S, 1.0f);
+DEF_InputAxis( MoveLeft, EKeyCode::K_A, 1.0f);
+DEF_InputAxis( MoveRight, EKeyCode::K_D, 1.0f);
 // 接受外部输入，并在合适的时机处理
 class InputManager
 {
@@ -111,6 +115,7 @@ public:
 	void SetScrollAxisProcessor(Processor processor);
 
 	void SetWindow(GLFWwindow* window);
+	GLFWwindow* GetWindow() const;
 private:
 	static Axis mergeAxis(std::queue<Axis>& axes);
 

@@ -4,6 +4,9 @@
 class CameraComponent :
     public SceneComponent
 {
+	ClassMetaDeclare(CameraComponent)
+public:
+	void TickComponent(float deltaTime) override;
 
 };
 

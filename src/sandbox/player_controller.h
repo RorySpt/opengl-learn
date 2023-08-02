@@ -3,6 +3,7 @@
 #include "actor_input_component.h"
 class PlayerController:public Actor
 {
+	ClassMetaDeclare(PlayerController)
 public:
 	PlayerController();
 
@@ -14,6 +15,7 @@ public:
 	void SetupPlayerInputComponent(InputComponent* input_component) override;
 	void OnMoveForward(float value) const;
 
+	InputManager* GetInputManager() const;
 
 	Actor* _processActor = nullptr;
 	InputComponent* _input_component;

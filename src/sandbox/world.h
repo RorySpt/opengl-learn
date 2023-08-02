@@ -5,6 +5,8 @@
 #include <memory>
 #include "actor_component.h"
 
+
+
 class Actor;
 class PlayerController;
 class World final
@@ -12,6 +14,8 @@ class World final
 public:
 	World();
 	virtual ~World() = default;
+
+	void init(GLFWwindow* w) ;
 
 	virtual void BeginPlay();
 	virtual void EndPlay();
@@ -27,7 +31,7 @@ public:
 	ActorType* SpawnActor(GenerateActorFunc generateActor);
 	
 	PlayerController* GetPlayerController() const;
-
+	
 
 
 
@@ -40,9 +44,10 @@ public:
 
 	PlayerController* _playerController;
 
-
+	bool bHasBegunPlay = false;
 	//std::array<std::optional<LightSource>, 16> _lights;
 
+	DisplayNameGenerator display_name_generator;
 private:
 	void DealActorAdd();
 	void DealActorDel();
@@ -66,6 +71,8 @@ ActorType* World::SpawnActor(GenerateActorFunc generateActor)
 {
 	auto actor = generateActor();
 	assert(actor != nullptr);
+	actor->set_self_display_name_generator(&display_name_generator);
+	actor->set_name(actor->type_name());
 	this->_newActors.emplace_back(actor);
 	return actor;
 }

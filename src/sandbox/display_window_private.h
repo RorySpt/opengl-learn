@@ -29,14 +29,13 @@ struct WindowRect
 };
 
 
-
 class DisplayWindowPrivate
 {
 	Q_DECLARE_PUBLIC(DisplayWindow)
 public:
 	explicit DisplayWindowPrivate(DisplayWindow* parent)
 		: q_ptr(parent),
-		mt(std::random_device()()),
+		mt(std::random_device("")()),
 		beginTime(DisplayWindow::Clock::now())
 		, currentTime(beginTime)
 	{

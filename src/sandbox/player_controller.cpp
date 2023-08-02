@@ -4,11 +4,7 @@
 
 PlayerController::PlayerController()
 {
-	_input_component = new InputComponent;
-	_components.emplace_back(_input_component);
-
-	
-
+	_input_component = CreateDefaultComponent<InputComponent>();
 }
 
 void PlayerController::OnProcess(Actor* actor)
@@ -69,6 +65,11 @@ void PlayerController::OnMoveForward(float value) const
 		std::cout << std::format("{} PlayerController:MoveForward: {}, Total: {}\n"
 			, comm::GetCurrentTimeString(), value, (distance += value));
 	}
+}
+
+InputManager* PlayerController::GetInputManager() const
+{
+	return &_input_component->inputManager;
 }
 
 

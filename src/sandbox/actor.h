@@ -3,13 +3,17 @@
 #include <memory>
 #include "world.h"
 #include "actor_component.h"
+#include "object.h"
+
 
 class World;
 class ActorComponent;
 class SceneComponent;
 class InputComponent;
-class Actor
+
+class Actor: public object
 {
+	ClassMetaDeclare(Actor)
 public:
 	template<typename ActorType> requires std::is_base_of_v<Actor, ActorType>
 	friend ActorType* SpawnActor(World* world);
@@ -27,14 +31,37 @@ public:
 	virtual void Destroy();	// 申请销毁
 	World* GetWorld() const;
 
+	template<typename ComponentType> requires std::is_base_of_v<ActorComponent, ComponentType>
+	ComponentType* CreateDefaultComponent();
 
-protected:
+	void RemoveComponent(ActorComponent*);
+	void ProcessComponentRemove();
+	void ProcessComponentAdd();
+//protected:
 
-	World* _world;
+	World* _world = nullptr;
 	InputComponent* _input_component = nullptr;
-	std::unique_ptr<SceneComponent> _root_component;
-	std::vector<std::unique_ptr<ActorComponent>> _components;
+	SceneComponent* _root_component;
+	std::vector<ActorComponent*> _non_scene_components;
+	std::vector<std::unique_ptr<ActorComponent>> _owned_components;
+
+	std::vector<ActorComponent*> _components_need_add;
+	std::vector<ActorComponent*> _components_need_del;
+
+
+	DisplayNameGenerator _display_name_generator;
 };
+
+template <typename ComponentType> requires std::is_base_of_v<ActorComponent, ComponentType>
+ComponentType* Actor::CreateDefaultComponent()
+{
+	_components_need_add.emplace_back(new ComponentType);
+	auto component = static_cast<ComponentType*>(_components_need_add.back());
+	component->SetOwner(this);
+	component->set_self_display_name_generator(&_display_name_generator);
+	component->set_name(component->type_name());
+	return component;
+}
 
 
 // 生成Actor的唯一方法

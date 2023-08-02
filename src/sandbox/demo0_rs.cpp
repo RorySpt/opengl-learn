@@ -5,7 +5,7 @@
 #include "player_controller.h"
 
 
-DEF_Render(Demo0_RS);
+//DEF_Render(Demo0_RS);
 
 Demo0_RS::Demo0_RS()
 	:mt(std::random_device()())

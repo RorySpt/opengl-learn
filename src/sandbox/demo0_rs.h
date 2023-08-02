@@ -8,6 +8,7 @@
 #include "input_manager.h"
 #include "world.h"
 
+// ReSharper disable once CppInconsistentNaming
 class Demo0_RS :
     public GUIInterface
 {

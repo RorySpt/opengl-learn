@@ -81,4 +81,5 @@ void InputComponent::RemoveBindings()
 	NoParamActionBindings.clear();
 	KeyActionActionBindings.clear();
 	Vec2dInputAxisBinding.clear();
+	FloatInputAxisBinding.clear();
 }

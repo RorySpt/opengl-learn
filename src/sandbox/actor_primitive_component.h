@@ -5,6 +5,7 @@
 class PrimitiveComponent :
     public SceneComponent, public IModel
 {
+    ClassMetaDeclare(PrimitiveComponent)
 
 };
 

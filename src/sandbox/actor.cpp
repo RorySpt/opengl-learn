@@ -6,8 +6,7 @@
 
 Actor::Actor()
 {
-	_root_component = std::make_unique<SceneComponent>();
-	_root_component->SetOwner(this);
+	_root_component = CreateDefaultComponent<SceneComponent>();
 }
 
 Actor::~Actor()
@@ -22,7 +21,13 @@ void Actor::SetupPlayerInputComponent(InputComponent* input_component)
 
 void Actor::BeginPlay()
 {
-	for(const auto& component:_components)
+	// 移除非Root的根Scene组件;
+	std::erase_if(_owned_components, [&](const std::unique_ptr<ActorComponent>& component)
+		{
+			const auto scene = dynamic_cast<SceneComponent*>(component.get());
+			return scene && scene->GetAttachParent() == nullptr && _root_component != scene;
+		});
+	for(const auto& component:_owned_components)
 	{
 		component->BeginPlay();
 	}
@@ -30,7 +35,7 @@ void Actor::BeginPlay()
 
 void Actor::EndPlay()
 {
-	for (const auto& component : _components)
+	for (const auto& component : _owned_components)
 	{
 		component->EndPlay();
 	}
@@ -38,8 +43,11 @@ void Actor::EndPlay()
 
 void Actor::Tick(float deltaTime)
 {
-	for (const auto& component : _components)
+	ProcessComponentRemove();
+	ProcessComponentAdd();
+	for (const auto& component : _owned_components)
 	{
+		if (!component->bHasBegunPlay) BeginPlay();
 		component->TickComponent(deltaTime);
 	}
 }
@@ -53,4 +61,56 @@ void Actor::Destroy()
 World* Actor::GetWorld() const
 {
 	return _world;
+}
+
+void Actor::RemoveComponent(ActorComponent* component)
+{
+	_components_need_del.emplace_back(component);
+}
+
+void Actor::ProcessComponentRemove()
+{
+	using value_type = decltype(_owned_components)::value_type;
+
+	if(_components_need_del.empty()) return;
+
+	for(auto component: _components_need_del)
+	{
+		if (component == _root_component)
+		{
+			_root_component = nullptr;
+		}
+		else if (const auto scene = dynamic_cast<SceneComponent*>(component))
+		{
+			scene->DetachFromParent();
+		}else
+		{
+			std::erase(_non_scene_components, component);
+		}
+		const auto result = std::erase_if(_owned_components, [component](const value_type& _component)
+			{
+				return _component.get() == component;
+			});
+	}
+	_components_need_del.clear();
+}
+
+void Actor::ProcessComponentAdd()
+{
+	using value_type = decltype(_owned_components)::value_type;
+
+	if (_components_need_add.empty()) return;
+	for (auto component : _components_need_add)
+	{
+
+		if (const auto scene = dynamic_cast<SceneComponent*>(component))
+		{
+			
+		}else
+		{
+			_non_scene_components.emplace_back(component);
+		}
+		_owned_components.emplace_back(component);
+	}
+	_components_need_add.clear();
 }

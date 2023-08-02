@@ -11,8 +11,11 @@
 
 class SceneComponent : public ActorComponent
 {
+    ClassMetaDeclare(SceneComponent)
 public:
-    virtual void TickComponent(float deltaTime) override;
+	SceneComponent();
+
+	virtual void TickComponent(float deltaTime) override;
 
     // 将当前组件附加到指定的父组件
     bool AttachToComponent(SceneComponent* parent);
@@ -36,11 +39,21 @@ public:
     void SetRelativeLocation(glm::vec3 relativeLocation);  // 设置相对位置
     glm::vec3 GetRelativeLocation() const;  // 获取相对位置
 
+    void SetWorldLocation(glm::vec3 worldLocation);  // 设置世界位置
+    glm::vec3 GetWorldLocation() const;  // 获取世界位置
+
+
     void SetRelativeRotation(glm::quat relativeRotation);  // 设置相对旋转
     glm::quat GetRelativeRotation() const;  // 获取相对旋转
 
+    void SetWorldRotation(glm::quat worldRotation);  // 设置世界旋转
+    glm::quat GetWorldRotation() const;  // 获取世界旋转
+
     void SetRelativeScale3d(glm::vec3 relativeScale3d);  // 设置相对缩放
     glm::vec3 GetRelativeScale3d() const;  // 获取相对缩放
+
+    void SetWorldScale3d(glm::vec3 relativeScale3d);  // 设置世界缩放
+    glm::vec3 GetWorldScale3d() const;  // 获取世界缩放
 
     void ParentTransformChanged();      // 父组件的变换发生改变的处理逻辑
     void LocalToWorldChanged();         // 本地到世界坐标系的变换关系发生改变的处理逻辑
@@ -61,5 +74,5 @@ public:
     glm::mat4 _local_to_world;  // 相对于世界坐标系的变换矩阵
 
     SceneComponent* _attach_parent = nullptr;  // 父组件指针
-    std::vector<std::unique_ptr<SceneComponent>> _attach_children;  // 子组件列表
+    std::vector<SceneComponent*> _attach_children;  // 子组件列表
 };
