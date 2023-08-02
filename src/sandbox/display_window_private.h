@@ -7,9 +7,7 @@
 #include "vertices.h"
 #include "camera.h"
 #include "frame_rate_calc.h"
-#include "BoxModel.h"
-#include "LightBoxModel.h"
-#include "IlluminantModel.h"
+
 
 #include <ranges>
 

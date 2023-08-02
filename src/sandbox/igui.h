@@ -2,8 +2,8 @@
 #include <memory>
 #include <vector>
 
-#include "GLFW/glfw3.h"
 
+struct GLFWwindow;
 /**
  * \brief ผฬณะ IRender 
  */

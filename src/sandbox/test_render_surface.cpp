@@ -9,7 +9,7 @@
 #include "Model.h"
 #include "player_controller.h"
 
-DEF_Render(TestRenderSurface);
+
 
 template<typename ...Ty>
 bool ScopeColor_TreeNode(ImVec4 color_f, Ty... args)

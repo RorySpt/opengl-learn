@@ -4,7 +4,6 @@
 #include "igui.h"
 #include "IlluminantModel.h"
 #include "input_manager.h"
-#include "material.h"
 #include "world.h"
 
 class TestRenderSurface final:

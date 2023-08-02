@@ -3,8 +3,8 @@
 #include <map>
 #include <set>
 #include <memory>
-#include "actor_component.h"
 
+#include "object.h"
 
 
 class Actor;

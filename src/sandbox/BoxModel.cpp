@@ -1,21 +1,21 @@
 #include "stdafx.h"
-#include "LightBoxModel.h"
+#include "BoxModel.h"
 #include "common.h"
 #include "vertices.h"
 #include "camera.h"
 #include "shader.h"
-LightBoxModel::LightBoxModel()
+BoxModel_SingleColor::BoxModel_SingleColor()
 {
 	
 	init();
 }
 
-LightBoxModel::~LightBoxModel()
+BoxModel_SingleColor::~BoxModel_SingleColor()
 {
 	finished();
 }
 
-void LightBoxModel::init()
+void BoxModel_SingleColor::init()
 {
 	shader = ShaderProgram::makeShaderByName("lightingShader.vert","lightingShader.frag");
 	//shader->use();
@@ -36,14 +36,14 @@ void LightBoxModel::init()
 	_material = MaterialTable::instance()->getMaterial("default");
 }
 
-void LightBoxModel::finished()
+void BoxModel_SingleColor::finished()
 {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 }
 
-void LightBoxModel::draw(const Camera& camera, const glm::mat4& wMat)
+void BoxModel_SingleColor::draw(const Camera& camera, const glm::mat4& wMat)
 {
 	drawBegin();
 	shader->glUniform("viewPos", camera.Position);
@@ -55,7 +55,7 @@ void LightBoxModel::draw(const Camera& camera, const glm::mat4& wMat)
 	drawEnd();
 }
 
-void LightBoxModel::draw(const Camera& camera, const std::vector<glm::mat4>& wMats)
+void BoxModel_SingleColor::draw(const Camera& camera, const std::vector<glm::mat4>& wMats)
 {
 	drawBegin();
 	shader->glUniform("viewPos", camera.Position);
@@ -69,7 +69,7 @@ void LightBoxModel::draw(const Camera& camera, const std::vector<glm::mat4>& wMa
 	drawEnd();
 }
 
-void LightBoxModel::drawBegin()
+void BoxModel_SingleColor::drawBegin()
 {
 	shader->use();
 
@@ -86,7 +86,7 @@ void LightBoxModel::drawBegin()
 	glBindVertexArray(VAO);
 }
 
-void LightBoxModel::drawEnd()
+void BoxModel_SingleColor::drawEnd()
 {
 }
 unsigned GetRandomRabbitTexture()
@@ -113,43 +113,23 @@ unsigned GetRandomRabbitTexture()
 	//}
 	return comm::loadTexture(std::string(comm::dir_picture) + "/matrix.jpg");
 }
-LightBoxModel2::LightBoxModel2()
+BoxModel_SimpleTexture::BoxModel_SimpleTexture()
 {
+	
+	initBuffers();
+	initTextures();
+
 	shader = std::make_shared<ShaderProgram>(std::string(comm::dir_shader) + "/lightingShader.vert", std::string(comm::dir_shader) + "/lightingShader3.frag");
-	shader->use();
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof vertices2, vertices2, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));  // NOLINT(performance-no-int-to-ptr)
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));  // NOLINT(performance-no-int-to-ptr)
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	auto container2_diffuse = comm::loadTexture(std::string(comm::dir_picture) + "/container2.png");
-	auto container2_specular = comm::loadTexture(std::string(comm::dir_picture) + "/container2_specular.png");
-
-	setMaterial({ GetRandomRabbitTexture(),
-		container2_diffuse
-		,container2_specular
-		,32.0f });
 }
 
-LightBoxModel2::~LightBoxModel2()
+BoxModel_SimpleTexture::~BoxModel_SimpleTexture()
 {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 }
 
-void LightBoxModel2::draw(const Camera& camera, const glm::mat4& wMat)
+void BoxModel_SimpleTexture::draw(const Camera& camera, const glm::mat4& wMat)
 {
 	drawBegin();
 	shader->glUniform("viewPos", camera.Position);
@@ -162,7 +142,7 @@ void LightBoxModel2::draw(const Camera& camera, const glm::mat4& wMat)
 	drawEnd();
 }
 
-void LightBoxModel2::draw(const Camera& camera, const std::vector<glm::mat4>& wMats)
+void BoxModel_SimpleTexture::draw(const Camera& camera, const std::vector<glm::mat4>& wMats)
 {
 	drawBegin();
 
@@ -179,7 +159,7 @@ void LightBoxModel2::draw(const Camera& camera, const std::vector<glm::mat4>& wM
 	drawEnd();
 }
 
-void LightBoxModel2::drawBegin()
+void BoxModel_SimpleTexture::drawBegin()
 {
 	shader->use();
 	glBindVertexArray(VAO);
@@ -207,10 +187,41 @@ void LightBoxModel2::drawBegin()
 	//shader->glUniform("light.specular", _light.specular);
 }
 
-void LightBoxModel2::drawEnd()
+void BoxModel_SimpleTexture::drawEnd()
 {
 	glBindVertexArray(0);
 	glActiveTexture(0);
 	glUseProgram(0);
+}
+
+void BoxModel_SimpleTexture::initBuffers()
+{
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof vertices2, vertices2, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));  // NOLINT(performance-no-int-to-ptr)
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));  // NOLINT(performance-no-int-to-ptr)
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+}
+
+void BoxModel_SimpleTexture::initTextures()
+{
+
+	auto container2_diffuse = comm::loadTexture(std::string(comm::dir_picture) + "/container2.png");
+	auto container2_specular = comm::loadTexture(std::string(comm::dir_picture) + "/container2_specular.png");
+
+	setMaterial({ GetRandomRabbitTexture(),
+		container2_diffuse
+		,container2_specular
+		,32.0f });
 }
 

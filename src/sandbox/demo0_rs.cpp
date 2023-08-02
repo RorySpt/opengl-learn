@@ -5,12 +5,15 @@
 #include "player_controller.h"
 
 
-//DEF_Render(Demo0_RS);
-
 Demo0_RS::Demo0_RS()
 	:mt(std::random_device()())
 {
 }
+
+Demo0_RS::~Demo0_RS()
+{
+}
+
 void Demo0_RS::init(GLFWwindow* window)
 {
 	_window = window;
@@ -24,10 +27,9 @@ void Demo0_RS::init(GLFWwindow* window)
 	camera.resizeViewport(w, h);
 	camera.MovementSpeed = 2.5;
 	camera.MouseSensitivity = CAMERA_DEFAULT_SENSITIVITY * 0.7f;
-	boxModel = comm::getOrCreate<BoxModel>();
-	lightModel = comm::getOrCreate<LightBoxModel>();
+	lightModel = comm::getOrCreate<BoxModel_SingleColor>();
 	illuminantModel = comm::getOrCreate<IlluminantModel>();
-	lightModel2 = comm::getOrCreate<LightBoxModel2>();
+	lightModel2 = comm::getOrCreate<BoxModel_SimpleTexture>();
 
 	auto materials = MaterialTable::instance()->getMaterials();
 	for (int i = 0; i < 100; ++i)

@@ -8,13 +8,14 @@
 #include "input_manager.h"
 #include "world.h"
 
-// ReSharper disable once CppInconsistentNaming
-class Demo0_RS :
+
+
+class Demo0_RS final :
     public GUIInterface
 {
 public:
 	Demo0_RS();
-	~Demo0_RS() override = default;
+	~Demo0_RS() override;
 	void init(GLFWwindow*) override;
 	void exit() override;
 	void tick(float deltaTime) override;
@@ -31,10 +32,9 @@ private:
 
 
 
-	std::shared_ptr<BoxModel> boxModel;
-	//光源模型
-	std::shared_ptr<LightBoxModel> lightModel;
-	std::shared_ptr<LightBoxModel2> lightModel2;
+	//受光源影响的光源模型
+	std::shared_ptr<BoxModel_SingleColor> lightModel;
+	std::shared_ptr<BoxModel_SimpleTexture> lightModel2;
 	std::shared_ptr<IlluminantModel> illuminantModel;
 
 	Camera camera;

@@ -28,14 +28,14 @@ struct Light {
 };
 
 
-class LightBoxModel :
+class BoxModel_SingleColor :
     public IModel
 {
 public:
-	CLASS_NO_COPY_DEFAULT_MOVE(LightBoxModel)
+	CLASS_NO_COPY_DEFAULT_MOVE(BoxModel_SingleColor)
 
-	LightBoxModel();
-	virtual ~LightBoxModel();
+	BoxModel_SingleColor();
+	virtual ~BoxModel_SingleColor();
 
 	void init() override;
 	void finished() override;
@@ -59,26 +59,26 @@ private:
 	Material _material;
 };
 
-inline void LightBoxModel::setLight(const Light& light)
+inline void BoxModel_SingleColor::setLight(const Light& light)
 {
 	_light = light;
 	
 }
-inline void LightBoxModel::setMaterial(const Material& material)
+inline void BoxModel_SingleColor::setMaterial(const Material& material)
 {
 	_material = material;
 }
 
 
 
-class LightBoxModel2 :
+class BoxModel_SimpleTexture :
 	public IModel
 {
 public:
-	CLASS_NO_COPY_AND_MOVE(LightBoxModel2)
+	CLASS_NO_COPY_AND_MOVE(BoxModel_SimpleTexture)
 
-	LightBoxModel2();
-	virtual ~LightBoxModel2();
+	BoxModel_SimpleTexture();
+	virtual ~BoxModel_SimpleTexture();
 
 	void draw(const Camera& camera, const glm::mat4& wMat) override;
 	void draw(const Camera& camera, const std::vector<glm::mat4>& wMats) override;
@@ -89,6 +89,8 @@ protected:
 	void drawBegin();
 	void drawEnd();
 private:
+	void initBuffers();
+	void initTextures();
 	unsigned int VAO = 0;
 	unsigned int VBO = 0;
 	unsigned int EBO = 0;
@@ -97,12 +99,12 @@ private:
 	LightSourcePoint _light;
 };
 
-inline void LightBoxModel2::setLight(const LightSourcePoint& light)
+inline void BoxModel_SimpleTexture::setLight(const LightSourcePoint& light)
 {
 	_light = light;
 
 }
-inline void LightBoxModel2::setMaterial(const Material3& material)
+inline void BoxModel_SimpleTexture::setMaterial(const Material3& material)
 {
 	_material = material;
 }

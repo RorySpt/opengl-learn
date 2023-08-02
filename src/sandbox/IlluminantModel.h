@@ -1,7 +1,8 @@
 #pragma once
 #include "common.h"
-#include "LightBoxModel.h"
+//#include "BoxModel.h"
 #include "IModel.h"
+#include "shader.h"
 
 
 class IlluminantModel :
