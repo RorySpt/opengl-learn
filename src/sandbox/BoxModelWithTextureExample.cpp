@@ -8,7 +8,7 @@ BoxModel::BoxModel()
     unsigned char* pic_data = nullptr;
 
     shader = ShaderProgram::makeShaderByName("shader.vert",  "shader.frag");
-    shader->use();
+    //shader->use();
     // 0. 复制顶点数组到到缓冲中供OpenGL使用
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

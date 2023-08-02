@@ -9,7 +9,7 @@ IlluminantModel::IlluminantModel()
 {
 	// 准备着色器
 	shader = ShaderProgram::makeShaderByName("lightingShader.vert", "lightingShader_fix.frag");
-	shader->use();
+	//shader->use();
 
 	// 创建buffer
 	glGenVertexArrays(1, &VAO);

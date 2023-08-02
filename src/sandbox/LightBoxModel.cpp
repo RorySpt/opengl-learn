@@ -18,7 +18,7 @@ LightBoxModel::~LightBoxModel()
 void LightBoxModel::init()
 {
 	shader = ShaderProgram::makeShaderByName("lightingShader.vert","lightingShader.frag");
-	shader->use();
+	//shader->use();
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
