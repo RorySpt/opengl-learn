@@ -59,12 +59,12 @@ void PlayerController::SetupPlayerInputComponent(InputComponent* input_component
 
 void PlayerController::OnMoveForward(float value) const
 {
-	static float distance = 0;
-	if (value > 0)
-	{
-		std::cout << std::format("{} PlayerController:MoveForward: {}, Total: {}\n"
-			, comm::GetCurrentTimeString(), value, (distance += value));
-	}
+	//static float distance = 0;
+	//if (value > 0)
+	//{
+	//	std::cout << std::format("{} PlayerController:MoveForward: {}, Total: {}\n"
+	//		, comm::GetCurrentTimeString(), value, (distance += value));
+	//}
 }
 
 InputManager* PlayerController::GetInputManager() const

@@ -310,24 +310,22 @@ void DisplayWindow::mouseButtonEvent(int buttonCode, int keyAction, int keyModif
 
 void DisplayWindow::mouseMoveEvent(float mouseX, float mouseY, float deltaX, float deltaY)
 {
+	Q_D(DisplayWindow);
+	if (d->mouseMode == MouseMode::Enabled)return;
+
 	for (const auto& render : GlobalRenderList()) {
 		render->mouseMoveEvent(mouseX, mouseY, deltaX, deltaY);
 	}
-	
-	Q_D(DisplayWindow);
-	if (d->mouseMode == MouseMode::Enabled)return;
-	
 }
 
 void DisplayWindow::scrollEvent(float deltaX, float deltaY)
 {
+	Q_D(DisplayWindow);
+	if (d->mouseMode == MouseMode::Enabled)return;
+
 	for (const auto& render : GlobalRenderList()) {
 		render->scrollEvent(deltaX, deltaY);
 	}
-	
-	Q_D(DisplayWindow);
-	if (d->mouseMode == MouseMode::Enabled)return;
-	
 }
 
 void DisplayWindow::toggleFullscreenMode()

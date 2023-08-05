@@ -7,6 +7,7 @@ static std::map<std::string_view, unsigned int> s_textureMap;
 
 unsigned comm::loadTexture(std::string_view path)
 {
+	stbi_set_flip_vertically_on_load(true);
 	if (s_textureMap.contains(path))
 		return s_textureMap.at(path);
 

@@ -8,7 +8,7 @@
 IlluminantModel::IlluminantModel()
 {
 	// 准备着色器
-	shader = ShaderProgram::makeShaderByName("lightingShader.vert", "lightingShader_fix.frag");
+	shader = ShaderProgram::makeShaderByName("PureColorMaterial.vert", "lightingShader_fix.frag");
 	//shader->use();
 
 	// 创建buffer

@@ -47,6 +47,9 @@ void Demo0_RS::init(GLFWwindow* window)
 	input = &world.GetPlayerController()->_input_component->inputManager;
 	input->SetWindow(window);
 	input->EnableInput();
+
+	
+
 }
 
 void Demo0_RS::exit()
@@ -98,8 +101,6 @@ void Demo0_RS::draw(float deltaTime)
 	{
 		std::cout << __func__ << "\n";
 	}
-
-
 
 	const glm::mat4 view = camera.getViewMatrix();
 	const glm::mat4 proj = camera.getProjMatrix();

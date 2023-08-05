@@ -19,6 +19,7 @@ bool ScopeColor_TreeNode(ImVec4 color_f, Ty... args)
 	ImGui::PopStyleColor();
 	return ret;
 }
+
 template<typename Ret, typename ...Ty>
 Ret ScopeColor(ImVec4 color_f, Ret (*func)(Ty...), Ty... args)
 {

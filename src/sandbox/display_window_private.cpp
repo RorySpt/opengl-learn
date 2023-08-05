@@ -23,9 +23,9 @@ bool WindowRect::Contains(int x, int y) const
 
 void DisplayWindowPrivate::initializeOpenGL()
 {
-	
 
-	if(!openglInitialized)
+
+	if (!openglInitialized)
 	{
 		glfwSetErrorCallback(handleErrorEvent);
 		//初始化GLF
@@ -38,7 +38,7 @@ void DisplayWindowPrivate::initializeOpenGL()
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);//设置次版本号为3
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//使用核心模式
 
-		
+
 		//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		openglInitialized = true;
 	}
@@ -53,14 +53,14 @@ void DisplayWindowPrivate::initGLFWWindow()
 		glfwWindowMap.emplace(window, q);
 
 
-	
+
 }
 
 GLFWwindow* DisplayWindowPrivate::createGLFWWindow()
 {
 	Q_Q(DisplayWindow);
 	//创建一个窗口对象
-    //comm::const_cast_ref(d->window)
+	//comm::const_cast_ref(d->window)
 	GLFWwindow* window;
 	comm::const_cast_ref(window) = glfwCreateWindow(1280, 720, "LearnOpenGL", NULL, NULL);
 
@@ -70,7 +70,7 @@ GLFWwindow* DisplayWindowPrivate::createGLFWWindow()
 		glfwTerminate();
 		return nullptr;
 	}
-	
+
 	// 如果glad还没有加载opengl函数，执行加载，整个程序生命周期只会执行一次
 	if (!gladLoaded)
 	{
@@ -126,7 +126,7 @@ void DisplayWindowPrivate::initializeImGui()
 	//	}
 	//}
 
-	
+
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
 	//ImGui::StyleColorsLight();
@@ -167,19 +167,56 @@ void DisplayWindowPrivate::defaultImGuiDraw()
 			//ImGui::Checkbox("Camera Window", &q->data->camera.bShowDebugWindow);
 			ImGui::NewLine();
 		}
-		
+
 		if (ImGui::CollapsingHeader("Graphics"))
 		{
-			//if (ImGui::TreeNode("Basic")) {}
-			const char* items[] = { "Fill", "Line", "Point" };
-			ImGui::Combo("Draw Mode", &draw_mode, items, IM_ARRAYSIZE(items));
+			{
+				//if (ImGui::TreeNode("Basic")) {}
+				const char* items[] = { "Fill", "Line", "Point" };
+				ImGui::Combo("Draw Mode", &draw_mode, items, IM_ARRAYSIZE(items));
+			}
+			{
+				//if (ImGui::TreeNode("Basic")) {}
+				const char* items[] = { "Null", "Front", "Back" };
+				int cull_mode = glIsEnabled(GL_CULL_FACE);
+				if (cull_mode)
+				{
+					int mode;
+					glGetIntegerv(GL_CULL_FACE_MODE, &mode);
+					cull_mode = mode == GL_FRONT ? 1
+								: mode == GL_BACK ? 2 : 0;
+				}
+					
+				if (ImGui::Combo("Cull Mode", &cull_mode, items, IM_ARRAYSIZE(items)))
+				{
+					switch (cull_mode)
+					{
+					case 1:
+					{
+						glEnable(GL_CULL_FACE);
+						glCullFace(GL_FRONT);
+					}break;
+					case 2:
+					{
+						glEnable(GL_CULL_FACE);
+						glCullFace(GL_BACK);
+					}break;
+					default:
+					{
+						glDisable(GL_CULL_FACE);
+						glCullFace(GL_BACK);
+					}
+					}
+				}
+
+			}
 		}
-		
+
 		//ImGui::SliderFloat("camera speed boundary", &speed_boundary, 0.0f, 10.0f,"%.3f", ImGuiSliderFlags_AlwaysClamp);
 		//ImGui::SliderFloat("camera normal speed radio", &normal_speed_ratio, 0.0f, speed_boundary, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 		//ImGui::SliderFloat("camera up speed radio", &speed_up_ratio, speed_boundary, 40.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);            // Edit 1 float using a slider from 0.0f to 1.0f
 
-		
+
 		//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 		//ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
@@ -202,7 +239,7 @@ void DisplayWindowPrivate::defaultImGuiDraw()
 		ImGui::End();
 	}
 
-	
+
 }
 
 void DisplayWindowPrivate::beginImGuiFrame()
@@ -293,7 +330,7 @@ void DisplayWindowPrivate::handleMouseMoveEvent(GLFWwindow* window, double newX,
 	// 一定会存在
 	const auto display = glfwWindowMap[window];
 	const auto& displayPrivate = display->d_ptr;
-	if(!displayPrivate->isFirst)
+	if (!displayPrivate->isFirst)
 	{
 		displayPrivate->lastMouseX = newX;
 		displayPrivate->lastMouseY = newY;
@@ -309,7 +346,7 @@ void DisplayWindowPrivate::handleMouseMoveEvent(GLFWwindow* window, double newX,
 	displayPrivate->lastMouseY = newY;
 
 	display->mouseMoveEvent(
-		static_cast<float>(newX) 
+		static_cast<float>(newX)
 		, static_cast<float>(newY)
 		, static_cast<float>(deltaX)
 		, static_cast<float>(deltaY)

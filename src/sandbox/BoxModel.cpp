@@ -17,11 +17,13 @@ BoxModel_SingleColor::~BoxModel_SingleColor()
 
 void BoxModel_SingleColor::init()
 {
-	shader = ShaderProgram::makeShaderByName("lightingShader.vert","lightingShader.frag");
+	shader = ShaderProgram::makeShaderByName("PureColorMaterial.vert","PureColorMaterial.frag");
 	//shader->use();
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
+
+
 
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -119,7 +121,7 @@ BoxModel_SimpleTexture::BoxModel_SimpleTexture()
 	initBuffers();
 	initTextures();
 
-	shader = std::make_shared<ShaderProgram>(std::string(comm::dir_shader) + "/lightingShader.vert", std::string(comm::dir_shader) + "/lightingShader3.frag");
+	shader = ShaderProgram::makeShaderByName("common.vert", "common.frag");
 }
 
 BoxModel_SimpleTexture::~BoxModel_SimpleTexture()
@@ -137,6 +139,7 @@ void BoxModel_SimpleTexture::draw(const Camera& camera, const glm::mat4& wMat)
 	shader->glUniform("projection", camera.getProjMatrix());
 	shader->glUniform("model", wMat);
 
+	//glFrontFace(GL_CW);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	drawEnd();
@@ -200,17 +203,89 @@ void BoxModel_SimpleTexture::initBuffers()
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
+	struct vertex
+	{
+		glm::vec3 position;
+		glm::vec3 normal;
+		glm::vec2 coordinate;
+	};
+	using triangle = std::array<vertex, 3>;
+
+	using face = std::array<vertex, 6>;
+
+
+	face faces[6];
+	
+	memcpy(&faces, vertices2, sizeof face * 6);
+
+	auto pi = glm::pi<float>();
+	auto pi_2 = pi / 2;
+
+	glm::mat4 mat_back =
+		glm::rotate(glm::mat4{1}, pi, { 0,1,0 });
+
+	glm::mat4 mat_left =
+		 glm::rotate(glm::mat4{1}, -pi_2, { 0,1,0 });
+
+	glm::mat4 mat_right =
+		 glm::rotate(glm::mat4{1}, pi_2, { 0,1,0 });
+
+	glm::mat4 mat_top =
+		 glm::rotate(glm::mat4{1}, -pi_2, { 1,0,0 });
+	glm::mat4 mat_bottom =
+		 glm::rotate(glm::mat4{1}, pi_2, { 1,0,0 });
+
+	auto transformFace = [&f = faces[1]](face& face, glm::mat4 mat)
+	{
+
+		for(int i = 0; i < face.size(); ++i)
+		{
+			face[i].position = mat * glm::vec4{ f[i].position, 1 };
+			face[i].coordinate = f[i].coordinate;
+			face[i].normal = mat * glm::vec4{ f[i].normal, 1 };
+
+		}
+	};
+	transformFace(faces[0], mat_back);
+	transformFace(faces[2], mat_left);
+	transformFace(faces[3], mat_right);
+	transformFace(faces[4], mat_top);
+	transformFace(faces[5], mat_bottom);
+
+	auto printFace = [](const face& face_)
+	{
+		for (auto& ver : face_)
+		{
+			std::cout << std::format("{: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f},\n"
+				, ver.position[0]
+				, ver.position[1]
+				, ver.position[2]
+				, ver.normal[0]
+				, ver.normal[1]
+				, ver.normal[2]
+				, ver.coordinate[0]
+				, ver.coordinate[1]
+			);
+		}
+		std::cout << '\n';
+	};
+	for(const auto& face:faces)
+	{
+		printFace(face);
+	}
+
+
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof vertices2, vertices2, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof face * 6, &vertices3, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));  // NOLINT(performance-no-int-to-ptr)
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));  // NOLINT(performance-no-int-to-ptr)
 	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
 void BoxModel_SimpleTexture::initTextures()
