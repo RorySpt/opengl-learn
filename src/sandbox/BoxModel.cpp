@@ -113,7 +113,7 @@ unsigned GetRandomRabbitTexture()
 	//	int index = uid(dre);
 	//	return comm::loadTexture(fs::absolute(rabbitPics[index]).string());
 	//}
-	return comm::loadTexture(std::string(comm::dir_picture) + "/matrix.jpg");
+	return comm::loadTexture(std::string(comm::dir_picture) + "/01.jpeg");
 }
 BoxModel_SimpleTexture::BoxModel_SimpleTexture()
 {
