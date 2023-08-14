@@ -41,6 +41,12 @@ struct LightSource {
 	LightSource(const LightSourcePoint& light);
 	LightSource(const LightSourceSpot& light);
 
+	template<typename LightSourceType> requires std::is_base_of_v<LightSourceBase, LightSourceType>
+	LightSourceType as();
+
+	template<LightType type>
+	auto as();
+
 	int type;
 	float innerCutOff;
 	float outerCutOff;
@@ -59,6 +65,65 @@ struct LightSource {
 private:
 	explicit LightSource(const LightSourceBase& light);
 };
+
+
+
+template<>
+inline LightSourceDirection LightSource::as<LightSourceDirection>()
+{
+	return LightSourceDirection{
+		ambient,
+		diffuse,
+		specular,
+		direction
+	};
+}
+template<>
+inline LightSourcePoint LightSource::as<LightSourcePoint>()
+{
+	return LightSourcePoint{
+		ambient,
+		diffuse,
+		specular,
+		position,
+		constant,
+		linear,
+		quadratic
+	};
+}
+
+template<>
+inline LightSourceSpot LightSource::as<LightSourceSpot>()
+{
+	return LightSourceSpot{
+		ambient,
+		diffuse,
+		specular,
+		position,
+		constant,
+		linear,
+		quadratic,
+		innerCutOff,
+		outerCutOff,
+		direction
+	};
+}
+template<>
+inline auto LightSource::as< LightSource::Direction>()
+{
+	return as<LightSourceDirection>();
+}
+template<>
+inline auto LightSource::as< LightSource::Point>()
+{
+	return as<LightSourcePoint>();
+}
+template<>
+inline auto LightSource::as< LightSource::Spot>()
+{
+	return as<LightSourceSpot>();
+}
+
 
 inline LightSource::LightSource(const LightSourceBase& light)
 	: type(-1)

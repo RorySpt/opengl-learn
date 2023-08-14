@@ -5,10 +5,67 @@
 #include <typeindex>
 
 #include "actor_camera_component.h"
+#include "actor_primitive_component.h"
 #include "camera_actor.h"
 #include "Model.h"
 #include "player_controller.h"
 
+
+class BoxPrimitiveComponent:public PrimitiveComponent
+{
+public:
+	void draw(const Camera& camera) override
+	{
+		auto point_lights = GetOwner()->GetWorld()->GetLightsByType(LightSource::Point);
+		if (point_lights.empty())
+			model->setLight({});
+		else
+			model->setLight(point_lights[0].as<LightSource::Point>());
+
+		model->setMaterial(_material);
+		model->draw(camera, GetComponentToWorld());
+	}
+	Material3 _material;
+	std::shared_ptr<BoxModel_SimpleTexture> model = comm::getOrCreate<BoxModel_SimpleTexture>();
+};
+
+unsigned GetRandomRabbitTexture();
+class MyActor:public Actor
+{
+public:
+	MyActor()
+	{
+		std::default_random_engine mt;
+		
+		auto container2_diffuse = comm::loadTexture(std::string(comm::dir_picture) + "/container2.png");
+		auto container2_specular = comm::loadTexture(std::string(comm::dir_picture) + "/container2_specular.png");
+
+
+		for (int i = 0; i < 100; ++i)
+		{
+			glm::vec3 pos;
+			const double scale = std::uniform_real_distribution<>(0.78, 5.0)(mt);
+			std::uniform_real_distribution<> urd(10, 50);
+			std::uniform_int_distribution<> uid(0, 1);// 中间清理出一块空地
+			pos = { urd(mt) * (uid(mt) ? 1 : -1), (scale - 1) / 2, urd(mt) * (uid(mt) ? 1 : -1) };
+
+			auto box_primitive = CreateDefaultComponent<BoxPrimitiveComponent>();
+			box_primitive->AttachToComponent(_root_component);
+			box_primitive->SetRelativeLocation(pos);
+			box_primitive->SetRelativeScale3d(glm::vec3{ static_cast<float>(scale) });
+
+			box_primitive->_material = { GetRandomRabbitTexture(),
+			container2_diffuse
+			,container2_specular
+			,32.0f };
+			box_primitives.emplace_back(box_primitive);
+		}
+		
+	}
+
+
+	std::vector<BoxPrimitiveComponent*> box_primitives;
+};
 
 
 template<typename ...Ty>
@@ -71,6 +128,18 @@ void TestRenderSurface::UI_Scene()
 				ImGui::BulletText(std::format("TypeName: {}", actor_type_name).c_str());
 				ImGui::BulletText(std::format("Name: {}", actor->name()).c_str());
 				ImGui::BulletText("More details.");
+
+				// CameraManager
+				{
+					if (const auto camera_manager = dynamic_cast<CameraManager*>(actor))
+					{
+						ImGui::BulletText(std::format("Camera Num: {}", camera_manager->cameras.size()).c_str());
+					}
+				}
+
+
+
+
 				ImGui::SeparatorText(std::format("Components").c_str());
 				for (auto& component : actor->_non_scene_components)
 				{
@@ -120,7 +189,8 @@ void TestRenderSurface::UI_Scene()
 
 						if (ImGui::DragFloat3("Rotation", &rot[0], 0.1f))
 						{
-							if (bRelative)component->SetRelativeRotation(convertToQuaternion( glm::radians(rot)));
+							rot[0] = glm::clamp(rot[0], -89.9f, 89.9f);
+							if (bRelative)component->SetRelativeRotation(convertToQuaternion(glm::radians(rot)));
 							else component->SetWorldRotation(convertToQuaternion(glm::radians(rot)));
 						}
 						ImGui::SameLine(); HelpMarker("pitch as x, yaw as y, roll as z.");
@@ -139,26 +209,43 @@ void TestRenderSurface::UI_Scene()
 							}
 						}
 
-
+						static bool relevance = false;
+						auto scaTmp = sca;
 						if (ImGui::DragFloat3("Scale3d", &sca[0], 0.1f))
 						{
+							if(relevance)
+							{
+								float value;
+								for(int n = 0; n < 3;++n)
+								{
+									if (sca[n] != scaTmp[n])value = sca[n];
+								}
+								sca = { value,value,value };
+							}
 							if (bRelative)component->SetRelativeScale3d(sca);
 							else component->SetWorldScale3d(sca);
 						}
+						ImGui::SameLine();
+						ImGui::Checkbox("Lock", &relevance);
 						if (ImGui::DragFloat4("Quaternion", &qua[0], 0.1f))
 						{
 							if (bRelative)component->SetRelativeRotation(qua);
 							else component->SetRelativeRotation(qua);
 						}
 
-
-
-						if (const auto camera_component = dynamic_cast<CameraComponent*>(component))
+						// CameraComponent
 						{
-							auto _loc_world = camera_component->GetComponentToWorld();
-							ImGui::Text("%s", std::format("Camera Position: {:.3f}, {:.3f}, {:.3f}"
-								, _loc_world[3][0], _loc_world[3][1], _loc_world[3][2]).c_str());
+							if (const auto camera_component = dynamic_cast<CameraComponent*>(component))
+							{
+								auto _loc_world = camera_component->GetComponentToWorld();
+								ImGui::Text("%s", std::format("Camera Position: {:.3f}, {:.3f}, {:.3f}"
+									, _loc_world[3][0], _loc_world[3][1], _loc_world[3][2]).c_str());
+							}
+						
 						}
+						
+
+
 						if (component->GetNumChildrenComponents() > 0)
 							ImGui::SeparatorText(std::format("SubComponents").c_str());
 						for(const auto sub:component->GetAttachChildren())
@@ -196,6 +283,20 @@ void TestRenderSurface::InitWorld()
 	mesh->set_name("MyMesh");
 	mesh = world.SpawnActor<Actor>();
 	mesh->set_name("MyMesh");
+
+	world.SpawnActor<MyActor>();
+
+	static glm::vec3 lightColor(1, 1, 1);
+	static glm::vec3 lightRatio(0.3f, 0.7f, 1);
+	
+
+	
+	glm::vec3 lightWorldPos = glm::vec4{ 1.2f, 5.2f, 10.0f, 1.0f } *2.0f;
+
+	// 光源
+	Light light = { lightColor * lightRatio.x,lightColor * lightRatio.y,lightColor * lightRatio.z, lightWorldPos };
+
+	world._lights[0] = LightSourcePoint(light);
 }
 
 void TestRenderSurface::UI_CameraTest()
@@ -258,6 +359,18 @@ void TestRenderSurface::tick(float deltaTime)
 void TestRenderSurface::draw(float deltaTime)
 {
 	UI_Scene();
+	const auto camera = world.GetPlayerController()->GetCameraManager()->ActivatedCamera().lock();
+	for(auto actor:world._workActors)
+	{
+		for(auto&component:actor->_owned_components)
+		{
+			auto primitive = dynamic_cast<PrimitiveComponent*>(component.get());
+			if(primitive)
+			{
+				primitive->draw(*camera);
+			}
+		}
+	}
 }
 
 void TestRenderSurface::resizeEvent(int width, int height)

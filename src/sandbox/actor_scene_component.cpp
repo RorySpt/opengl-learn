@@ -3,7 +3,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-SceneComponent::SceneComponent(): _relative_location(), _relative_rotation(), _relative_scale3d(1),
+SceneComponent::SceneComponent(): _relative_location(), _relative_rotation(1,0,0,0), _relative_scale3d(1),
                                   _world_location_cache(),
                                   _world_rotation_cache(),
                                   _world_scale3d_cache(1),

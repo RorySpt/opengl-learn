@@ -42,6 +42,7 @@ private:
 	InputManager* input;
 	std::vector<std::tuple<glm::vec3, double, Material>> boxArguments;
 
+	EulerAngle euler{0,0,0};
 
 	std::default_random_engine mt;
 };

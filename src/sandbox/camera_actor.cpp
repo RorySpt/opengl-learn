@@ -4,6 +4,8 @@
 #include "actor_input_component.h"
 #include "player_controller.h"
 
+DEF_InputAction(Run, EKeyCode::K_LeftShift);
+
 CameraActor::CameraActor()
 {
 	_camera_component = CreateDefaultComponent<CameraComponent>();
@@ -19,39 +21,50 @@ void CameraActor::BeginPlay()
 void CameraActor::SetupPlayerInputComponent(InputComponent* input_component)
 {
 	Actor::SetupPlayerInputComponent(input_component);
+
+	input_component->BindAction("Run", EKeyAction::A_Press, this, [&]()
+		{
+			run = true;
+		});
+	input_component->BindAction("Run", EKeyAction::A_Release, this, [&]()
+		{
+			run = false;
+		});
 	input_component->BindAxis("MoveForward", this, [&](float val)
 		{
-			if (val != 0) _root_component->SetRelativeLocation(_root_component->GetRelativeLocation() + _root_component->GetRelativeRotation() * glm::vec3{0, 0, -val});
+			_root_component->SetRelativeLocation(_root_component->GetRelativeLocation() + _root_component->GetRelativeRotation() * glm::vec3{0, 0, -val} * moveSpeed * (run ? 5.f:1.f));
 		});
 	input_component->BindAxis("MoveBack", this, [&](float val)
 		{
-			if (val != 0) _root_component->SetRelativeLocation(_root_component->GetRelativeLocation() + _root_component->GetRelativeRotation() * glm::vec3{0, 0, val});
+			_root_component->SetRelativeLocation(_root_component->GetRelativeLocation() + _root_component->GetRelativeRotation() * glm::vec3{0, 0, val} * moveSpeed* (run ? 5.f : 1.f));
 		});
 	input_component->BindAxis("MoveLeft", this, [&](float val)
 		{
-			if (val != 0) _root_component->SetRelativeLocation(_root_component->GetRelativeLocation() + _root_component->GetRelativeRotation() * glm::vec3{-val, 0, 0});
+			_root_component->SetRelativeLocation(_root_component->GetRelativeLocation() + _root_component->GetRelativeRotation() * glm::vec3{-val, 0, 0} * moveSpeed* (run ? 5.f : 1.f));
 		});
 	input_component->BindAxis("MoveRight", this, [&](float val)
 		{
-			if (val != 0) _root_component->SetRelativeLocation(_root_component->GetRelativeLocation() + _root_component->GetRelativeRotation() * glm::vec3{val, 0, 0});
+			_root_component->SetRelativeLocation(_root_component->GetRelativeLocation() + _root_component->GetRelativeRotation() * glm::vec3{val, 0, 0} * moveSpeed* (run ? 5.f : 1.f));
 		});
 
 	input_component->BindAxis("LookAround", this, [&](glm::vec2 val)
 		{
-			if (val.x != 0 || val.y != 0)
-			{
-				EulerAngle euler = glm::degrees(convertToEulerAngle(_root_component->GetRelativeRotation()).data);
+			
+			glm::vec3 euler = glm::degrees(convertToEulerAngle(_root_component->GetRelativeRotation()).data);
 
-				int width, height;
-				glfwGetWindowSize(GetWorld()->GetPlayerController()->GetInputManager()->GetWindow(), &width, &height);
-				const auto scaleW = static_cast<float>(360.0 / width);
-				const auto scaleH = static_cast<float>(360.0 / height);
+			int width, height;
+			glfwGetWindowSize(GetWorld()->GetPlayerController()->GetInputManager()->GetWindow(), &width, &height);
 
-				euler.yaw += val.x * scaleW;
-				euler.pitch = glm::clamp(euler.pitch + val.y * scaleH, -90.f, 90.f);
+			const float Sensitivity = 0.1f;
+			const auto scaleW = static_cast<float>(30.0f / width);
+			const auto scaleH = static_cast<float>(30.0f / height);
 
-				_root_component->SetRelativeRotation(convertToQuaternion(glm::radians(euler.data)));
-			}
+			euler.y += -val.x * Sensitivity;
+			euler.x =  glm::clamp(euler.x + -val.y * Sensitivity, -89.99f, 89.99f);
+
+
+
+			_root_component->SetRelativeRotation(convertToQuaternion(glm::radians(euler)));
 
 		});
 

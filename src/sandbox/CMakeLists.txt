@@ -50,6 +50,12 @@ target_link_libraries(sandbox PUBLIC
     opengl32.lib
 )
 
+if(STB_PATH)
+    message("found stb")
+    target_include_directories(sandbox PRIVATE ${STB_PATH})
+else(STB_PATH)
+    message(FATAL_ERROR "found stb failed! Check whether the stb submodule exists.")
+endif(STB_PATH)
 
 find_package(ASSIMP CONFIG REQUIRED)
 if(ASSIMP_FOUND)
@@ -61,14 +67,14 @@ else(ASSIMP_FOUND)
 endif(ASSIMP_FOUND)
 
 
-find_package(GLM CONFIG REQUIRED)
-if(GLM_FOUND)
+#find_package(GLM CONFIG REQUIRED)
+if(GLM_PATH)
     message("found GLM")
-    target_include_directories(sandbox PRIVATE ${GLM_INCLUDE_DIR})
-    target_link_libraries(sandbox PRIVATE glm::glm)
-else(GLM_FOUND)
+    target_include_directories(sandbox PRIVATE ${GLM_PATH})
+    #target_link_libraries(sandbox PRIVATE glm::glm)
+else(GLM_PATH)
     message(WARNING "found GLM failed!")
-endif(GLM_FOUND)
+endif(GLM_PATH)
 
 
 find_package(glfw3 CONFIG REQUIRED)

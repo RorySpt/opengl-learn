@@ -97,6 +97,11 @@ public:
 
 	DisplayWindow::MouseMode mouseMode = DisplayWindow::MouseMode::Disabled;
 
+	bool bIgnoreMoveEvent = false;
+	int nIgnoreMoveEventTimes = 0;
+
+
+	double wMouseX, wMouseY;
 	//
 	bool isFirst = false;
 	double lastMouseX, lastMouseY;

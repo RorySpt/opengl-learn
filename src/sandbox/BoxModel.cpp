@@ -4,6 +4,7 @@
 #include "vertices.h"
 #include "camera.h"
 #include "shader.h"
+#include <execution>
 BoxModel_SingleColor::BoxModel_SingleColor()
 {
 	
@@ -93,27 +94,44 @@ void BoxModel_SingleColor::drawEnd()
 }
 unsigned GetRandomRabbitTexture()
 {
-	//namespace fs = std::filesystem;
+	namespace fs = std::filesystem;
 	//constexpr std::string_view RabbitDir = "C:/Users/zhang/Pictures/Material/Rabbit";
-	//
-	//static std::vector<fs::path> rabbitPics;
+	constexpr std::string_view RabbitDir = R"(C:\Users\zhang\Pictures\4K±ÚÖ½)";
+	static std::vector<fs::path> rabbitPics;
 	//static std::random_device rd;
-	//static std::default_random_engine dre(rd());
-	//if(rabbitPics.empty())
-	//for (auto& p : fs::directory_iterator(RabbitDir))
-	//{
-	//	if(p.path().has_extension())
-	//	{
-	//		rabbitPics.emplace_back(p.path());
-	//	}
-	//}
-	//if(!rabbitPics.empty())
-	//{
-	//	std::uniform_int_distribution<> uid(0, rabbitPics.size() - 1);
-	//	int index = uid(dre);
-	//	return comm::loadTexture(fs::absolute(rabbitPics[index]).string());
-	//}
-	return comm::loadTexture(std::string(comm::dir_picture) + "/01.jpeg");
+	static std::default_random_engine dre(0);
+
+	
+
+	if (rabbitPics.empty())
+	{
+		std::vector<std::string> entries;
+		for (auto& p : fs::directory_iterator(RabbitDir))
+		{
+			if (auto path = p.path(); path.has_extension())
+				if (auto ext = path.extension(); ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+				{
+					entries.emplace_back(p.path().string());
+					//std::cout << std::format("{} load: {}\n", count.load(), p.path().string()); ++count;
+					//comm::loadTexture(fs::absolute(p.path()).string());
+					rabbitPics.emplace_back(p.path());
+				}
+		}
+#ifndef  DEMO0
+		auto ids = comm::loadTexture(entries);
+#endif
+
+	}
+	
+	
+
+	if(!rabbitPics.empty())
+	{
+		std::uniform_int_distribution<> uid(0, rabbitPics.size() - 1);
+		int index = uid(dre);
+		return comm::loadTexture(fs::absolute(rabbitPics[index]).string());
+	}
+	//return comm::loadTexture(std::string(comm::dir_picture) + "/wallhaven-95oj7k.png");
 }
 BoxModel_SimpleTexture::BoxModel_SimpleTexture()
 {
@@ -121,7 +139,7 @@ BoxModel_SimpleTexture::BoxModel_SimpleTexture()
 	initBuffers();
 	initTextures();
 
-	shader = ShaderProgram::makeShaderByName("common.vert", "common.frag");
+	shader = ShaderProgram::makeShaderByName("BoxModel_SimpleTexture.vert", "BoxModel_SimpleTexture.frag");
 }
 
 BoxModel_SimpleTexture::~BoxModel_SimpleTexture()
@@ -161,6 +179,8 @@ void BoxModel_SimpleTexture::draw(const Camera& camera, const std::vector<glm::m
 
 	drawEnd();
 }
+
+
 
 void BoxModel_SimpleTexture::drawBegin()
 {

@@ -44,14 +44,16 @@ public:
 };
 
 #define DEF_InputAction(Name, KeyCode)\
-	inline InputAdder<GetInputActionKeyMappings> Name{#Name, InputActionKeyMapping{#Name, KeyCode}}
+	inline InputAdder<GetInputActionKeyMappings> InputAdder_##Name{#Name, InputActionKeyMapping{#Name, KeyCode}}
 #define DEF_InputAction_WithModifier(Name, KeyCode , keyModifier)\
-	inline InputAdder<GetInputActionKeyMappings>Name{#Name, InputActionKeyMapping{#Name,KeyCode,keyModifier}}
+	inline InputAdder<GetInputActionKeyMappings> InputAdder_##Name{#Name, InputActionKeyMapping{#Name,KeyCode,keyModifier}}
 #define DEF_InputAxis(Name, KeyCode , Scale)\
-	inline InputAdder<GetInputAxisKeyMappings> Name{#Name, InputAxisKeyMapping{ #Name, KeyCode, Scale }}
+	inline InputAdder<GetInputAxisKeyMappings> InputAdder_##Name{#Name, InputAxisKeyMapping{ #Name, KeyCode, Scale }}
 
 // Such as:
 DEF_InputAction_WithModifier( Jump, EKeyCode::K_Space,EKeyMod::Mod_Shift);
+
+
 DEF_InputAxis( LookUpDown, EKeyCode::K_MouseMove_Y, 1.0f );
 DEF_InputAxis( LookLeftRight, EKeyCode::K_MouseMove_X, 1.0f);
 DEF_InputAxis( LookAround, EKeyCode::K_MouseMove_XY, 1.0f);

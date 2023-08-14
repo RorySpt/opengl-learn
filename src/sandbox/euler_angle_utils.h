@@ -7,20 +7,33 @@
 #define _GL_MATH ::math::
 
 _GL_MATH_BEGIN
-
+/*
+ * 坐标系定义：
+ * 前：z负方向
+ * 右：x正方形
+ * 上：y正方向
+ * 旋转定义：
+ * 逆时针为正
+ * 无序欧拉角定义
+ * pitch：与x-z平面的夹角
+ * yaw：绕y轴的旋转
+ * roll: 绕自身x轴的旋转
+ * 即用pitch，yaw表示四元数的旋转轴，roll表示四元数的旋转值
+ */
 
 // The default unit should be radius
 struct EulerAngle  // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
+	using value_type = glm::vec3::value_type;
+
 	union
 	{
-		struct { float pitch, yaw, roll; };   // NOLINT(clang-diagnostic-nested-anon-types)
+		struct { value_type pitch, yaw, roll; };   // NOLINT(clang-diagnostic-nested-anon-types)
 		glm::vec3 data;
 	};
 
-public:
 	EulerAngle() = default;
-	EulerAngle(const float pitch, const float yaw, const float roll)  // NOLINT(cppcoreguidelines-pro-type-member-init)
+	EulerAngle(const value_type pitch, const value_type yaw, const value_type roll)  // NOLINT(cppcoreguidelines-pro-type-member-init)
 		: pitch(pitch),
 		yaw(yaw),
 		roll(roll)
@@ -35,6 +48,14 @@ public:
 	operator glm::vec3() const
 	{
 		return data;
+	}
+	value_type& operator [](const int i)
+	{
+		return data[i];
+	}
+	value_type operator [](const int i) const
+	{
+		return data[i];
 	}
 };
 inline glm::vec3 convertToVec3D(const EulerAngle euler)
@@ -54,13 +75,13 @@ inline EulerAngle convertToQuaternion_(const EulerAngle euler)
 {
 	constexpr auto pi = glm::pi<float>();
 	EulerAngle euler_ = euler;
-	if (euler_.yaw > pi / 2)
+	if (euler_.yaw >= pi / 2)
 	{
 		euler_.yaw -= pi;
 		euler_.pitch = (euler_.pitch > 0 ? -pi : pi) - euler_.pitch;
 		euler_.roll += euler_.roll > 0 ? -pi : pi;
 	}
-	else if (euler_.yaw <= -pi / 2)
+	else if (euler_.yaw < -pi / 2)
 	{
 		euler_.yaw += pi;
 		euler_.pitch = (euler_.pitch > 0 ? -pi : pi) - euler_.pitch;
@@ -75,9 +96,31 @@ inline glm::quat convertToQuaternion_native(const EulerAngle euler)
 
 	return { euler };
 }
+
+inline bool isValid(float v)
+{
+	bool b = isinf(v);
+	bool b1 = isnan(v);
+	bool b2 = !b && !b1;
+	return b2;
+}
+inline bool isValid(glm::quat v)
+{
+	return isValid(v[0]) && isValid(v[1]) && isValid(v[2]) && isValid(v[3]);
+}
+inline bool isValid(glm::vec3 v)
+{
+	return isValid(v[0]) && isValid(v[1]) && isValid(v[2]);
+}
+inline bool isValid(glm::dvec3 v)
+{
+	return isValid(v[0]) && isValid(v[1]) && isValid(v[2]);
+}
+
 // glm 原生转换，会限制yaw到[-90,90)
 inline EulerAngle convertToEulerAngle_native(glm::quat qua)
 {
+	
 	EulerAngle euler_ = eulerAngles(qua);
 
 	return { euler_ };
@@ -85,42 +128,46 @@ inline EulerAngle convertToEulerAngle_native(glm::quat qua)
 
 inline glm::quat convertToQuaternion(const EulerAngle euler)
 {
-	constexpr auto pi = glm::pi<float>();
-	EulerAngle euler_ = euler;
-	if (euler_.yaw > pi / 2)
-	{
-		euler_.yaw -= pi;
-		euler_.pitch = (euler_.pitch > 0 ? pi : -pi) - euler_.pitch;
-		euler_.roll += euler_.roll > 0 ? -pi : pi;
-	}
-	else if (euler_.yaw <= -pi / 2)
-	{
-		euler_.yaw += pi;
-		euler_.pitch = (euler_.pitch > 0 ? pi : -pi) - euler_.pitch;
-		euler_.roll += euler_.roll > 0 ? -pi : pi;
-	}
-	return { euler_ };
+	assert(isValid(euler));
+	const auto rr = glm::rotate(glm::quat(1, 0, 0, 0), euler.roll, { 0,0,1 });
+	const auto ry = glm::rotate(glm::quat(1, 0, 0, 0), euler.yaw, { 0,1,0 });
+	const auto rp = glm::rotate(glm::quat(1, 0, 0, 0), euler.pitch, ry * glm::vec3{ 1, 0, 0 });
+
+	assert(isValid(rp * ry * rr));
+	return rp * ry * rr;
 }
-// 将四元数转换为欧拉角，欧拉角顺序为pitch-yaw-roll，数值约束为pitch[-90,90]，yaw[-180,180]，roll[-180,180]
+
+// 将四元数转换为欧拉角，欧拉角顺序为roll-yaw-pitch，数值约束为pitch[-90,90]
 inline EulerAngle convertToEulerAngle(glm::quat qua)
 {
-	constexpr auto pi = glm::pi<float>();
+	constexpr glm::vec3 world_up = { 0,1,0 };
+	auto rMat = glm::mat3_cast(qua);
+	auto& [axisX, axisY, axisZ] = reinterpret_cast<std::array<glm::vec3, 3>&>(rMat[0]);
 
-	EulerAngle euler_ = eulerAngles(qua);
-	if (euler_.pitch >= pi / 2)
-	{
-		euler_.pitch = pi - euler_.pitch;
-		euler_.yaw += euler_.yaw > 0 ? -pi : pi;
-		euler_.roll += euler_.roll > 0 ? -pi : pi;
-	}
-	else if (euler_.pitch < -pi / 2)
-	{
-		euler_.pitch = -pi - euler_.pitch;
-		euler_.yaw += euler_.yaw > 0 ? -pi : pi;
-		euler_.roll += euler_.roll > 0 ? -pi : pi;
-	}
-	return { euler_ };
+	
+	const auto forward = -axisZ;
+	//const auto right = glm::cross(forward, world_up);
+	//const auto up = glm::normalize(glm::cross(right, forward));
+
+
+	const float forward_proj_xz = sqrt(forward.x * forward.x + forward.z * forward.z);
+	const float pitch = atan2(forward.y, forward_proj_xz);
+	const float yaw = -atan2(forward.z, forward.x) - glm::pi<float>() / 2;
+
+	auto rot_yaw = glm::rotate(glm::quat(1, 0, 0, 0), yaw, { 0,1,0 });
+	auto rot_pitch = glm::rotate(glm::quat(1, 0, 0, 0), pitch, rot_yaw * glm::vec3{ 1, 0, 0 });
+	auto rot_roll = inverse((rot_pitch * rot_yaw)) * qua;
+
+	//const auto f = glm::cross(up, axisY);
+	const auto roll = glm::angle(rot_roll);//acos(glm::clamp(dot(up, axisY), -1.0f, 1.0f));
+
+	//if (!isValid(roll)) roll = 0;
+
+	assert(isValid(glm::vec3{ pitch, yaw, roll }));
+	return {pitch, yaw, roll };
 }
+
+
 inline EulerAngle convertToEulerAngle(glm::vec3 direction)
 {
 	const float pitch = atan2(direction.y, sqrt(direction.x * direction.x + direction.z * direction.z));

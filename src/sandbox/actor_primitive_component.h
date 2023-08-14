@@ -3,9 +3,10 @@
 #include "IModel.h"
 
 class PrimitiveComponent :
-    public SceneComponent, public IModel
+    public SceneComponent
 {
     ClassMetaDeclare(PrimitiveComponent)
 
+	virtual void draw(const Camera& camera) = 0;
 };
 

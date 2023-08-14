@@ -14,6 +14,10 @@ Actor::~Actor()
 	//_world->_actors.erase(this);
 }
 
+void Actor::OnConstruct()
+{
+}
+
 void Actor::SetupPlayerInputComponent(InputComponent* input_component)
 {
 	_input_component = input_component;
@@ -91,6 +95,14 @@ void Actor::ProcessComponentRemove()
 			{
 				return _component.get() == component;
 			});
+
+		//if(auto hashCode = typeid(*component).hash_code();_owned_components_map.contains(hashCode))
+		//{
+		//	std::erase_if(_owned_components_map[hashCode], [component](const value_type::element_type* _component)
+		//		{
+		//			return _component == component;
+		//		});
+		//}
 	}
 	_components_need_del.clear();
 }
@@ -111,6 +123,7 @@ void Actor::ProcessComponentAdd()
 			_non_scene_components.emplace_back(component);
 		}
 		_owned_components.emplace_back(component);
+		//_owned_components_map[typeid(*component).hash_code()].emplace_back(component);
 	}
 	_components_need_add.clear();
 }

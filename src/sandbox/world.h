@@ -4,6 +4,7 @@
 #include <set>
 #include <memory>
 
+#include "light.h"
 #include "object.h"
 
 
@@ -32,7 +33,7 @@ public:
 	
 	PlayerController* GetPlayerController() const;
 	
-
+	std::vector<LightSource> GetLightsByType(LightSource::LightType t_light) const;
 
 
 	std::vector<Actor*> _newActors;	// 新生成的Actor列表
@@ -45,7 +46,8 @@ public:
 	PlayerController* _playerController;
 
 	bool bHasBegunPlay = false;
-	//std::array<std::optional<LightSource>, 16> _lights;
+
+	std::array<std::optional<LightSource>, 16> _lights;
 
 	DisplayNameGenerator display_name_generator;
 private:
@@ -56,7 +58,7 @@ extern World GWorld;
 
 // 声明从世界生成Actor, 由Actor实现该方法
 template<typename ActorType> requires std::is_base_of_v<Actor, ActorType>
-ActorType* SpawnActor(World* world = &GWorld);
+ActorType* SpawnActor(World* world);
 
 
 template <typename ActorType> requires std::is_base_of_v<Actor, ActorType>
@@ -74,9 +76,14 @@ ActorType* World::SpawnActor(GenerateActorFunc generateActor)
 	actor->set_self_display_name_generator(&display_name_generator);
 	actor->set_name(actor->type_name());
 	this->_newActors.emplace_back(actor);
+	actor->OnConstruct();
 	return actor;
 }
-
+template<typename ActorComponentType> requires std::is_base_of_v<Actor, ActorComponentType>
+bool IsValid(Actor* actor)
+{
+	return actor;
+}
 
 
 //// 使用局部静态变量保证初始化顺序

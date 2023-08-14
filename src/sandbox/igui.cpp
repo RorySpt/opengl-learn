@@ -1,7 +1,7 @@
 #include "igui.h"
 
 
-#define DEMO0
+//#define DEMO0
 
 #ifdef DEMO0
 #include "demo0_rs.h"

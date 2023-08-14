@@ -85,6 +85,7 @@ public:
 
 	void setLight(const LightSourcePoint& light);
 	void setMaterial(const Material3&);
+
 protected:
 	void drawBegin();
 	void drawEnd();

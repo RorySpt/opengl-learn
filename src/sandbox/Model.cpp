@@ -26,8 +26,11 @@ void Model::loadModel(std::string_view path)
 		return;
 	}
 	std::string_view::size_type index;
-	if ((index = path.find_last_of('/')) == std::string_view::npos)
-		index = path.find_last_of('\\') == std::string_view::npos;
+	if (!((index = path.find_last_of('/')) == std::string_view::npos
+		&&(index = path.find_last_of('\\')) == std::string_view::npos))
+	{
+		std::cout << "The file path may be incorrectness, path: " << path << '\n';
+	}
 	_directory = path.substr(0, index);
 	processNode(scene->mRootNode, scene);
 }
@@ -112,7 +115,7 @@ std::vector<Texture> Model::loadMaterialTexture(const aiMaterial* material, aiTe
 		if(!skip)
 		{
 			Texture texture;
-			texture.id = comm::loadTexture({ str.C_Str(), str.length }, _directory);
+			texture.id = comm::loadTexture({ str.C_Str(), str.length }, _directory,false);
 			texture.type = typeName;
 			texture.path = str.C_Str();
 			textures.push_back(texture);

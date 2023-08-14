@@ -48,8 +48,6 @@ void Demo0_RS::init(GLFWwindow* window)
 	input->SetWindow(window);
 	input->EnableInput();
 
-	
-
 }
 
 void Demo0_RS::exit()
@@ -146,7 +144,9 @@ void Demo0_RS::draw(float deltaTime)
 	// 光源
 	Light light = { lightColor * lightRatio.x,lightColor * lightRatio.y,lightColor * lightRatio.z, lightWorldPos };
 
+	ImGui::Text("%s", std::format("Light Position: {:.3f}, {:.3f}, {:.3f}", light.position.x, light.position.y, light.position.z).c_str());
 
+	ImGui::End();
 	// 创建发光体
 	{
 		// 灯光模型的变换矩阵
@@ -183,7 +183,7 @@ void Demo0_RS::draw(float deltaTime)
 	}
 	{
 		static auto shader = ShaderProgram::makeShaderByName("common.vert", "common.frag");
-		static Model model(R"(C:/Users/zhang/Pictures/Material/nanosuit/nanosuit.obj)");
+		static Model model(R"(C:\Users\zhang\Pictures\Material\F22\f22.obj)");
 		shader->use();
 		shader->glUniform("lights[0].type", 1);
 		shader->glUniform("viewPos", camera.Position);
@@ -197,15 +197,124 @@ void Demo0_RS::draw(float deltaTime)
 		shader->glUniform("material.shininess", 32.0f);
 		shader->glUniform("view", camera.getViewMatrix());
 		shader->glUniform("projection", camera.getProjMatrix());
-		shader->glUniform("model", glm::scale(glm::mat4(1.0f), glm::vec3{ 0.5f, 0.5f, 0.5f }*2.0f));
+
+
+		ImGui::Begin("F22");
+		static glm::vec3 scale = { 1,1,1 };
+		static glm::vec3 position = { 0,0,0 };
+		static glm::vec3 axis = {0,1,0};
+		static float roll = 0;
+		glm::quat qua;
+
+		if (ImGui::DragFloat3("Scale", &scale[0], 0.1f)) {};
+		if (ImGui::DragFloat3("Position", &position[0], 0.1f)){};
+		if constexpr (false)
+		{
+			glm::vec3 forward = {
+			cos(euler.pitch) * cos(euler.yaw)
+			,sin(euler.pitch)
+			,cos(euler.pitch) * sin(euler.yaw)
+			};
+
+			// crossdot({1,0,0} , forward)
+			axis = {
+				0,
+				-cos(euler.pitch) * sin(euler.yaw),
+				sin(euler.pitch)
+			};
+
+			float angle = glm::degrees(acos(cos(euler.pitch / 2) * cos(euler.yaw / 2)));
+			ImGui::DragFloat3("Forward", &forward[0], 0.1f);
+			{
+				auto euler_degrees = glm::degrees(euler.data);
+				if(ImGui::DragFloat3("Rotation", &euler_degrees[0], 0.1f))
+				{
+					euler.data = glm::radians(euler_degrees);
+				}
+			}
+			{
+				auto l_axis = glm::cross({ 1,0,0 }, forward);
+				ImGui::DragFloat3("Axis", &l_axis[0], 0.1f);
+			}
+			ImGui::DragFloat3("myAxis", &axis[0], 0.1f);
+			ImGui::DragFloat("Angle", &angle, 0.1f);
+
+			auto rot_roll = glm::rotate(glm::quat(1, 0, 0, 0), euler.roll, { 0,0,1 });
+			auto rot_yaw = glm::rotate(glm::quat(1, 0, 0, 0), euler.yaw, { 0,1,0 });
+			auto rot_pitch = glm::rotate(glm::quat(1, 0, 0, 0), euler.pitch, rot_yaw * glm::vec3{ 1,0,0 });
+			qua = normalize(rot_pitch * rot_yaw * rot_roll);
+
+				
+			//qua = normalize(glm::quat( 1 + cos(euler.pitch) * cos(euler.yaw), axis));
+
+			//qua = glm::quat({ 1,0,0 }, forward);
+		}else
+		{
+			if (ImGui::DragFloat3("Axis", &axis[0], 0.1f))
+			{
+				
+			}
+			if (ImGui::DragFloat("Roll", &roll, 0.1f))
+			{
+				
+			}
+			qua = glm::quat(cos(glm::radians(roll)), normalize(axis) * sin(glm::radians(roll)));
+
+			qua = glm::angleAxis(glm::radians(roll), axis);
+		}
+
+		
+		if(ImGui::DragFloat4("Quat", &qua[0], 0.1f))
+		{
+			
+		}
+		{
+			constexpr glm::vec3 world_up = { 0,1,0 };
+			auto rMat = glm::mat3_cast(qua);
+			auto& [axisX, axisY, axisZ] = reinterpret_cast<std::array<glm::vec3, 3>&>(rMat[0]);
+
+			const auto forward = -axisZ;
+			const auto right = glm::cross(forward, world_up);
+			const auto up = glm::normalize(glm::cross(right, forward)) ;
+
+
+			const float forward_proj_xz = sqrt(forward.x * forward.x + forward.z * forward.z);
+			const float pitch = atan2(forward.y, forward_proj_xz);
+			const float yaw = -atan2(forward.z, forward.x) - glm::pi<float>() / 2;
+
+			auto rot_yaw = glm::rotate(glm::quat(1, 0, 0, 0), yaw, { 0,1,0 });
+			auto rot_pitch = glm::rotate(glm::quat(1, 0, 0, 0), pitch, rot_yaw * glm::vec3{ 1, 0, 0 });
+			auto rot_roll =  inverse((rot_pitch * rot_yaw)) * qua;
+
+			//const auto f = glm::cross(up, axisY);
+			const auto roll = glm::angle(normalize(rot_roll));//acos(glm::clamp(dot(up, axisY), -1.0f, 1.0f));
+
+
+			glm::vec3 rot = glm::degrees(glm::vec3{ pitch , yaw, roll});
+
+			ImGui::DragFloat3("Axis->Rotation", &rot[0], 0.1f);
+
+			auto axis = glm::axis(qua);
+			ImGui::DragFloat3("Quat->Axis", &axis[0], 0.1f);
+
+			auto q = glm::angleAxis(roll,axis);
+			ImGui::DragFloat4("Quat->Quat", &q[0], 0.1f);
+
+			//qua = q;
+		}
+		ImGui::End();
+
+
+		shader->glUniform("model", glm::translate(glm::mat4(1.0f), position) 
+			* glm::mat4_cast(qua) 
+			* glm::rotate(glm::mat4(1),glm::pi<float>() , {0,1,0}) 
+			* glm::scale(glm::mat4(1.0f), scale));
 		model.Draw(*shader);
 	}
 
 
 
-	ImGui::Text("%s", std::format("Light Position: {:.3f}, {:.3f}, {:.3f}", light.position.x, light.position.y, light.position.z).c_str());
-
-	ImGui::End();
+	
 }
 
 void Demo0_RS::resizeEvent(int width, int height)

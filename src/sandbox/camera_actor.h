@@ -12,5 +12,9 @@ public:
 	void SetupPlayerInputComponent(InputComponent* input_component) override;
 
 	CameraComponent* _camera_component;
+
+
+	float moveSpeed = 5;
+	bool run = false;
 };
 

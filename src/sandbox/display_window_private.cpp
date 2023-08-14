@@ -52,8 +52,6 @@ void DisplayWindowPrivate::initGLFWWindow()
 	if (window != nullptr)
 		glfwWindowMap.emplace(window, q);
 
-
-
 }
 
 GLFWwindow* DisplayWindowPrivate::createGLFWWindow()

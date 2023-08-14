@@ -1,11 +1,26 @@
 #include "player_controller.h"
 
+#include "actor_camera_component.h"
 #include "common.h"
+#include "camera.h"
 
 PlayerController::PlayerController()
 {
 	_input_component = CreateDefaultComponent<InputComponent>();
 }
+
+void PlayerController::OnConstruct()
+{
+	Actor::OnConstruct();
+}
+
+//auto findCameraComponent(Actor* actor)
+//{
+//	for(auto& com: actor)
+//	{
+//		com->
+//	}
+//}
 
 void PlayerController::OnProcess(Actor* actor)
 {
@@ -14,11 +29,20 @@ void PlayerController::OnProcess(Actor* actor)
 		_input_component->RemoveBindings();
 		_processActor = actor;
 		actor->SetupPlayerInputComponent(_input_component);
+		if(actor->bAutoActiveCamera)
+		{
+			const auto cameraComponents = actor->GetComponentsByType<CameraComponent>();
+			if(!cameraComponents.empty())
+			{
+				_camera_manager->Activate(cameraComponents[0]->camera_weak_ptr);
+			}
+		}
 	}
 }
 
 void PlayerController::OnUnPossess()
 {
+	_camera_manager->ResetActivate();
 	_input_component->RemoveBindings();
 	_processActor = nullptr;
 }
@@ -26,8 +50,13 @@ void PlayerController::OnUnPossess()
 void PlayerController::BeginPlay()
 {
 	Actor::BeginPlay();
-
+	
 	OnProcess(this);
+}
+
+void PlayerController::Tick(float deltaTime)
+{
+	Actor::Tick(deltaTime);
 }
 
 void PlayerController::SetupPlayerInputComponent(InputComponent* input_component)
@@ -70,6 +99,16 @@ void PlayerController::OnMoveForward(float value) const
 InputManager* PlayerController::GetInputManager() const
 {
 	return &_input_component->inputManager;
+}
+
+CameraManager* PlayerController::GetCameraManager() 
+{
+	if (_camera_manager == nullptr)
+	{
+		_camera_manager = GetWorld()->SpawnActor<CameraManager>();
+	}
+		
+	return _camera_manager;
 }
 
 

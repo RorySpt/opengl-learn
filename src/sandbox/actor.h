@@ -11,6 +11,9 @@ class ActorComponent;
 class SceneComponent;
 class InputComponent;
 
+//template<typename T>
+//concept ComponentType = std::is_base_of_v<ActorComponent, T>;
+
 class Actor: public object
 {
 	ClassMetaDeclare(Actor)
@@ -18,10 +21,13 @@ public:
 	template<typename ActorType> requires std::is_base_of_v<Actor, ActorType>
 	friend ActorType* SpawnActor(World* world);
 	friend class World;
-	
+
+	bool bAutoActiveCamera = true;
 
 	Actor();
 	virtual ~Actor();
+
+	virtual void OnConstruct();
 
 	virtual void SetupPlayerInputComponent(InputComponent *input_component);
 
@@ -37,6 +43,9 @@ public:
 	void RemoveComponent(ActorComponent*);
 	void ProcessComponentRemove();
 	void ProcessComponentAdd();
+
+	template<typename ComponentType> requires std::is_base_of_v<ActorComponent, ComponentType>
+	std::vector<ComponentType*> GetComponentsByType();
 //protected:
 
 	World* _world = nullptr;
@@ -48,6 +57,7 @@ public:
 	std::vector<ActorComponent*> _components_need_add;
 	std::vector<ActorComponent*> _components_need_del;
 
+	std::map<std::size_t, std::vector<ActorComponent*>> _owned_components_map;
 
 	DisplayNameGenerator _display_name_generator;
 };
@@ -61,6 +71,27 @@ ComponentType* Actor::CreateDefaultComponent()
 	component->set_self_display_name_generator(&_display_name_generator);
 	component->set_name(component->type_name());
 	return component;
+}
+
+template <typename ComponentType> requires std::is_base_of_v<ActorComponent, ComponentType>
+std::vector<ComponentType*> Actor::GetComponentsByType()
+{
+	//if(const auto hashCode = typeid(ComponentType).hash_code();
+	//	_owned_components_map.contains(hashCode))
+	//{
+	//	return _owned_components_map[hashCode];
+	//}
+	std::vector<ComponentType*> components;
+	for(auto &com: _owned_components)
+	{
+		if(auto actual = dynamic_cast<ComponentType*>(com.get()))
+		{
+			components.push_back(actual);
+		}
+	}
+
+
+	return components;
 }
 
 

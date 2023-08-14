@@ -80,10 +80,11 @@ int DisplayWindow::exec()
 void DisplayWindow::render_init()
 {
 	Q_D(DisplayWindow);
-	
+
 	int w, h;
 	glfwGetWindowSize(d->window, &w, &h);
-
+	d->wMouseX = w / 2;
+	d->wMouseY = h / 2;
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -311,7 +312,8 @@ void DisplayWindow::mouseButtonEvent(int buttonCode, int keyAction, int keyModif
 void DisplayWindow::mouseMoveEvent(float mouseX, float mouseY, float deltaX, float deltaY)
 {
 	Q_D(DisplayWindow);
-	if (d->mouseMode == MouseMode::Enabled)return;
+	if (d->mouseMode == MouseMode::Enabled || consumeNextMouseMoveEventIgnore())return;
+
 
 	for (const auto& render : GlobalRenderList()) {
 		render->mouseMoveEvent(mouseX, mouseY, deltaX, deltaY);
@@ -321,7 +323,7 @@ void DisplayWindow::mouseMoveEvent(float mouseX, float mouseY, float deltaX, flo
 void DisplayWindow::scrollEvent(float deltaX, float deltaY)
 {
 	Q_D(DisplayWindow);
-	if (d->mouseMode == MouseMode::Enabled)return;
+	if (d->mouseMode == MouseMode::Enabled || consumeNextMouseMoveEventIgnore())return;
 
 	for (const auto& render : GlobalRenderList()) {
 		render->scrollEvent(deltaX, deltaY);
@@ -336,6 +338,7 @@ void DisplayWindow::toggleFullscreenMode()
 
 	if (glfwGetWindowMonitor(window) == NULL)
 	{
+		ignoreNextMouseMoveEvent();
 		// 进入全屏模式
 		
 		glfwGetWindowPos(window, &left, &top);
@@ -356,17 +359,22 @@ void DisplayWindow::toggleFullscreenMode()
 	}
 	else
 	{
+		ignoreNextMouseMoveEvent();
 		// 退出全屏模式
 		glfwSetWindowMonitor(window, NULL, left, top, width, height, GLFW_DONT_CARE);
+
 	}
 }
 
 void DisplayWindow::toggleMouseMode()
 {
+	
 	Q_D(DisplayWindow);
 	GLFWwindow* window = d->window;
 	if (d->mouseMode == MouseMode::Enabled)
 	{
+		ignoreNextMouseMoveEvent(); ignoreNextMouseMoveEvent();
+		glfwGetCursorPos(d->window, &d->wMouseX, &d->wMouseY);
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		d->mouseMode = MouseMode::Disabled;
 	}
@@ -374,8 +382,43 @@ void DisplayWindow::toggleMouseMode()
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		d->mouseMode = MouseMode::Enabled;
+
+		ignoreNextMouseMoveEvent(); ignoreNextMouseMoveEvent();
+		glfwSetCursorPos(d->window, d->wMouseX,d->wMouseY);
 	}
+
 }
+
+void DisplayWindow::transferMousePosition(float mouseX, float mouseY)
+{
+}
+
+void DisplayWindow::enableMouseMoveEvent()
+{
+	d_func()->bIgnoreMoveEvent = true;
+}
+
+void DisplayWindow::disableMouseMoveEvent()
+{
+	d_func()->bIgnoreMoveEvent = false;
+}
+
+void DisplayWindow::ignoreNextMouseMoveEvent()
+{
+	++d_func()->nIgnoreMoveEventTimes;
+}
+
+bool DisplayWindow::consumeNextMouseMoveEventIgnore()
+{
+	if (d_func()->nIgnoreMoveEventTimes)
+	{
+		--d_func()->nIgnoreMoveEventTimes;
+		return true;
+	}
+
+	return false;
+}
+
 // Find the monitor containing the specified position (centerX, centerY)
 // and return the corresponding GLFWmonitor pointer.
 // Returns nullptr if no monitor is found.

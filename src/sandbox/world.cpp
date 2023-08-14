@@ -58,6 +58,16 @@ PlayerController* World::GetPlayerController() const
 	return _playerController;
 }
 
+std::vector<LightSource> World::GetLightsByType(LightSource::LightType t_light) const
+{
+	std::vector<LightSource> lights;
+	for(auto op_light:_lights)
+	{
+		if (op_light.has_value() && op_light->type == t_light)
+			lights.emplace_back(*op_light);
+	}
+	return lights;
+}
 
 
 void World::DealActorAdd()

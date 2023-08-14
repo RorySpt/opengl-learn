@@ -29,6 +29,7 @@ InputComponent::InputComponent()
 		});
 	inputManager.SetMouseMoveAxisProcessor([&](InputManager::Axis axis)
 		{
+			if (axis.deltaX == 0 && axis.deltaY == 0)return;
 			for (auto _binding : Vec2dInputAxisBinding)
 			{
 				auto& InputAxis = GetInputAxisKeyMappings().at(_binding.actionName);
@@ -50,6 +51,7 @@ InputComponent::InputComponent()
 
 	inputManager.SetScrollAxisProcessor([&](InputManager::Axis axis)
 		{
+			if (axis.deltaX == 0 && axis.deltaY == 0)return;
 			for (auto _binding : Vec2dInputAxisBinding)
 			{
 				auto& InputAxis = GetInputAxisKeyMappings().at(_binding.actionName);
@@ -72,7 +74,8 @@ void InputComponent::TickComponent(float deltaTime)
 	for (auto _binding : FloatInputAxisBinding)
 	{
 		const auto& InputAxis = GetInputAxisKeyMappings().at(_binding.actionName);
-		_binding.cb(inputManager.GetKeyState(InputAxis.keyCode) == EKeyAction::A_Press ? InputAxis.Scale * deltaTime : 0);
+		if(inputManager.GetKeyState(InputAxis.keyCode) == EKeyAction::A_Press)
+			_binding.cb(InputAxis.Scale * deltaTime);
 	}
 }
 

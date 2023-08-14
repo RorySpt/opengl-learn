@@ -62,6 +62,13 @@ protected:
 	void toggleFullscreenMode();
 	void toggleMouseMode();
 
+	void transferMousePosition(float mouseX, float mouseY);
+
+	void enableMouseMoveEvent();
+	void disableMouseMoveEvent();
+	void ignoreNextMouseMoveEvent();
+	bool consumeNextMouseMoveEventIgnore();
+
 	GLFWmonitor* findMonitorByPosition(int centerX, int centerY);
 	
 private:
