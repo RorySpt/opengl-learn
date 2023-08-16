@@ -4,6 +4,8 @@
 #include <string>
 #include <type_traits>
 #include <chrono>
+#include <stb_image.h>
+#include <stb_image_resize.h>
 #define _COMM_BEGIN namespace comm{
 #define _COMM_END }
 #define _COMM ::comm::
@@ -69,10 +71,12 @@ auto getOrCreate() requires std::is_default_constructible_v<T>
     static std::shared_ptr<T> inst(new T); return inst;
 }
 
-
+std::shared_ptr<stbi_uc[]> resize_image(const stbi_uc* source, int w, int h, int channels, int& r_w, int& r_h);
 unsigned int loadTexture(std::string_view path, bool b_flip_vertically = true);
 unsigned int loadTexture(std::string_view fileName, std::string_view directory, bool b_flip_vertically = true);
 std::vector<unsigned int> loadTexture(const std::vector<std::string>& paths, bool b_flip_vertically = true);
+
+
 
 inline std::string GetCurrentTimeString(std::format_string<std::chrono::zoned_time<std::chrono::system_clock::duration>> fmt)
 {

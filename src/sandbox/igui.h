@@ -31,7 +31,10 @@ inline std::vector<std::shared_ptr<GUIInterface>>& GlobalRenderList()
 	static std::vector<std::shared_ptr<GUIInterface>> global_render_list;
 	return global_render_list;
 }
-
+class GlobalRenderManager
+{
+	
+};
 
 // 通过全局变量构造函数的方式将RenderType自动添加到GlobalRenderList
 template<typename RenderType> requires std::is_base_of_v<GUIInterface, RenderType>&& requires {new RenderType; }

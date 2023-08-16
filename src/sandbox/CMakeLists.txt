@@ -103,10 +103,12 @@ set(SANDBOX_HXX_DIR_FILES ${SANDBOX_HXX_FILES})
 set(SANDBOX_UTILS_HXX_DIR_FILES 
     euler_angle_utils.h
     frame_rate_calc.h
+    texture_loader.h
     "flags.h"
 )
 set(SANDBOX_UTILS_CXX_DIR_FILES 
     frame_rate_calc.cpp
+    texture_loader.cpp
     "flags.cpp"
 )
 

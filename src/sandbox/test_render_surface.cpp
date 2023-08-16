@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "test_render_surface.h"
 
+#include <execution>
 #include <stack>
 #include <typeindex>
 
@@ -9,6 +10,8 @@
 #include "camera_actor.h"
 #include "Model.h"
 #include "player_controller.h"
+#include "texture_loader.h"
+
 
 
 class BoxPrimitiveComponent:public PrimitiveComponent
@@ -29,18 +32,20 @@ public:
 	std::shared_ptr<BoxModel_SimpleTexture> model = comm::getOrCreate<BoxModel_SimpleTexture>();
 };
 
-unsigned GetRandomRabbitTexture();
+
 class MyActor:public Actor
 {
 public:
 	MyActor()
 	{
 		std::default_random_engine mt;
-		
-		auto container2_diffuse = comm::loadTexture(std::string(comm::dir_picture) + "/container2.png");
-		auto container2_specular = comm::loadTexture(std::string(comm::dir_picture) + "/container2_specular.png");
 
+		auto [container2_diffuse, container2_specular] = reinterpret_cast<std::array<unsigned int, 2>&>( comm::loadTexture({
+			std::string(comm::dir_picture) + "/container2.png",
+			std::string(comm::dir_picture) + "/container2_specular.png"
+			})[0]);
 
+		std::vector<TextureLoader::outer_type> setters;
 		for (int i = 0; i < 100; ++i)
 		{
 			glm::vec3 pos;
@@ -54,19 +59,64 @@ public:
 			box_primitive->SetRelativeLocation(pos);
 			box_primitive->SetRelativeScale3d(glm::vec3{ static_cast<float>(scale) });
 
-			box_primitive->_material = { GetRandomRabbitTexture(),
+			box_primitive->_material = { 0U,
 			container2_diffuse
 			,container2_specular
 			,32.0f };
+
+
+			
+			setters.emplace_back([box_primitive](TextureLoader::texture_id_type id)
+			{
+				box_primitive->_material.emission = id;
+				std::cout << box_primitive->display_name() << " 加载纹理完成，ID: " << id << std::endl;
+			});
+
 			box_primitives.emplace_back(box_primitive);
 		}
-		
-	}
 
+		GetRandomRabbitTexture(setters);
+	}
+	void GetRandomRabbitTexture(std::vector<TextureLoader::outer_type> setters);
 
 	std::vector<BoxPrimitiveComponent*> box_primitives;
 };
+void MyActor::GetRandomRabbitTexture(std::vector<TextureLoader::outer_type> setters)
+{
+	namespace fs = std::filesystem;
+	constexpr std::string_view RabbitDir = R"(C:\Users\zhang\Pictures\4K壁纸)";
+	static std::vector<fs::path> rabbitPics;
+	//static std::random_device rd;
+	static std::default_random_engine dre(0);
 
+	if (rabbitPics.empty())
+	{
+		for (auto& p : fs::directory_iterator(RabbitDir))
+		{
+			if (auto path = p.path(); path.has_extension())
+				if (auto ext = path.extension(); ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+				{
+					rabbitPics.emplace_back(p.path());
+				}
+		}
+	}
+	if (!rabbitPics.empty())
+	{
+		std::uniform_int_distribution uid(0, static_cast<int>(rabbitPics.size()) - 1);
+		int index = uid(dre);
+
+		std::vector<TextureLoader::input_type> inputs(setters.size());
+		for(int i = 0;i < inputs.size();++i)
+		{
+			inputs[i] = TextureLoader::input_type{
+				fs::path(rabbitPics[uid(dre)].c_str()),
+				setters[i]
+			};
+		}
+		g_texture_loader->loadTexture(inputs);
+	}
+	
+}
 
 template<typename ...Ty>
 bool ScopeColor_TreeNode(ImVec4 color_f, Ty... args)
@@ -330,7 +380,8 @@ TestRenderSurface::~TestRenderSurface() = default;
 TestRenderSurface::TestRenderSurface()
 	:mt(std::random_device("")())
 {
-
+	texture_loader = std::make_shared<TextureLoader>();
+	::g_texture_loader = texture_loader.get();
 }
 
 void TestRenderSurface::init(GLFWwindow* window)
@@ -354,6 +405,8 @@ void TestRenderSurface::tick(float deltaTime)
 		world.BeginPlay();
 
 	world.Tick(deltaTime);
+
+	g_texture_loader->tick();
 }
 
 void TestRenderSurface::draw(float deltaTime)

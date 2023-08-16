@@ -6,7 +6,7 @@
 #include "stb_image.h"
 #include "stb_image_resize.h"
 
-static std::map<std::string, unsigned int> s_textureMap;
+std::map<std::string, unsigned int> s_textureMap;
 
 // An output image with N components has the following components interleaved
 // in this order in each pixel:
@@ -16,7 +16,7 @@ static std::map<std::string, unsigned int> s_textureMap;
 //       2           grey, alpha
 //       3           red, green, blue
 //       4           red, green, blue, alpha
-GLenum stb_channel_to_enum(int channel)
+consteval GLenum stb_channel_to_enum(int channel)
 {
 	switch (channel)
 	{
@@ -37,7 +37,7 @@ consteval GLenum stb_enum_to_channel(int channel)
 	default: return 0;
 	}
 }
-unsigned int highbit(unsigned int x) {
+consteval unsigned int highbit(unsigned int x) {
 	x |= x >> 1;
 	x |= x >> 2;
 	x |= x >> 4;
@@ -46,7 +46,7 @@ unsigned int highbit(unsigned int x) {
 	return x - (x >> 1);
 }
 
-std::shared_ptr<stbi_uc[]> resize_image(const stbi_uc* source, int w, int h, int channels, int& r_w, int& r_h)
+std::shared_ptr<stbi_uc[]> comm::resize_image(const stbi_uc* source, int w, int h, int channels, int& r_w, int& r_h)
 {
 	constexpr int resolution_max = 8192;
 
@@ -64,8 +64,8 @@ unsigned comm::loadTexture(std::string_view path, bool b_flip_vertically)
 	if (s_textureMap.contains(path.data()))
 		return s_textureMap.at(path.data());
 	unsigned int textureID;
-	int width, height, nrCommponents;
-	unsigned char* data = stbi_load(path.data(), &width, &height, &nrCommponents, stb_enum_to_channel(GL_RGBA));
+	int width, height, nrComponents;
+	unsigned char* data = stbi_load(path.data(), &width, &height, &nrComponents, stb_enum_to_channel(GL_RGBA));
 
 	if(data)
 	{
@@ -110,8 +110,8 @@ std::vector<unsigned int> comm::loadTexture(const std::vector<std::string>& path
 	auto loadFile = [](const input_type& s)
 	{
 		output_type result{ std::get<0>(s), nullptr, 0, 0};
-		int width, height, nrCommponents;
-		unsigned char* data = stbi_load(std::get<1>(s).data(), &width, &height, &nrCommponents, 4);
+		int width, height, nrComponents;
+		unsigned char* data = stbi_load(std::get<1>(s).data(), &width, &height, &nrComponents, 4);
 		if (!data)return result;
 
 		std::get<1>(result) = resize_image(data, width, height, 4
@@ -130,7 +130,7 @@ std::vector<unsigned int> comm::loadTexture(const std::vector<std::string>& path
 			ids[i] = s_textureMap.at(paths[i]);
 	}
 	int count = 0;
-	auto lastTimePoint = std::chrono::high_resolution_clock::now();
+	const auto lastTimePoint = std::chrono::high_resolution_clock::now();
 	std::for_each(std::execution::par, inputs.begin(), inputs.end(), [&](const input_type& input)
 		{
 			if (const int n = std::get<0>(input); ids[n] != 0)
@@ -143,6 +143,7 @@ std::vector<unsigned int> comm::loadTexture(const std::vector<std::string>& path
 			outputs[std::get<0>(input)] = output;
 		});
 	std::cout << std::format("[{:.1f}%]Load completed! Cost: {} sec\n", 100.0, std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - lastTimePoint));
+
 	count = 0;
 	for(auto& output: outputs)
 	{
@@ -162,7 +163,7 @@ std::vector<unsigned int> comm::loadTexture(const std::vector<std::string>& path
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		std::cout << std::format("[{:.1f}%]生成纹理：{} Size:{{{}, {}}}\n", static_cast<double>(++count * 100) / inputs.size(), textureID, rw, rh);
+		std::cout << std::format("[{:.1f}%]生成纹理：{} Size:{{{}, {}}}\n", static_cast<double>(++count * 100) / inputs.size(), textureID, rw, rh);  // NOLINT(clang-diagnostic-invalid-source-encoding)
 		s_textureMap.insert_or_assign(std::get<1>(inputs[n]).data(), textureID);
 	}
 

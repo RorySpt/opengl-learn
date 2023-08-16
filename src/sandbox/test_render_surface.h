@@ -6,6 +6,7 @@
 #include "input_manager.h"
 #include "world.h"
 
+class TextureLoader;
 class TestRenderSurface final:
     public GUIInterface
 {
@@ -43,7 +44,7 @@ private:
 	World world;
 	InputManager* input = nullptr;
 
-
+	std::shared_ptr<TextureLoader> texture_loader;
 	std::default_random_engine mt;
 };
 

@@ -118,7 +118,7 @@ unsigned GetRandomRabbitTexture()
 				}
 		}
 #ifndef  DEMO0
-		auto ids = comm::loadTexture(entries);
+		//auto ids = comm::loadTexture(entries);
 #endif
 
 	}
