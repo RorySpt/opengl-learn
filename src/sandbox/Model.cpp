@@ -26,7 +26,7 @@ void Model::loadModel(std::string_view path)
 		return;
 	}
 	std::string_view::size_type index;
-	if (!((index = path.find_last_of('/')) == std::string_view::npos
+	if (((index = path.find_last_of('/')) == std::string_view::npos
 		&&(index = path.find_last_of('\\')) == std::string_view::npos))
 	{
 		std::cout << "The file path may be incorrectness, path: " << path << '\n';
