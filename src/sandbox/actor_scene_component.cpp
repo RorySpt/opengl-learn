@@ -3,12 +3,16 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-SceneComponent::SceneComponent(): _relative_location(), _relative_rotation(1,0,0,0), _relative_scale3d(1),
-                                  _world_location_cache(),
-                                  _world_rotation_cache(),
-                                  _world_scale3d_cache(1),
-                                  _local_to_parent_cache(1),
-                                  _local_to_world(1)
+SceneComponent::SceneComponent() :
+	_relative_location()
+	, _relative_rotation(1, 0, 0, 0)
+	, _relative_scale3d(1)
+	, _world_location_cache()
+	, _world_rotation_cache(1, 0, 0, 0)
+	, _world_scale3d_cache(1)
+	, _local_to_parent_cache(1)
+	, _local_to_world_cache(1)
+	, _parent_to_world_cache(1)
 {
 }
 
@@ -95,12 +99,12 @@ std::vector<SceneComponent*> SceneComponent::GetAttachChildren()
 
 glm::mat4 SceneComponent::GetComponentToWorld() const
 {
-	return _local_to_world;
+	return _local_to_world_cache;
 }
 
 void SceneComponent::SetComponentToWorld(const glm::mat4& mat)
 {
-	_local_to_world = mat;
+	_local_to_world_cache = mat;
 	LocalToWorldChanged();
 }
 
@@ -129,12 +133,12 @@ glm::vec3 SceneComponent::GetRelativeLocation() const
 
 void SceneComponent::SetWorldLocation(glm::vec3 worldLocation)
 {
-	SetRelativeLocation(glm::inverse(_local_to_world) * glm::vec4(worldLocation, 1) - glm::vec4(_relative_location,1));
+	SetRelativeLocation(glm::vec3(glm::inverse(_parent_to_world_cache) * glm::vec4(worldLocation, 1)));
 }
 
 glm::vec3 SceneComponent::GetWorldLocation() const
 {
-	return _local_to_world[3];
+	return _local_to_world_cache[3];
 }
 
 void SceneComponent::SetRelativeRotation(glm::quat relativeRotation)
@@ -150,13 +154,15 @@ glm::quat SceneComponent::GetRelativeRotation() const
 
 void SceneComponent::SetWorldRotation(glm::quat worldRotation)
 {
-	SetRelativeRotation(_relative_rotation + worldRotation - _world_rotation_cache);
+	SetRelativeRotation(inverse(glm::quat_cast(_parent_to_world_cache)) * worldRotation );
+
+
 	//SetRelativeRotation(glm::inverse(_relative_rotation) * glm::quat_cast(glm::inverse(_local_to_world)) * worldRotation);
 }
 
 glm::quat SceneComponent::GetWorldRotation() const
 {
-	return glm::quat_cast(_local_to_world);
+	return _world_rotation_cache;
 }
 
 void SceneComponent::SetRelativeScale3d(glm::vec3 relativeScale3d)
@@ -172,7 +178,7 @@ glm::vec3 SceneComponent::GetRelativeScale3d() const
 
 void SceneComponent::SetWorldScale3d(glm::vec3 relativeScale3d)
 {
-	SetRelativeScale3d(relativeScale3d - _world_scale3d_cache);
+	SetRelativeScale3d(_relative_scale3d + relativeScale3d - _world_scale3d_cache);
 }
 
 glm::vec3 SceneComponent::GetWorldScale3d() const
@@ -182,17 +188,20 @@ glm::vec3 SceneComponent::GetWorldScale3d() const
 
 void SceneComponent::ParentTransformChanged()
 {
+	
 	if(IsValid(_attach_parent))
 	{
-		_local_to_world = _attach_parent->GetComponentToWorld() * GetRelativeTransform();
+		_parent_to_world_cache = _attach_parent->GetComponentToWorld();
+		_local_to_world_cache = _parent_to_world_cache * GetRelativeTransform();
 
 		glm::vec3 skew;
 		glm::vec4 perspective;
-		glm::decompose(_local_to_world, _world_scale3d_cache, _world_rotation_cache, _world_location_cache, skew, perspective);
+		glm::decompose(_local_to_world_cache, _world_scale3d_cache, _world_rotation_cache, _world_location_cache, skew, perspective);
 
 	}else
 	{
-		_local_to_world = _local_to_parent_cache;
+		_parent_to_world_cache = glm::mat4(1);
+		_local_to_world_cache = _local_to_parent_cache;
 		_world_location_cache = _relative_location;
 		_world_rotation_cache = _relative_rotation;
 		_world_scale3d_cache = _relative_scale3d;
@@ -207,14 +216,9 @@ void SceneComponent::LocalToWorldChanged()
 {
 	glm::vec3 skew;
 	glm::vec4 perspective;
-	glm::decompose(_local_to_world, _world_scale3d_cache, _world_rotation_cache, _world_location_cache, skew, perspective);
-	if (IsValid(_attach_parent))
-	{
-		_local_to_parent_cache = glm::inverse(_attach_parent->GetComponentToWorld()) * _local_to_world;
-	}else
-	{
-		_local_to_parent_cache = _local_to_world;
-	}
+	glm::decompose(_local_to_world_cache, _world_scale3d_cache, _world_rotation_cache, _world_location_cache, skew, perspective);
+	
+	_local_to_parent_cache = glm::inverse(_parent_to_world_cache) * _local_to_world_cache;
 
 	glm::decompose(_local_to_parent_cache, _relative_scale3d, _relative_rotation, _relative_location, skew, perspective);
 
@@ -232,14 +236,14 @@ void SceneComponent::RelativeTransformChanged()
 
 	if (IsValid(_attach_parent))
 	{
-		_local_to_world = _attach_parent->GetComponentToWorld() * _local_to_parent_cache;
+		_local_to_world_cache = _parent_to_world_cache * _local_to_parent_cache;
 
 		glm::vec3 skew;
 		glm::vec4 perspective;
-		glm::decompose(_local_to_world, _world_scale3d_cache, _world_rotation_cache, _world_location_cache, skew, perspective);
+		glm::decompose(_local_to_world_cache, _world_scale3d_cache, _world_rotation_cache, _world_location_cache, skew, perspective);
 	}else
 	{
-		_local_to_world = _local_to_parent_cache;
+		_local_to_world_cache = _local_to_parent_cache;
 		_world_location_cache = _relative_location;
 		_world_rotation_cache = _relative_rotation;
 		_world_scale3d_cache = _relative_scale3d;
@@ -260,15 +264,15 @@ void SceneComponent::RelativeLocationChanged()
 
 	if (IsValid(_attach_parent))
 	{
-		_local_to_world = _attach_parent->GetComponentToWorld() * _local_to_parent_cache;
+		_local_to_world_cache = _parent_to_world_cache * _local_to_parent_cache;
 
 		glm::vec3 skew;
 		glm::vec4 perspective;
-		glm::decompose(_local_to_world, _world_scale3d_cache, _world_rotation_cache, _world_location_cache, skew, perspective);
+		glm::decompose(_local_to_world_cache, _world_scale3d_cache, _world_rotation_cache, _world_location_cache, skew, perspective);
 	}
 	else
 	{
-		_local_to_world = _local_to_parent_cache;
+		_local_to_world_cache = _local_to_parent_cache;
 		_world_location_cache = _relative_location;
 		_world_rotation_cache = _relative_rotation;
 		_world_scale3d_cache = _relative_scale3d;

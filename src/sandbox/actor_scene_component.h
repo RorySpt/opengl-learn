@@ -71,7 +71,8 @@ public:
     glm::vec3 _world_scale3d_cache;     // 世界坐标系中的缩放缓存
 
     glm::mat4 _local_to_parent_cache;  // 相对于父组件的变换矩阵缓存
-    glm::mat4 _local_to_world;  // 相对于世界坐标系的变换矩阵
+    glm::mat4 _local_to_world_cache;  // 相对于世界坐标系的变换矩阵
+    glm::mat4 _parent_to_world_cache;  // 父组件相对于世界坐标系的变换矩阵
 
     SceneComponent* _attach_parent = nullptr;  // 父组件指针
     std::vector<SceneComponent*> _attach_children;  // 子组件列表
