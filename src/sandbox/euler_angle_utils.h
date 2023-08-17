@@ -128,43 +128,63 @@ inline EulerAngle convertToEulerAngle_native(glm::quat qua)
 
 inline glm::quat convertToQuaternion(const EulerAngle euler)
 {
-	assert(isValid(euler));
-	const auto rr = glm::rotate(glm::quat(1, 0, 0, 0), euler.roll, { 0,0,1 });
-	const auto ry = glm::rotate(glm::quat(1, 0, 0, 0), euler.yaw, { 0,1,0 });
-	const auto rp = glm::rotate(glm::quat(1, 0, 0, 0), euler.pitch, ry * glm::vec3{ 1, 0, 0 });
+	//assert(isValid(euler));
+	//const auto rr = glm::rotate(glm::quat(1, 0, 0, 0), euler.roll, { 0,0,1 });
+	//const auto rp = glm::rotate(glm::quat(1, 0, 0, 0), euler.pitch, glm::vec3{ 1, 0, 0 });
+	//const auto ry = glm::rotate(glm::quat(1, 0, 0, 0), euler.yaw, { 0,1,0 });
+	//
+	//assert(isValid(ry * rp * rr));
+	//return ry * rp * rr;
 
-	assert(isValid(rp * ry * rr));
-	return rp * ry * rr;
+	//auto eulerAngle = euler.data;
+	//
+	//glm::vec3 c = glm::cos(eulerAngle * (0.5f));
+	//glm::vec3 s = glm::sin(eulerAngle * (0.5f));
+	//
+	//float w = c.x * s.y * s.z + s.x * c.y * c.z;
+	//float x = s.x * c.y * c.z + s.x * s.y * c.z;
+	//float y = c.x * s.y * c.z - s.x * c.y * s.z;
+	//float z = c.x * c.y * c.z - s.x * s.y * s.z;
+	//
+	auto qua = glm::quat({ euler.roll,euler.pitch,euler.yaw });
+	return {qua.w,qua.y,qua.z,qua.x};
 }
 
-// 将四元数转换为欧拉角，欧拉角顺序为roll-yaw-pitch，数值约束为pitch[-90,90]
+// 将四元数转换为欧拉角，欧拉角顺序为roll-pitch-yaw，数值约束为pitch[-90,90]
 inline EulerAngle convertToEulerAngle(glm::quat qua)
 {
-	constexpr glm::vec3 world_up = { 0,1,0 };
-	auto rMat = glm::mat3_cast(qua);
-	auto& [axisX, axisY, axisZ] = reinterpret_cast<std::array<glm::vec3, 3>&>(rMat[0]);
+	//constexpr glm::vec3 world_up = { 0,1,0 };
+	//auto rMat = glm::mat3_cast(qua);
+	//auto& [axisX, axisY, axisZ] = reinterpret_cast<std::array<glm::vec3, 3>&>(rMat[0]);
+	//
+	//
+	//const auto forward = -axisZ;
+	////const auto right = glm::cross(forward, world_up);
+	////const auto up = glm::normalize(glm::cross(right, forward));
+	////glm::roll()
+	//
+	//const float forward_proj_xz = sqrt(forward.x * forward.x + forward.z * forward.z);
+	//const float pitch = atan2(forward.y, forward_proj_xz);
+	//const float yaw = -atan2(forward.z, forward.x) - glm::pi<float>() / 2;
+	//
+	//auto rot_yaw = glm::rotate(glm::quat(1, 0, 0, 0), yaw, { 0,1,0 });
+	//auto rot_pitch = glm::rotate(glm::quat(1, 0, 0, 0), pitch, { 1, 0, 0 });
+	//auto rot_roll = inverse((rot_yaw * rot_pitch )) * qua;
+	//
+	////const auto f = glm::cross(up, axisY);
+	//const auto roll = glm::angle(rot_roll);//acos(glm::clamp(dot(up, axisY), -1.0f, 1.0f));
+	//
+	////if (!isValid(roll)) roll = 0;
+	//
+	//assert(isValid(glm::vec3{ pitch, yaw, roll }));
 
-	
-	const auto forward = -axisZ;
-	//const auto right = glm::cross(forward, world_up);
-	//const auto up = glm::normalize(glm::cross(right, forward));
 
 
-	const float forward_proj_xz = sqrt(forward.x * forward.x + forward.z * forward.z);
-	const float pitch = atan2(forward.y, forward_proj_xz);
-	const float yaw = -atan2(forward.z, forward.x) - glm::pi<float>() / 2;
 
-	auto rot_yaw = glm::rotate(glm::quat(1, 0, 0, 0), yaw, { 0,1,0 });
-	auto rot_pitch = glm::rotate(glm::quat(1, 0, 0, 0), pitch, rot_yaw * glm::vec3{ 1, 0, 0 });
-	auto rot_roll = inverse((rot_pitch * rot_yaw)) * qua;
 
-	//const auto f = glm::cross(up, axisY);
-	const auto roll = glm::angle(rot_roll);//acos(glm::clamp(dot(up, axisY), -1.0f, 1.0f));
-
-	//if (!isValid(roll)) roll = 0;
-
-	assert(isValid(glm::vec3{ pitch, yaw, roll }));
-	return {pitch, yaw, roll };
+	//return {pitch, yaw, roll };
+	auto euler = glm::eulerAngles(glm::quat{qua.w, qua.z, qua.x, qua.y});
+	return {euler[1],euler[2],euler[0]};
 }
 
 
