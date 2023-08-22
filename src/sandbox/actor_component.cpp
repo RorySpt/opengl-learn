@@ -4,6 +4,10 @@
 #include "actor.h"
 
 
+void ActorComponent::OnConstruct()
+{
+}
+
 void ActorComponent::BeginPlay()
 {
 	assert(!bHasBegunPlay);

@@ -131,7 +131,7 @@ unsigned GetRandomRabbitTexture()
 		int index = uid(dre);
 		return comm::loadTexture(fs::absolute(rabbitPics[index]).string());
 	}
-	//return comm::loadTexture(std::string(comm::dir_picture) + "/wallhaven-95oj7k.png");
+	return comm::loadTexture(std::string(comm::dir_picture) + "/wallhaven-95oj7k.png");
 }
 BoxModel_SimpleTexture::BoxModel_SimpleTexture()
 {
@@ -186,28 +186,36 @@ void BoxModel_SimpleTexture::drawBegin()
 {
 	shader->use();
 	glBindVertexArray(VAO);
+	
+	
+	
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, std::get<Material3::TextureID>(_material.diffuse));
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, std::get<Material3::TextureID>(_material.diffuse));
+	glBindTextureUnit(0, std::get<Material3::TextureID>(_material.diffuse));
 	shader->glUniform("material.diffuseTex", 0);
 	shader->glUniform("material.enable_diffuseTex", true);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, std::get<Material3::TextureID>(_material.specular));
+	//glActiveTexture(GL_TEXTURE1);
+	//glBindTexture(GL_TEXTURE_2D, std::get<Material3::TextureID>(_material.specular));
+	glBindTextureUnit(1, std::get<Material3::TextureID>(_material.specular));
 	shader->glUniform("material.specularTex", 1);
 	shader->glUniform("material.enable_specularTex", true);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, std::get<Material3::TextureID>(_material.emission));
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(GL_TEXTURE_2D, std::get<Material3::TextureID>(_material.emission));
+	glBindTextureUnit(2, std::get<Material3::TextureID>(_material.emission));
 	shader->glUniform("material.emissionTex", 2);
 	shader->glUniform("material.enable_emissionTex", true);
 
 	shader->glUniform("material.shininess", _material.shininess);
 
 
-	applyLightToShader(_light, *shader);
-	//shader->glUniform("light.position", _light.position);
-	//shader->glUniform("light.ambient", _light.ambient);
-	//shader->glUniform("light.diffuse", _light.diffuse);
-	//shader->glUniform("light.specular", _light.specular);
+	int i = 0;
+	for (auto& light : _lights)
+	{
+		applyLightToShader(light, *shader, i++);
+	}
+	
+	shader->glUniform("emissionRatio", _emission_ratio);
 }
 
 void BoxModel_SimpleTexture::drawEnd()
@@ -234,65 +242,65 @@ void BoxModel_SimpleTexture::initBuffers()
 	using face = std::array<vertex, 6>;
 
 
-	face faces[6];
-	
-	memcpy(&faces, vertices2, sizeof face * 6);
-
-	auto pi = glm::pi<float>();
-	auto pi_2 = pi / 2;
-
-	glm::mat4 mat_back =
-		glm::rotate(glm::mat4{1}, pi, { 0,1,0 });
-
-	glm::mat4 mat_left =
-		 glm::rotate(glm::mat4{1}, -pi_2, { 0,1,0 });
-
-	glm::mat4 mat_right =
-		 glm::rotate(glm::mat4{1}, pi_2, { 0,1,0 });
-
-	glm::mat4 mat_top =
-		 glm::rotate(glm::mat4{1}, -pi_2, { 1,0,0 });
-	glm::mat4 mat_bottom =
-		 glm::rotate(glm::mat4{1}, pi_2, { 1,0,0 });
-
-	auto transformFace = [&f = faces[1]](face& face, glm::mat4 mat)
-	{
-
-		for(int i = 0; i < face.size(); ++i)
-		{
-			face[i].position = mat * glm::vec4{ f[i].position, 1 };
-			face[i].coordinate = f[i].coordinate;
-			face[i].normal = mat * glm::vec4{ f[i].normal, 1 };
-
-		}
-	};
-	transformFace(faces[0], mat_back);
-	transformFace(faces[2], mat_left);
-	transformFace(faces[3], mat_right);
-	transformFace(faces[4], mat_top);
-	transformFace(faces[5], mat_bottom);
-
-	auto printFace = [](const face& face_)
-	{
-		for (auto& ver : face_)
-		{
-			std::cout << std::format("{: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f},\n"
-				, ver.position[0]
-				, ver.position[1]
-				, ver.position[2]
-				, ver.normal[0]
-				, ver.normal[1]
-				, ver.normal[2]
-				, ver.coordinate[0]
-				, ver.coordinate[1]
-			);
-		}
-		std::cout << '\n';
-	};
-	for(const auto& face:faces)
-	{
-		printFace(face);
-	}
+	//face faces[6];
+	//
+	//memcpy(&faces, vertices2, sizeof face * 6);
+	//
+	//auto pi = glm::pi<float>();
+	//auto pi_2 = pi / 2;
+	//
+	//glm::mat4 mat_back =
+	//	glm::rotate(glm::mat4{1}, pi, { 0,1,0 });
+	//
+	//glm::mat4 mat_left =
+	//	 glm::rotate(glm::mat4{1}, -pi_2, { 0,1,0 });
+	//
+	//glm::mat4 mat_right =
+	//	 glm::rotate(glm::mat4{1}, pi_2, { 0,1,0 });
+	//
+	//glm::mat4 mat_top =
+	//	 glm::rotate(glm::mat4{1}, -pi_2, { 1,0,0 });
+	//glm::mat4 mat_bottom =
+	//	 glm::rotate(glm::mat4{1}, pi_2, { 1,0,0 });
+	//
+	//auto transformFace = [&f = faces[1]](face& face, glm::mat4 mat)
+	//{
+	//
+	//	for(int i = 0; i < face.size(); ++i)
+	//	{
+	//		face[i].position = mat * glm::vec4{ f[i].position, 1 };
+	//		face[i].coordinate = f[i].coordinate;
+	//		face[i].normal = mat * glm::vec4{ f[i].normal, 1 };
+	//
+	//	}
+	//};
+	//transformFace(faces[0], mat_back);
+	//transformFace(faces[2], mat_left);
+	//transformFace(faces[3], mat_right);
+	//transformFace(faces[4], mat_top);
+	//transformFace(faces[5], mat_bottom);
+	//
+	//auto printFace = [](const face& face_)
+	//{
+	//	for (auto& ver : face_)
+	//	{
+	//		std::cout << std::format("{: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f}, {: .1f},\n"
+	//			, ver.position[0]
+	//			, ver.position[1]
+	//			, ver.position[2]
+	//			, ver.normal[0]
+	//			, ver.normal[1]
+	//			, ver.normal[2]
+	//			, ver.coordinate[0]
+	//			, ver.coordinate[1]
+	//		);
+	//	}
+	//	std::cout << '\n';
+	//};
+	//for(const auto& face:faces)
+	//{
+	//	printFace(face);
+	//}
 
 
 	glBindVertexArray(VAO);
@@ -314,7 +322,7 @@ void BoxModel_SimpleTexture::initTextures()
 	auto container2_diffuse = comm::loadTexture(std::string(comm::dir_picture) + "/container2.png");
 	auto container2_specular = comm::loadTexture(std::string(comm::dir_picture) + "/container2_specular.png");
 
-	setMaterial({ GetRandomRabbitTexture(),
+	setMaterial({ container2_diffuse,
 		container2_diffuse
 		,container2_specular
 		,32.0f });

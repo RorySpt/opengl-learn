@@ -24,6 +24,9 @@
 
 #pragma comment(lib,"Winmm.lib") 
 
+//extern "C" {
+//	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+//}
 
 DisplayWindow::DisplayWindow()
 	:d_ptr(std::make_unique<DisplayWindowPrivate>(this))
@@ -96,7 +99,7 @@ void DisplayWindow::render_init()
 		render->init(d->window);
 	}
 }
-
+extern std::map<std::string, unsigned int> s_textureMap;
 void DisplayWindow::render_exit()
 {
 	Q_D(DisplayWindow);
@@ -107,6 +110,13 @@ void DisplayWindow::render_exit()
 	{
 		render->exit();
 	}
+	std::vector<unsigned> vector;
+	vector.reserve(s_textureMap.size());
+	for (const auto& render : s_textureMap)
+	{
+		vector.emplace_back(render.second);
+	}
+	glDeleteTextures(vector.size(), vector.data());
 }
 
 void DisplayWindow::render_tick(float deltaTime)
@@ -348,7 +358,7 @@ void DisplayWindow::toggleFullscreenMode()
 		// 找到中心点所在窗口
 		GLFWmonitor* workMonitor = findMonitorByPosition(centerX, centerY);
 
-		if(workMonitor!=nullptr)
+		if(workMonitor==nullptr)
 		{
 			workMonitor = glfwGetPrimaryMonitor();
 		}

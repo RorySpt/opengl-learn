@@ -34,8 +34,8 @@ void DisplayWindowPrivate::initializeOpenGL()
 			throw(std::runtime_error(std::format("{} call initializeOpenGL() failed! ", __FUNCTION__)));
 		}
 		//配置GLFW
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);//设置主版本号为3
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);//设置次版本号为3
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);//设置主版本号为3
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);//设置次版本号为3
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//使用核心模式
 
 
@@ -97,6 +97,8 @@ GLFWwindow* DisplayWindowPrivate::createGLFWWindow()
 	glfwFocusWindow(window);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+
+
 	return window;
 }
 
@@ -111,6 +113,9 @@ void DisplayWindowPrivate::initializeImGui()
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+
+	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
+	//io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
 	//io.ConfigViewportsNoAutoMerge = true;
 	//io.ConfigViewportsNoTaskBarIcon = true;
 
@@ -159,6 +164,41 @@ void DisplayWindowPrivate::defaultImGuiDraw()
 		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 		if (ImGui::CollapsingHeader("Windows"))
 		{
+			const GLubyte* name = glGetString(GL_VENDOR); //返回负责当前OpenGL实现厂商的名字
+			const GLubyte* biaoshifu = glGetString(GL_RENDERER); //返回一个渲染器标识符，通常是个硬件平台
+			const GLubyte* OpenGLVersion = glGetString(GL_VERSION); //返回当前OpenGL实现的版本号
+
+			ImGui::BulletText("Video Card: %s", biaoshifu);
+			ImGui::BulletText("OpenGL Version: %s", OpenGLVersion);
+
+
+			int left, top, width, height;
+
+			glfwGetWindowPos(window, &left, &top);
+			glfwGetWindowSize(window, &width, &height);
+			const int centerX = left + width / 2;
+			const int centerY = top + height / 2;
+			// 找到中心点所在窗口
+			GLFWmonitor* workMonitor = q->findMonitorByPosition(centerX, centerY);
+
+			if (workMonitor == nullptr)
+			{
+				workMonitor = glfwGetPrimaryMonitor();
+			}
+			const GLFWvidmode* vidMode = glfwGetVideoMode(workMonitor);
+
+			//ImGui::SeparatorText("Video Mode");
+			if(ImGui::TreeNode("Video Mode"))
+			{
+
+				ImGui::BulletText("screenSize: %d*%d", vidMode->width, vidMode->height);
+				ImGui::BulletText("refreshRate: %d", vidMode->refreshRate);
+
+				ImGui::TreePop();
+			}
+
+
+
 			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 			ImGui::Checkbox("Another Window", &show_another_window);

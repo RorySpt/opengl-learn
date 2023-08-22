@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 out			vec4 FragColor;
 in			vec3 Normal;
@@ -75,11 +75,11 @@ void main()
 	}
 
 	//自发光
-	vec3 v = pureMaterial.specular;
-	v[0] = v[0] <= 0.01?1:0;
-	v[1] = v[1] <= 0.01?1:0;
-	v[2] = v[2] <= 0.01?1:0;
-	result += v * pureMaterial.emission;
+	//vec3 v = pureMaterial.specular;
+	//v[0] = v[0] <= 0.01?1:0;
+	//v[1] = v[1] <= 0.01?1:0;
+	//v[2] = v[2] <= 0.01?1:0;
+	//result += v * pureMaterial.emission;
 
 	FragColor = vec4(result,1.0);
 }
@@ -159,7 +159,7 @@ vec3 CalcLight(PureMaterial pureMaterial, Light light, vec3 normal, vec3 viewDir
 	
 	if(light.type == LT_SPOT && theta < light.outerCutOff)
 	{
-			return light.ambient * pureMaterial.diffuse;
+			return vec3(0,0,0);
 	}
 	// 镜面反射色
 	float diff = max(dot(normal,lightDir),0.0);

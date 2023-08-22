@@ -4,6 +4,9 @@
 
 #include"common.h"
 
+/**
+ * \brief 加载纹理， 由于 OpenglAPI 没办法做并发调用，因此将 opengl 创建纹理相关内容放入tick函数中，需要在主线程循环中调用
+ */
 class TextureLoader final
 {
 public:
@@ -23,9 +26,10 @@ public:
 		std::filesystem::path path;
 		outer_type outer;
 		IntermediateData intermediate_data;
+		texture_id_type id;
 	};
 
-	TextureLoader();
+	TextureLoader(GLFWwindow* sharedWindow);
 	~TextureLoader();
 
 	void loadTexture(std::string_view path, const outer_type&);
@@ -37,17 +41,22 @@ public:
 
 private:
 	void work_thread(); // 子线程
-
+	void work_thread2(); // 子线程，拥有独立的Opengl上下文
 
 
 	bool bSurvival = true;
 
-	int max_concurrency = std::numeric_limits<int>::max();
+	int max_concurrency = std::thread::hardware_concurrency() > 3 ? static_cast<int>(std::thread::hardware_concurrency()) / 2: 1;
 
-	std::mutex raw_mutex, gen_mutex;
+	std::mutex raw_mutex, gen_mutex, res_mutex;
 	std::queue<TaskInfo> raw_task_queue;
 	std::queue<TaskInfo> gen_task_queue;
+	std::queue<TaskInfo> res_task_queue;
 	std::jthread thread;
+	std::jthread thread2;
+
+	GLFWwindow* _sharedWindow;
+	GLFWwindow* _threadContext;
 };
 
 

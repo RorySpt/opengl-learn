@@ -160,7 +160,7 @@ void Demo0_RS::draw(float deltaTime)
 	}
 	//随机位置生成盒子
 	{
-		lightModel2->setLight(light);
+		lightModel2->setLight(LightSourcePoint(light));
 		auto wMatsView = boxArguments | std::ranges::views::transform([](auto&& tuple) {
 			return glm::scale(glm::translate(glm::mat4(1.0f), std::get<0>(tuple) + glm::vec3{ 0, 0.0001, 0 }), glm::vec3(static_cast<float>(std::get<1>(tuple))));
 			});

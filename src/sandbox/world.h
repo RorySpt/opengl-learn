@@ -33,8 +33,9 @@ public:
 	
 	PlayerController* GetPlayerController() const;
 	
-	std::vector<LightSource> GetLightsByType(LightSource::LightType t_light) const;
-
+	std::vector<LightSource> GetLightsByTypeWithAllChannel(LightType t_light) const;
+	std::vector<LightSource> GetLightsByType(LightType t_light, int channel = -1) const;
+	std::vector<LightSource> GetLightsByChannel(int channel = -1) const;
 
 	std::vector<Actor*> _newActors;	// 新生成的Actor列表
 	std::vector<Actor*> _delActors;	// 待删除Actor列表
@@ -47,7 +48,7 @@ public:
 
 	bool bHasBegunPlay = false;
 
-	std::array<std::optional<LightSource>, 16> _lights;
+	std::array<std::vector<std::shared_ptr<LightSource>>, 16> _lights;
 
 	DisplayNameGenerator display_name_generator;
 private:

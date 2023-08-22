@@ -83,7 +83,8 @@ public:
 	void draw(const Camera& camera, const glm::mat4& wMat) override;
 	void draw(const Camera& camera, const std::vector<glm::mat4>& wMats) override;
 
-	void setLight(const LightSourcePoint& light);
+	void setLight(const LightSource& light);
+	void setLight(const std::vector<LightSource>& light);
 	void setMaterial(const Material3&);
 
 protected:
@@ -97,13 +98,19 @@ private:
 	unsigned int EBO = 0;
 	std::shared_ptr<ShaderProgram> shader;
 	Material3 _material;
-	LightSourcePoint _light;
+	std::vector<LightSource> _lights;
+public:
+	float _emission_ratio = 1.0;
 };
 
-inline void BoxModel_SimpleTexture::setLight(const LightSourcePoint& light)
+inline void BoxModel_SimpleTexture::setLight(const LightSource& light)
 {
-	_light = light;
-
+	if (!_lights.empty())_lights[0] = light;
+	else _lights.emplace_back(light);
+}
+inline void BoxModel_SimpleTexture::setLight(const std::vector<LightSource>& lights)
+{
+	_lights = lights;
 }
 inline void BoxModel_SimpleTexture::setMaterial(const Material3& material)
 {

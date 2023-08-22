@@ -6,6 +6,7 @@
 #include <typeindex>
 
 #include "actor_camera_component.h"
+#include "actor_light_component.h"
 #include "actor_primitive_component.h"
 #include "camera_actor.h"
 #include "Model.h"
@@ -14,71 +15,186 @@
 
 
 
+
+
+class F22PrimitiveComponent :public PrimitiveComponent
+{
+public:
+	void BeginPlay() override
+	{
+		PrimitiveComponent::BeginPlay();
+
+		shader = ShaderProgram::makeShaderByName("common.frag", "common.vert");
+		model = std::make_shared<Model>(R"(C:\Users\zhang\Pictures\Material\F22\f22.obj)");
+	}
+
+	void draw(const Camera& camera) override
+	{
+		auto lights = GetOwner()->GetWorld()->GetLightsByChannel();
+		if(lights.empty())return;
+		
+		shader->use();
+
+		int i = 0;
+		for(auto& light: lights)
+		{
+			applyLightToShader(light, *shader, i++);
+		}
+
+		
+		shader->glUniform("viewPos", camera.Position);
+		shader->glUniform("material.shininess", 32.0f);
+		shader->glUniform("view", camera.getViewMatrix());
+		shader->glUniform("projection", camera.getProjMatrix());
+
+		shader->glUniform("model", GetComponentToWorld());
+		model->Draw(*shader);
+	}
+
+	std::shared_ptr<ShaderProgram> shader;
+	std::shared_ptr<Model> model;
+};
+
+
 class BoxPrimitiveComponent:public PrimitiveComponent
 {
 public:
 	void draw(const Camera& camera) override
 	{
-		auto point_lights = GetOwner()->GetWorld()->GetLightsByType(LightSource::Point);
-		if (point_lights.empty())
+		auto lights = GetOwner()->GetWorld()->GetLightsByChannel();
+		if (lights.empty())
 			model->setLight({});
 		else
-			model->setLight(point_lights[0].as<LightSource::Point>());
+			model->setLight(lights);
 
 		model->setMaterial(_material);
+		model->_emission_ratio = _emission_ratio;
 		model->draw(camera, GetComponentToWorld());
 	}
 	Material3 _material;
+	inline static float _emission_ratio = 1.0f;
 	std::shared_ptr<BoxModel_SimpleTexture> model = comm::getOrCreate<BoxModel_SimpleTexture>();
 };
 
+class SphereModel :IModel
+{
+public:
+	struct vertex
+
+	{
+		
+	};
+	SphereModel()
+	{
+		glCreateVertexArrays(1, &VAO);
+		glCreateBuffers(1, &VBO);
+		
+		//glNamedBufferData(VBO,)
+		//glVertexArrayVertexBuffer(VAO,0,VBO,)
+
+
+	}
+
+	void draw(const Camera& camera, const glm::mat4& wMat) override {};
+
+private:
+	GLuint VBO;
+	GLuint VAO;
+
+	std::vector<>
+};
+class SpherePrimitiveComponent :public PrimitiveComponent
+{
+	
+	SpherePrimitiveComponent()
+	{
+		
+	}
+
+
+	
+};
+class LightActor:public Actor
+{
+public:
+	LightActor()
+	{
+		_point_light_component = CreateDefaultComponent<PointLightComponent>();
+		_point_light_component->AttachToComponent(_root_component);
+		_point_light_component->SetRelativeScale3d(glm::vec3(0.2));
+
+		_spot_light_component = CreateDefaultComponent<SpotLightComponent>();
+		_spot_light_component->AttachToComponent(_root_component);
+		_spot_light_component->SetRelativeScale3d(glm::vec3(0.2));
+		_spot_light_component->lightColor = glm::vec3{ 0 };
+	}
+
+private:
+	PointLightComponent* _point_light_component;
+	SpotLightComponent* _spot_light_component;
+};
 
 class MyActor:public Actor
 {
 public:
 	MyActor()
 	{
-		std::default_random_engine mt;
-
-		auto [container2_diffuse, container2_specular] = reinterpret_cast<std::array<unsigned int, 2>&>( comm::loadTexture({
-			std::string(comm::dir_picture) + "/container2.png",
-			std::string(comm::dir_picture) + "/container2_specular.png"
-			})[0]);
-
-		std::vector<TextureLoader::outer_type> setters;
-		for (int i = 0; i < 100; ++i)
 		{
-			glm::vec3 pos;
-			const double scale = std::uniform_real_distribution<>(0.78, 5.0)(mt);
-			std::uniform_real_distribution<> urd(10, 50);
-			std::uniform_int_distribution<> uid(0, 1);// 中间清理出一块空地
-			pos = { urd(mt) * (uid(mt) ? 1 : -1), (scale - 1) / 2, urd(mt) * (uid(mt) ? 1 : -1) };
-
-			auto box_primitive = CreateDefaultComponent<BoxPrimitiveComponent>();
-			box_primitive->AttachToComponent(_root_component);
-			box_primitive->SetRelativeLocation(pos);
-			box_primitive->SetRelativeScale3d(glm::vec3{ static_cast<float>(scale) });
-
-			box_primitive->_material = { 0U,
-			container2_diffuse
-			,container2_specular
-			,32.0f };
-
-
+			auto f22_primitive = CreateDefaultComponent<F22PrimitiveComponent>();
+			f22_primitives.emplace_back(f22_primitive);
 			
-			setters.emplace_back([box_primitive](TextureLoader::texture_id_type id)
-			{
-				box_primitive->_material.emission = id;
-				std::cout << box_primitive->display_name() << " 加载纹理完成，ID: " << id << std::endl;
-			});
+			f22_primitive->AttachToComponent(_root_component);
 
-			box_primitives.emplace_back(box_primitive);
 		}
 
-		GetRandomRabbitTexture(setters);
+		{
+			std::default_random_engine mt(0);
+
+			auto [container2_diffuse, container2_specular] = reinterpret_cast<std::array<unsigned int, 2>&>(comm::loadTexture({
+				std::string(comm::dir_picture) + "/container2.png",
+				std::string(comm::dir_picture) + "/container2_specular.png"
+				})[0]);
+
+			std::vector<TextureLoader::outer_type> setters;
+			for (int i = 0; i < 100; ++i)
+			{
+				glm::vec3 pos;
+				const double scale = std::uniform_real_distribution<>(0.78, 5.0)(mt);
+				std::uniform_real_distribution<> urd(10, 50);
+				std::uniform_int_distribution<> uid(0, 1);// 中间清理出一块空地
+				pos = { urd(mt) * (uid(mt) ? 1 : -1), (scale - 1) / 2, urd(mt) * (uid(mt) ? 1 : -1) };
+
+				auto box_primitive = CreateDefaultComponent<BoxPrimitiveComponent>();
+				box_primitive->AttachToComponent(_root_component);
+				box_primitive->SetRelativeLocation(pos);
+				box_primitive->SetRelativeScale3d(glm::vec3{ static_cast<float>(scale) });
+
+				box_primitive->_material = { container2_diffuse,
+				container2_diffuse
+				,container2_specular
+				,32.0f };
+
+
+
+				setters.emplace_back([box_primitive](TextureLoader::texture_id_type id)
+				{
+					box_primitive->_material.emission = id;
+					std::cout << std::format("{}"" 加载纹理完成，ID: {}\n", box_primitive->display_name(), id);
+				});
+
+				box_primitives.emplace_back(box_primitive);
+			}
+
+			GetRandomRabbitTexture(setters);
+		}
+		
+
+		
+		
 	}
 	void GetRandomRabbitTexture(std::vector<TextureLoader::outer_type> setters);
 
+	std::vector<F22PrimitiveComponent*> f22_primitives;
 	std::vector<BoxPrimitiveComponent*> box_primitives;
 };
 void MyActor::GetRandomRabbitTexture(std::vector<TextureLoader::outer_type> setters)
@@ -151,18 +267,19 @@ static void HelpMarker(const char* desc)
 void TestRenderSurface::UI_Scene()
 {
 	ImGui::Begin("World");
+
+
 	static ImVec4 colf = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
 	ImGui::ColorEdit4("ObjectNameColor", &colf.x);
 
-	static bool bRelative = true;
-	if(ImGui::SmallButton(bRelative ? "Relative" : "Absolute"))
-	{
-		bRelative = !bRelative;
-	}
+	
+	ImGui::SliderFloat("EmissionRatio", &BoxPrimitiveComponent::_emission_ratio, 0, 1);
 
-	ImGui::SetNextItemOpen(true);
+	
 	std::stack<std::string> level;
-	level.push("World");
+	level.emplace("World");
+	ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+
 	if (ImGui::CollapsingHeader(level.top().c_str()))
 	{
 		ImGuiIO& io = ImGui::GetIO();
@@ -171,7 +288,7 @@ void TestRenderSurface::UI_Scene()
 		{
 			// Foreach Actor
 			auto actor_type_name = std::type_index(typeid(*actor)).name();
-			level.push(actor_type_name);
+			level.emplace(actor_type_name);
 			if (ScopeColor_TreeNode(colf, std::format("{}##{}", actor->display_name(), level.size()).c_str()))
 			{
 				ImGui::SeparatorText("Property");
@@ -221,7 +338,18 @@ void TestRenderSurface::UI_Scene()
 						ImGui::SeparatorText("Property");
 						ImGui::BulletText(std::format("TypeName: {}", com_type_name).c_str());
 						ImGui::BulletText(std::format("Name: {}", component->name()).c_str());
-						
+
+
+						ImGui::SameLine(0,100);
+						static bool bRelative = true;
+						if (ImGui::SmallButton(bRelative ? "Relative" : "World"))
+						{
+							bRelative = !bRelative;
+						}
+
+						std::string tr_type = bRelative ? "Relative-" : "World-";
+
+						ImGui::SameLine(); HelpMarker("Display the relative transform parts or world transform parts.");
 						auto pos = bRelative ? component->GetRelativeLocation() : component->GetWorldLocation();
 						auto rot = glm::degrees(convertToEulerAngle(bRelative ? component->GetRelativeRotation() : component->GetWorldRotation()).data);
 						auto sca = bRelative ? component->GetRelativeScale3d() : component->GetWorldScale3d();
@@ -230,14 +358,14 @@ void TestRenderSurface::UI_Scene()
 						//ImGui::BulletText(std::format("Relative Position: {:.3f}, {:.3f}, {:.3f}", pos[0], pos[1], pos[2]).c_str());
 						//ImGui::BulletText(std::format("Relative Rotation: {:.3f}, {:.3f}, {:.3f}", rot.data[0], rot.data[1], rot.data[2]).c_str());
 						//ImGui::BulletText(std::format("Relative Scale3d : {:.3f}, {:.3f}, {:.3f}", sca[0], sca[1], sca[2]).c_str());
-						if(ImGui::DragFloat3("Position", &pos[0], 0.1f))
+						if(ImGui::DragFloat3((tr_type +"Position").c_str(), &pos[0], 0.1f))
 						{
 							if (bRelative)component->SetRelativeLocation(pos);
 							else component->SetWorldLocation(pos);
 						}
 						ImGui::SameLine(); HelpMarker("opengl right-hand coordinate system, right as x, up as y, front as -z.");
 
-						if (ImGui::DragFloat3("Rotation", &rot[0], 0.1f))
+						if (ImGui::DragFloat3((tr_type + "Rotation").c_str(), &rot[0], 0.1f))
 						{
 							rot[0] = glm::clamp(rot[0], -89.9f, 89.9f);
 							if (bRelative)component->SetRelativeRotation(convertToQuaternion(glm::radians(rot)));
@@ -261,7 +389,7 @@ void TestRenderSurface::UI_Scene()
 
 						static bool relevance = false;
 						auto scaTmp = sca;
-						if (ImGui::DragFloat3("Scale3d", &sca[0], 0.1f))
+						if (ImGui::DragFloat3((tr_type + "Scale3d").c_str(), &sca[0], 0.1f))
 						{
 							if(relevance)
 							{
@@ -276,8 +404,15 @@ void TestRenderSurface::UI_Scene()
 							else component->SetWorldScale3d(sca);
 						}
 						ImGui::SameLine();
-						ImGui::Checkbox("Lock", &relevance);
-						if (ImGui::DragFloat4("Quaternion", &qua[0], 0.1f))
+						ImGui::Checkbox(" ", &relevance);
+						if (ImGui::BeginItemTooltip())
+						{
+							ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+							ImGui::TextUnformatted("link the x, y, z.");
+							ImGui::PopTextWrapPos();
+							ImGui::EndTooltip();
+						}
+						if (ImGui::DragFloat4((tr_type + "Quaternion").c_str(), &qua[0], 0.1f))
 						{
 							if (bRelative)component->SetRelativeRotation(qua);
 							else component->SetRelativeRotation(qua);
@@ -293,7 +428,14 @@ void TestRenderSurface::UI_Scene()
 							}
 						
 						}
-						
+						// LightComponent
+						{
+							if (const auto camera_component = dynamic_cast<LightComponent*>(component))
+							{
+								camera_component->UI_Draw();
+							}
+
+						}
 
 
 						if (component->GetNumChildrenComponents() > 0)
@@ -324,7 +466,8 @@ void TestRenderSurface::UI_Scene()
 void TestRenderSurface::InitWorld()
 {
 	world.init(_window);
-	
+
+	camera_manager = world.GetPlayerController()->GetCameraManager();
 	input = world.GetPlayerController()->GetInputManager();
 	input->EnableInput();
 	world.SpawnActor<CameraActor>();
@@ -344,9 +487,13 @@ void TestRenderSurface::InitWorld()
 	glm::vec3 lightWorldPos = glm::vec4{ 1.2f, 5.2f, 10.0f, 1.0f } *2.0f;
 
 	// 光源
-	Light light = { lightColor * lightRatio.x,lightColor * lightRatio.y,lightColor * lightRatio.z, lightWorldPos };
 
-	world._lights[0] = LightSourcePoint(light);
+	auto lightActor = world.SpawnActor<LightActor>();
+	lightActor->_root_component->SetWorldLocation(lightWorldPos);
+
+	//Light light = { lightColor * lightRatio.x,lightColor * lightRatio.y,lightColor * lightRatio.z, lightWorldPos };
+	//
+	//world._lights[0] = LightSourcePoint(light);
 }
 
 void TestRenderSurface::UI_CameraTest()
@@ -380,14 +527,16 @@ TestRenderSurface::~TestRenderSurface() = default;
 TestRenderSurface::TestRenderSurface()
 	:mt(std::random_device("")())
 {
-	texture_loader = std::make_shared<TextureLoader>();
-	::g_texture_loader = texture_loader.get();
+	
 }
 
 void TestRenderSurface::init(GLFWwindow* window)
 {
 	_window = window;
 	std::cout << __func__ << "\n";
+
+	texture_loader = std::make_shared<TextureLoader>(window);
+	::g_texture_loader = texture_loader.get();
 
 	InitWorld();
 
@@ -429,7 +578,7 @@ void TestRenderSurface::draw(float deltaTime)
 void TestRenderSurface::resizeEvent(int width, int height)
 {
 	GUIInterface::resizeEvent(width, height);
-	
+	camera_manager->ResizeViewport(width, height);
 }
 
 void TestRenderSurface::keyEvent(int keyCode, int scanCode, int keyAction, int keyModifiers)

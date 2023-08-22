@@ -48,19 +48,22 @@ consteval unsigned int highbit(unsigned int x) {
 
 std::shared_ptr<stbi_uc[]> comm::resize_image(const stbi_uc* source, int w, int h, int channels, int& r_w, int& r_h)
 {
-	constexpr int resolution_max = 8192;
+	constexpr int resolution_max = 4096;
 
 	int w_ceil = std::bit_ceil(static_cast<unsigned>(w));
 	r_w = w_ceil <= resolution_max ? w_ceil : resolution_max;
 	r_h = static_cast<unsigned>(h * static_cast<double>(r_w) / w);
 	std::shared_ptr<stbi_uc[]> odata = std::make_shared<stbi_uc[]>(r_w * r_h * channels);
-	stbir_resize_uint8_srgb(source, w, h, 0, odata.get(), r_w, r_h, 0, channels, 3, 1);
+	if (channels > 3)
+		stbir_resize_uint8_srgb(source, w, h, 0, odata.get(), r_w, r_h, 0, channels, 3, 1);
+	else
+		stbir_resize_uint8(source, w, h, 0, odata.get(), r_w, r_h, 0, channels);
 	return odata;
 }
 
 unsigned comm::loadTexture(std::string_view path, bool b_flip_vertically)
 {
-	stbi_set_flip_vertically_on_load(b_flip_vertically);
+	//stbi_set_flip_vertically_on_load(b_flip_vertically);
 	if (s_textureMap.contains(path.data()))
 		return s_textureMap.at(path.data());
 	unsigned int textureID;
@@ -95,7 +98,7 @@ unsigned comm::loadTexture(std::string_view path, bool b_flip_vertically)
 
 std::vector<unsigned int> comm::loadTexture(const std::vector<std::string>& paths, bool b_flip_vertically)
 {
-	stbi_set_flip_vertically_on_load(b_flip_vertically);
+	//stbi_set_flip_vertically_on_load(b_flip_vertically);
 	std::vector<unsigned int> ids(paths.size(), 0);
 
 	using input_type = std::tuple<int, std::string_view>;

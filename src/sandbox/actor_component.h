@@ -9,6 +9,8 @@ class ActorComponent:public object
 	ClassMetaDeclare(ActorComponent)
 public:
 	virtual ~ActorComponent() = default;
+
+	virtual void OnConstruct();
 	virtual void BeginPlay();
 	virtual void EndPlay();
 	virtual void TickComponent(float deltaTime);

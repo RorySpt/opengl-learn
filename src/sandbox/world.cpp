@@ -10,7 +10,7 @@ World::World()
 
 void World::init(GLFWwindow* w)
 {
-	_playerController->_input_component->inputManager.SetWindow(w);
+	_playerController->GetInputManager()->SetWindow(w);
 }
 
 void World::BeginPlay()
@@ -58,14 +58,46 @@ PlayerController* World::GetPlayerController() const
 	return _playerController;
 }
 
-std::vector<LightSource> World::GetLightsByType(LightSource::LightType t_light) const
+std::vector<LightSource> World::GetLightsByTypeWithAllChannel(LightType t_light) const
 {
 	std::vector<LightSource> lights;
-	for(auto op_light:_lights)
+	for(const auto& channel_lights:_lights)
 	{
-		if (op_light.has_value() && op_light->type == t_light)
-			lights.emplace_back(*op_light);
+		for(auto &light: channel_lights)
+		{
+			if(light->type == t_light)
+			lights.emplace_back(*light);
+		}
 	}
+	return lights;
+}
+
+std::vector<LightSource> World::GetLightsByType(LightType t_light, int channel) const
+{
+	assert(channel < static_cast<int>(_lights.size()));
+	if (channel < 0)channel = 0;
+
+	std::vector<LightSource> lights;
+	for (auto& light : _lights[channel])
+	{
+		if (light->type == t_light)
+			lights.emplace_back(*light);
+	}
+	return lights;
+}
+
+std::vector<LightSource> World::GetLightsByChannel(int channel) const
+{
+	assert(channel < static_cast<int>(_lights.size()));
+	if (channel < 0)channel = 0;
+
+	std::vector<LightSource> lights;
+	lights.reserve(_lights[channel].size());
+	for (auto& light : _lights[channel])
+	{
+		lights.emplace_back(*light);
+	}
+
 	return lights;
 }
 

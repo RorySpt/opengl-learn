@@ -45,3 +45,11 @@ void CameraManager::ResetActivate()
 {
 	activatedCamera = defaultCamera;
 }
+
+void CameraManager::ResizeViewport(int w, int h)
+{
+	for(auto& camera:cameras)
+	{
+		camera->resizeViewport(w, h);
+	}
+}

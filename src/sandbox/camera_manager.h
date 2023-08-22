@@ -21,6 +21,8 @@ public:
 
 	void ResetActivate();
 
+	void ResizeViewport(int w, int h);
+
 	std::shared_ptr<Camera> activatedCamera;
 	std::shared_ptr<Camera> defaultCamera;
 

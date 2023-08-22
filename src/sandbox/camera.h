@@ -255,6 +255,7 @@ inline void Camera::processMouseScroll(const float y_offset)
 
 inline void Camera::resizeViewport(int w, int h)
 {
+	if(w == 0||h == 0)return;
 	VWidth = w;
 	VHeight = h;
 }

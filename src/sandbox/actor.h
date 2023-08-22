@@ -70,6 +70,7 @@ ComponentType* Actor::CreateDefaultComponent()
 	component->SetOwner(this);
 	component->set_self_display_name_generator(&_display_name_generator);
 	component->set_name(component->type_name());
+	if(_world!=nullptr)component->OnConstruct();
 	return component;
 }
 

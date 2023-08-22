@@ -30,13 +30,15 @@ struct LightSourceSpot :public LightSourcePoint
 	glm::vec3 direction;
 };
 
+enum class LightType
+{
+	Ambient,
+	Direction,
+	Point,
+	Spot
+};
 struct LightSource {
-	enum LightType
-	{
-		Direction,
-		Point,
-		Spot
-	};
+	
 	LightSource(const LightSourceDirection& light);
 	LightSource(const LightSourcePoint& light);
 	LightSource(const LightSourceSpot& light);
@@ -47,7 +49,7 @@ struct LightSource {
 	template<LightType type>
 	auto as();
 
-	int type;
+	LightType type;
 	float innerCutOff;
 	float outerCutOff;
 	float constant;
@@ -62,19 +64,29 @@ struct LightSource {
 	glm::vec3 specular;
 
 
-private:
+//private:
 	explicit LightSource(const LightSourceBase& light);
 };
 
 
-
+template<>
+inline LightSourceBase LightSource::as<LightSourceBase>()
+{
+	return LightSourceBase{
+		ambient,
+		diffuse,
+		specular,
+	};
+}
 template<>
 inline LightSourceDirection LightSource::as<LightSourceDirection>()
 {
 	return LightSourceDirection{
-		ambient,
+		{
+			ambient,
 		diffuse,
-		specular,
+		specular
+		},
 		direction
 	};
 }
@@ -82,9 +94,11 @@ template<>
 inline LightSourcePoint LightSource::as<LightSourcePoint>()
 {
 	return LightSourcePoint{
-		ambient,
+		{
+			ambient,
 		diffuse,
-		specular,
+		specular
+		},
 		position,
 		constant,
 		linear,
@@ -96,37 +110,46 @@ template<>
 inline LightSourceSpot LightSource::as<LightSourceSpot>()
 {
 	return LightSourceSpot{
-		ambient,
+		{
+			{
+				ambient,
 		diffuse,
-		specular,
-		position,
+		specular
+			},
+					position,
 		constant,
 		linear,
-		quadratic,
+			quadratic
+		},
 		innerCutOff,
 		outerCutOff,
-		direction
+		direction,
 	};
 }
 template<>
-inline auto LightSource::as< LightSource::Direction>()
+inline auto LightSource::as< LightType::Ambient>()
+{
+	return as<LightSourceBase>();
+}
+template<>
+inline auto LightSource::as< LightType::Direction>()
 {
 	return as<LightSourceDirection>();
 }
 template<>
-inline auto LightSource::as< LightSource::Point>()
+inline auto LightSource::as< LightType::Point>()
 {
 	return as<LightSourcePoint>();
 }
 template<>
-inline auto LightSource::as< LightSource::Spot>()
+inline auto LightSource::as< LightType::Spot>()
 {
 	return as<LightSourceSpot>();
 }
 
 
 inline LightSource::LightSource(const LightSourceBase& light)
-	: type(-1)
+	: type(LightType::Ambient)
 	, innerCutOff(0)
 	, outerCutOff(0)
 	, constant(0)

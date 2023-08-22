@@ -3,6 +3,7 @@
 #include "actor_camera_component.h"
 #include "actor_input_component.h"
 #include "player_controller.h"
+#include "actor_light_component.h"
 
 DEF_InputAction(Run, EKeyCode::K_LeftShift);
 
@@ -10,6 +11,11 @@ CameraActor::CameraActor()
 {
 	_camera_component = CreateDefaultComponent<CameraComponent>();
 	_camera_component->AttachToComponent(_root_component);
+
+	_spot_light_component = CreateDefaultComponent<SpotLightComponent>();
+	_spot_light_component->AttachToComponent(_root_component);
+	_spot_light_component->b_show_model = false;
+	_spot_light_component->lightColor = glm::vec3{0};
 }
 
 void CameraActor::BeginPlay()

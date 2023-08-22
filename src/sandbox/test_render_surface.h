@@ -6,6 +6,7 @@
 #include "input_manager.h"
 #include "world.h"
 
+class CameraManager;
 class TextureLoader;
 class TestRenderSurface final:
     public GUIInterface
@@ -40,10 +41,9 @@ private:
 	GLFWwindow* _window = nullptr;
 
 
-	Camera camera;
 	World world;
 	InputManager* input = nullptr;
-
+	CameraManager* camera_manager = nullptr;
 	std::shared_ptr<TextureLoader> texture_loader;
 	std::default_random_engine mt;
 };

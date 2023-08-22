@@ -47,7 +47,7 @@ public:
 		glfwDestroyWindow(window);
 		if(glfwWindowMap.empty())
 		{
-			glfwTerminate();
+			//glfwTerminate();
 			openglInitialized = false;
 		}
 	}

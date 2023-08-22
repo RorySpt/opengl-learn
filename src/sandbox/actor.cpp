@@ -16,6 +16,10 @@ Actor::~Actor()
 
 void Actor::OnConstruct()
 {
+	for (const auto& component : _components_need_add)
+	{
+		component->OnConstruct();
+	}
 }
 
 void Actor::SetupPlayerInputComponent(InputComponent* input_component)
