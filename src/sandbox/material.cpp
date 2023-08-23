@@ -69,7 +69,7 @@ MaterialTable::MaterialTable()
 		std::stringstream stringstream;
 		stringstream << ifstream.rdbuf();
 		std::string materials = stringstream.str();
-
+	
 		std::regex regex(R"(([a-zA-Z][a-zA-Z ]*[a-zA-Z])(.*))");
 		std::regex re_val(R"(([0-9][0-9\.]*))");
 		
@@ -105,13 +105,40 @@ MaterialTable::MaterialTable()
 			std::cout << e.what() << '\n';
 		}
 		
-
-
+	
+	
 	}else
 	{
 		std::cout << std::format("error to load {}\n", comm::path_materials);
 	}
-	
+
+	insert_or_assign("´äÂÌÉ«", Materials::emerald);       // ´äÂÌÉ«
+	insert_or_assign("ÓñÊ¯ÂÌ", Materials::jade);          // ÓñÊ¯ÂÌ
+	insert_or_assign("ºÚê×Ê¯", Materials::obsidian);      // ºÚê×Ê¯
+	insert_or_assign("ÕäÖé°×", Materials::pearl);         // ÕäÖé°×
+	insert_or_assign("ºì±¦Ê¯", Materials::ruby);          // ºì±¦Ê¯
+	insert_or_assign("ÂÌËÉÊ¯", Materials::turquoise);     // ÂÌËÉÊ¯
+	insert_or_assign("»ÆÍ­", Materials::brass);         // »ÆÍ­
+	insert_or_assign("ÇàÍ­", Materials::bronze);        // ÇàÍ­
+	insert_or_assign("¸õ", Materials::chrome);        // ¸õ
+	insert_or_assign("Í­", Materials::copper);        // Í­
+	insert_or_assign("»Æ½ğ", Materials::gold);          // »Æ½ğ
+	insert_or_assign("Òø", Materials::silver);        // Òø
+	insert_or_assign("ºÚÉ«ËÜÁÏ", Materials::black_plastic); // ºÚÉ«ËÜÁÏ
+	insert_or_assign("ÇàÉ«ËÜÁÏ", Materials::cyan_plastic);  // ÇàÉ«ËÜÁÏ
+	insert_or_assign("ÂÌÉ«ËÜÁÏ", Materials::green_plastic); // ÂÌÉ«ËÜÁÏ
+	insert_or_assign("ºìÉ«ËÜÁÏ", Materials::red_plastic);   // ºìÉ«ËÜÁÏ
+	insert_or_assign("°×É«ËÜÁÏ", Materials::white_plastic); // °×É«ËÜÁÏ
+	insert_or_assign("»ÆÉ«ËÜÁÏ", Materials::yellow_plastic);// »ÆÉ«ËÜÁÏ
+	insert_or_assign("ºÚÉ«ÏğÆ¤", Materials::black_rubber);  // ºÚÉ«ÏğÆ¤
+	insert_or_assign("ÇàÉ«ÏğÆ¤", Materials::cyan_rubber);   // ÇàÉ«ÏğÆ¤
+	insert_or_assign("ÂÌÉ«ÏğÆ¤", Materials::green_rubber);  // ÂÌÉ«ÏğÆ¤
+	insert_or_assign("ºìÉ«ÏğÆ¤", Materials::red_rubber);    // ºìÉ«ÏğÆ¤
+	insert_or_assign("°×É«ÏğÆ¤", Materials::white_rubber);  // °×É«ÏğÆ¤
+	insert_or_assign("»ÆÉ«ÏğÆ¤", Materials::yellow_rubber); // »ÆÉ«ÏğÆ¤
+
+
+
 	insert_or_assign("default", { {1.0f, 0.5f, 0.31f},{1.0f, 0.5f, 0.31f},{0.5f, 0.5f, 0.5f},32.0f });
 }
 

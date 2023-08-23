@@ -17,9 +17,10 @@ void LogPrintVec(glm::dvec3 vec)
         , vec[0], vec[1], vec[2]
     );
 }
+void common_unit_testing();
 int main(int argc,char** argv)
 {
-
+    common_unit_testing();
     for(int i = 0;i<argc;++i)
     {
         std::cout << argv[i] << std::endl;

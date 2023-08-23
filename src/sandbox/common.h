@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 #include <chrono>
+#include <imstb_truetype.h>
 #include <stb_image.h>
 #include <stb_image_resize.h>
 #define _COMM_BEGIN namespace comm{
@@ -55,7 +56,7 @@ constexpr std::string_view path_materials(R"(C:/WorkSpace/MyFile/MyCode/OpenGLEx
 
 
 template <class... Types>
-void print_line(const std::string_view fmt, Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)) << "\n"; }
+void println(const std::string_view fmt, Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)) << "\n"; }
 template <class... Types>
 void print(const std::string_view fmt, Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)); }
 
@@ -89,6 +90,13 @@ inline std::string GetCurrentTimeString()
 {
     return GetCurrentTimeString("{:L%F %H:%M:%S}");
 }
+
+std::string WideCharToAnsi(const wchar_t* ws);
+std::wstring AnsiToWideChar(const char* s);
+std::u8string WideCharToUtf8(const wchar_t* ws);
+std::wstring Utf8ToWideChar(const char8_t* u8s);
+std::u8string AnsiToUtf8(const char* s);
+std::string Utf8ToAnsi(const char8_t* u8s);
 
 _COMM_END
 

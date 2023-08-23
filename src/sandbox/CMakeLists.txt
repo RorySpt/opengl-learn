@@ -93,13 +93,13 @@ target_link_libraries(sandbox PRIVATE glfw)
 
 
 
-#   ʼ  ֯ ļ  ṹ
+# ��ʼ��֯Ŀ¼
 
 set(SANDBOX_CXX_DIR_FILES ${SANDBOX_CPP_FILES})
 set(SANDBOX_HXX_DIR_FILES ${SANDBOX_HXX_FILES})
 
 
-# utils ļ   
+# utils Ŀ¼   
 set(SANDBOX_UTILS_HXX_DIR_FILES 
     euler_angle_utils.h
     frame_rate_calc.h
@@ -117,7 +117,7 @@ source_group("Source Files/utils" FILES ${SANDBOX_UTILS_CXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_HXX_DIR_FILES ${SANDBOX_UTILS_HXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_UTILS_CXX_DIR_FILES})
 
-# data ļ   
+# data Ŀ¼ 
 set(SANDBOX_DATA_HXX_DIR_FILES 
     vertices.h
 )
@@ -130,7 +130,7 @@ list(APPEND SANDBOX_EXCLUDE_HXX_DIR_FILES ${SANDBOX_DATA_HXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_DATA_CXX_DIR_FILES})
 
 
-# render ļ   
+# render Ŀ¼ 
 set(SANDBOX_RENDER_HXX_DIR_FILES 
     igui.h
     demo0_rs.h
@@ -146,7 +146,7 @@ source_group("Source Files/render" FILES ${SANDBOX_RENDER_CXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_HXX_DIR_FILES ${SANDBOX_RENDER_HXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_RENDER_CXX_DIR_FILES})
 
-# gameplay ļ   
+# gameplay Ŀ¼ 
 file(GLOB SANDBOX_GAMEPLAY_HXX_DIR_FILES "*_component.h")
 file(GLOB SANDBOX_GAMEPLAY_CXX_DIR_FILES "*_component.cpp")
 
@@ -167,8 +167,32 @@ source_group("Source Files/gameplay" FILES ${SANDBOX_GAMEPLAY_CXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_HXX_DIR_FILES ${SANDBOX_GAMEPLAY_HXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_GAMEPLAY_CXX_DIR_FILES})
 
+# model Ŀ¼ 
+list(PREPEND SANDBOX_MODEL_HXX_DIR_FILES 
+    BoxModel.h
+    BoxModelWithTextureExample.h
+    IlluminantModel.h
+    IlluminationWidget.h
+    IModel.h
+    Model.h
+    Mesh.h
+)
+list(PREPEND SANDBOX_MODEL_CXX_DIR_FILES 
+    BoxModel.cpp
+    BoxModelWithTextureExample.cpp
+    IlluminantModel.cpp
+    IlluminationWidget.cpp
+    IModel.cpp
+    Model.cpp
+    Mesh.cpp
+)
+source_group("Header Files/model" FILES ${SANDBOX_MODEL_HXX_DIR_FILES})
+source_group("Source Files/model" FILES ${SANDBOX_MODEL_CXX_DIR_FILES})
+list(APPEND SANDBOX_EXCLUDE_HXX_DIR_FILES ${SANDBOX_MODEL_HXX_DIR_FILES})
+list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_MODEL_CXX_DIR_FILES})
 
-#    ˳          SANDBOX_UTILS_DIR_FILES  е  ļ 
+
+
 foreach(SANDBOX_EXCLUDE_FILE ${SANDBOX_EXCLUDE_HXX_DIR_FILES})
 file(GLOB FULL_DIR_FILES "${SANDBOX_EXCLUDE_FILE}")
 #list(FILTER SANDBOX_HXX_DIR_FILES EXCLUDE REGEX "${FULL_DIR_FILES}")

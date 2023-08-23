@@ -119,16 +119,53 @@ void DisplayWindowPrivate::initializeImGui()
 	//io.ConfigViewportsNoAutoMerge = true;
 	//io.ConfigViewportsNoTaskBarIcon = true;
 
-	//io.Fonts->AddFontDefault();
-	//for (int i = 8; i < 24; ++i)
-	//{
-	//	ImFont* font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/consola.ttf", static_cast<float>(i));
-	//	if (i == 16)
-	//	{
-	//		io.FontDefault = font;
-	//	}
-	//}
+	io.Fonts->AddFontDefault();
+	{
+		ImFontConfig config;
+		config.MergeMode = true;
+		io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/simsun.ttc", 13
+			, &config, io.Fonts->GetGlyphRangesChineseFull()
+		);
+		io.Fonts->Build();
+	}
+	
+	for (int i = 18; i < 19; ++i)
+	{
+		
+		ImFontConfig config;
 
+
+		static const ImWchar basic_ranges[] =
+		{
+			0x0020, 0x00FF, // Basic Latin + Latin Supplement
+			0,
+		};
+		static const ImWchar chinese_ranges[] =
+		{
+			0x0020, 0x00FF, // Basic Latin + Latin Supplement
+			0x2000, 0x206F, // General Punctuation
+			0x3000, 0x30FF, // CJK Symbols and Punctuations, Hiragana, Katakana
+			0x31F0, 0x31FF, // Katakana Phonetic Extensions
+			0xFF00, 0xFFEF, // Half-width characters
+			0xFFFD, 0xFFFD, // Invalid
+			0x4e00, 0x9FAF, // CJK Ideograms
+			0,
+		};
+		
+		ImFont* font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/CascadiaCode.ttf", static_cast<float>(i)
+			, &config, basic_ranges
+		);
+		
+		
+		config.MergeMode = true;
+		io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/simhei.ttf", static_cast<float>(i)
+			, &config, chinese_ranges
+		);
+		
+		
+		io.FontDefault = font;
+	}
+	io.Fonts->Build();
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();

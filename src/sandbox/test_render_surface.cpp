@@ -79,40 +79,238 @@ public:
 class SphereModel :IModel
 {
 public:
-	struct vertex
-
+	struct VertexInfo
 	{
-		
+		glm::vec3 location;
+		glm::vec3 normal;
 	};
 	SphereModel()
 	{
 		glCreateVertexArrays(1, &VAO);
 		glCreateBuffers(1, &VBO);
+		glCreateBuffers(1, &EBO);
+		//glNamedBufferStorage(VBO, 10000 * sizeof VertexInfo, nullptr, GL_DYNAMIC_STORAGE_BIT);
+		//glNamedBufferStorage(EBO, 60000 * sizeof(GLuint), nullptr, GL_DYNAMIC_STORAGE_BIT);
+
+		glEnableVertexArrayAttrib(VAO, 0);
+		glEnableVertexArrayAttrib(VAO, 1);
+		glVertexArrayVertexBuffer(VAO, 0, VBO, 0, sizeof VertexInfo);
+		glVertexArrayVertexBuffer(VAO, 1, VBO, 0, sizeof VertexInfo);
+
+		glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
+		glVertexArrayAttribFormat(VAO, 1, 3, GL_FLOAT, GL_FALSE, sizeof glm::vec3);
+
+		glVertexArrayElementBuffer(VAO, EBO);
+
 		
-		//glNamedBufferData(VBO,)
-		//glVertexArrayVertexBuffer(VAO,0,VBO,)
+
+		
+	}
+	void UpdateBufferData() const
+	{
+		glNamedBufferData(VBO, vertexes.size() * sizeof VertexInfo, vertexes.data(), GL_DYNAMIC_DRAW);
+		glNamedBufferData(EBO, indexes.size() * sizeof (GLuint), indexes.data(), GL_DYNAMIC_DRAW);
+	}
+	void initSphereVertexes(float radius, int segment = 10)
+	{
+		assert(segment > 2);
+
+		const double gap = glm::pi<double>() / static_cast<float>(segment);
+
+		vertexes.resize(static_cast<std::size_t>(segment) * (segment - 1) + 2);
+		indexes.resize(static_cast<std::size_t>(segment) * (segment - 1) * 2 * 3);
+		for(int row = 1; row < segment; ++row)
+			for(int col = 0; col < segment; ++col)
+			{
+				VertexInfo& vertex = vertexes[(row - 1) * segment + col + 1];
+
+				const double rr = gap * row;
+				const double rc = gap * col * 2;
+				const double lr = sin(rr);
+
+				const double x = lr * cos(rc);
+				const double y = cos(rr);
+				const double z = -lr * sin(rc); // ÄæÊ±Õë·½Ïò
+
+				vertex.location = glm::vec3{ x,y,z } * radius;
+				vertex.normal = glm::vec3{ x, y, z };
 
 
+				const int nc = col + 1 < segment ? col + 1 : 0;
+				const int tr = row - 1;
+				const int cr = row;
+				const int br = row + 1;
+
+				const int ic = (cr - 1) * segment + col + 1;
+				const int in = (cr - 1) * segment + nc + 1;
+				const int it = tr > 0 ? (tr - 1) * segment + col + 1 : 0;
+				const int ib = br < segment ? (br - 1) * segment + nc + 1
+											: segment * (segment - 1) + 1;
+
+				const int n = ((row - 1) * segment + col) * 6;
+				indexes[n] = ic;
+				indexes[n + 1] = in;
+				indexes[n + 2] = it;
+				indexes[n + 3] = ic;
+				indexes[n + 4] = ib;
+				indexes[n + 5] = in;
+			}
+		vertexes.front() = { glm::vec3{0,1,0} * radius,{0,1,0} };
+		vertexes.back() = { glm::vec3{0,-1,0} * radius,{0,-1,0} };
+	}
+	void draw(const Camera& camera, const glm::mat4& wMat) override
+	{
+		draw(camera, std::vector{ wMat });
+	}
+	void draw(const Camera& camera, const std::vector<glm::mat4>& wMats) override
+	{
+		if(!shader)
+		{
+			shader = ShaderProgram::makeShaderByName("SphereModel_SimpleColor.vert", "SphereModel_SimpleColor.frag");
+		}
+		shader->use();
+		shader->glUniform("material.""diffuse", glm::vec3(0));
+		shader->glUniform("material.""specular", glm::vec3(0));
+		shader->glUniform("material.""emission", glm::vec3(0));
+		shader->glUniform("material.""diffuseTex", 0);
+		shader->glUniform("material.""specularTex", 0);
+		shader->glUniform("material.""emissionTex", 0);
+		if(_material.diffuse.index() == 1)
+		{
+			glBindTextureUnit(0, std::get<Material3::TextureID>(_material.diffuse));
+			shader->glUniform("material.diffuseTex", 0);
+		}else
+		{
+			glBindTextureUnit(0, 0);
+			shader->glUniform("material.diffuse", std::get<Material3::Color>(_material.diffuse));
+		}
+		
+		if(_material.specular.index() == 1)
+		{
+			glBindTextureUnit(1, std::get<Material3::TextureID>(_material.specular));
+			shader->glUniform("material.specularTex", 1);
+		}
+		else
+		{
+			glBindTextureUnit(0, 0);
+			shader->glUniform("material.specular", std::get<Material3::Color>(_material.specular));
+		}
+		
+
+		if (_material.emission.index() == 1)
+		{
+			glBindTextureUnit(2, std::get<Material3::TextureID>(_material.emission));
+			shader->glUniform("material.emissionTex", 2);
+		}else
+		{
+			glBindTextureUnit(0, 0);
+			shader->glUniform("material.emission", std::get<Material3::Color>(_material.emission));
+		}
+		
+		shader->glUniform("material.shininess", _material.shininess);
+
+
+		int i = 0;
+		for (auto& light : _lights)
+		{
+			applyLightToShader(light, *shader, i++);
+		}
+
+		shader->glUniform("viewPos", camera.Position);
+		shader->glUniform("view", camera.getViewMatrix());
+		shader->glUniform("projection", camera.getProjMatrix());
+
+		glBindVertexArray(VAO);
+		for (auto& mat : wMats)
+		{
+			shader->glUniform("model", mat);
+			glDrawElements(GL_TRIANGLES, indexes.size() , GL_UNSIGNED_INT, 0);
+			//glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 	}
 
-	void draw(const Camera& camera, const glm::mat4& wMat) override {};
-
+	Material3 _material;
+	std::vector<LightSource> _lights;
 private:
+	GLuint EBO;
 	GLuint VBO;
 	GLuint VAO;
 
-	std::vector<>
+	std::vector<VertexInfo> vertexes;
+	std::vector<GLuint> indexes;
+	std::shared_ptr<ShaderProgram> shader;
 };
 class SpherePrimitiveComponent :public PrimitiveComponent
 {
-	
+public:
 	SpherePrimitiveComponent()
 	{
-		
+		auto material_names = MaterialTable::instance()->getMaterialNames();
+
+		if (const auto res = std::ranges::find(material_names, "default"); res != material_names.end())
+		{
+			index = std::ranges::find(material_names, "default") - material_names.begin();
+		}
+		else
+		{
+			index = 0;
+		}
+		auto m = MaterialTable::instance()->getMaterial(material_names[index]);
+		material.diffuse = m.diffuse;
+		material.specular = m.specular;
+		material.shininess = m.shininess;
+		material.emission = glm::vec3{ 0,0,0 };
+
+		model->initSphereVertexes(1, segmentation);
+		model->UpdateBufferData();
 	}
 
 
-	
+	void draw(const Camera& camera) override
+	{
+		model->_lights = GetOwner()->GetWorld()->GetLightsByChannel();
+		model->_material = material;
+		model->draw(camera, GetComponentToWorld());
+	}
+	void UI_Draw()
+	{
+		static auto ansi_names = MaterialTable::instance()->getMaterialNames(); 
+		static std::vector<const char8_t*> utf8_names;
+		static std::vector<std::u8string> utf8_names_buffer;
+		if(utf8_names.empty())
+		{
+			
+			for (auto& name : ansi_names)
+			{
+				utf8_names_buffer.emplace_back(comm::AnsiToUtf8(name.c_str()));
+				utf8_names.emplace_back(utf8_names_buffer.back().c_str());
+
+				comm::println(comm::Utf8ToAnsi(utf8_names.back()));
+			}
+		}
+		
+		if(ImGui::Combo("Material", &index, reinterpret_cast<const char**>( utf8_names.data()), utf8_names.size()))
+		{
+			auto m = MaterialTable::instance()->getMaterial(ansi_names[index]);
+
+			material.diffuse = m.diffuse;
+			material.specular = m.specular;
+			material.shininess = m.shininess;
+		}
+
+		if(ImGui::SliderInt("Segmentation", &segmentation, 3, 100))
+		{
+			model->initSphereVertexes(1, segmentation);
+			model->UpdateBufferData();
+		}
+
+	}
+
+private:
+	Material3 material;
+	int index;
+	int segmentation = 3;
+	std::shared_ptr<SphereModel> model = comm::getOrCreate<SphereModel>();
 };
 class LightActor:public Actor
 {
@@ -146,7 +344,13 @@ public:
 			f22_primitive->AttachToComponent(_root_component);
 
 		}
+		{
+			auto sphere_primitive = CreateDefaultComponent<SpherePrimitiveComponent>();
+			sphere_primitive->AttachToComponent(_root_component);
+			sphere_primitives.emplace_back(sphere_primitive);
 
+			sphere_primitive->SetRelativeLocation({ 0,4,0 });
+		}
 		{
 			std::default_random_engine mt(0);
 
@@ -188,14 +392,16 @@ public:
 			GetRandomRabbitTexture(setters);
 		}
 		
-
+		
 		
 		
 	}
+
 	void GetRandomRabbitTexture(std::vector<TextureLoader::outer_type> setters);
 
 	std::vector<F22PrimitiveComponent*> f22_primitives;
 	std::vector<BoxPrimitiveComponent*> box_primitives;
+	std::vector<SpherePrimitiveComponent*> sphere_primitives;
 };
 void MyActor::GetRandomRabbitTexture(std::vector<TextureLoader::outer_type> setters)
 {
@@ -436,7 +642,13 @@ void TestRenderSurface::UI_Scene()
 							}
 
 						}
-
+						// SpherePrimitiveComponent
+						{
+							if (const auto camera_component = dynamic_cast<SpherePrimitiveComponent*>(component))
+							{
+								camera_component->UI_Draw();
+							}
+						}
 
 						if (component->GetNumChildrenComponents() > 0)
 							ImGui::SeparatorText(std::format("SubComponents").c_str());

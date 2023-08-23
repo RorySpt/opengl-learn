@@ -6,6 +6,11 @@
 #include "stb_image.h"
 #include "stb_image_resize.h"
 
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
+
 std::map<std::string, unsigned int> s_textureMap;
 
 // An output image with N components has the following components interleaved
@@ -172,9 +177,92 @@ std::vector<unsigned int> comm::loadTexture(const std::vector<std::string>& path
 
 	return ids;
 }
+
+std::string comm::WideCharToAnsi(const wchar_t* ws)
+{
+	const int length = WideCharToMultiByte(CP_ACP, 0, ws, -1, nullptr, 0, nullptr, nullptr);
+	if (length == 0) {
+		printf("Conversion failed. Error code: %lu\n", GetLastError());
+		return {};
+	}
+	std::string s; s.resize(length);
+	if (!WideCharToMultiByte(CP_ACP, 0, ws, -1, s.data(), length, nullptr, nullptr)) {
+		printf("Conversion failed. Error code: %lu\n", GetLastError());
+		return {};
+	}
+	return s;
+}
+
+std::wstring comm::AnsiToWideChar(const char* s)
+{
+	const int length = MultiByteToWideChar(CP_ACP, 0, s, -1, nullptr, 0);
+	if (length == 0) {
+		printf("Conversion failed. Error code: %lu\n", GetLastError());
+		return {};
+	}
+	std::wstring ws; ws.resize(length);
+	if (!MultiByteToWideChar(CP_ACP, 0, s, -1, ws.data(), length)) {
+		printf("Conversion failed. Error code: %lu\n", GetLastError());
+		return {};
+	}
+	return ws;
+}
+
+std::u8string comm::WideCharToUtf8(const wchar_t* ws)
+{
+	const int length = WideCharToMultiByte(CP_UTF8, 0, ws, -1, nullptr, 0, nullptr, nullptr);
+	if (length == 0) {
+		printf("Conversion failed. Error code: %lu\n", GetLastError());
+		return {};
+	}
+	std::u8string u8s; u8s.resize(length);
+	if (!WideCharToMultiByte(CP_UTF8, 0, ws, -1, reinterpret_cast<char*>(u8s.data()), length, nullptr, nullptr)) {
+		printf("Conversion failed. Error code: %lu\n", GetLastError());
+		return {};
+	}
+	return u8s;
+}
+
+std::wstring comm::Utf8ToWideChar(const char8_t* u8s)
+{
+	const int length = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(u8s), -1, nullptr, 0);
+	if (length == 0) {
+		printf("Conversion failed. Error code: %lu\n", GetLastError());
+		return {};
+	}
+	std::wstring ws; ws.resize(length);
+	if (!MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(u8s), -1, ws.data(), length)) {
+		printf("Conversion failed. Error code: %lu\n", GetLastError());
+		return {};
+	}
+	return ws;
+}
+
+std::u8string comm::AnsiToUtf8(const char* s)
+{
+	return comm::WideCharToUtf8(comm::AnsiToWideChar(s).c_str());
+}
+
+std::string comm::Utf8ToAnsi(const char8_t* u8s)
+{
+	return comm::WideCharToAnsi(comm::Utf8ToWideChar(u8s).c_str());
+}
+
 unsigned comm::loadTexture(std::string_view fileName, std::string_view directory, bool b_flip_vertically)
 {
 	return loadTexture(std::string(directory).append("/").append(fileName), b_flip_vertically);
 }
 
 
+void common_unit_testing()
+{
+	comm::println("common unit test begin!");
+	const std::wstring input_w = L"³É¹¦£¡";
+	const std::u8string input_u8 = comm::WideCharToUtf8(input_w.c_str());
+	const std::string input = comm::WideCharToAnsi(input_w.c_str());
+	
+	comm::println("Ansi<->WideChar: {}", comm::WideCharToAnsi(comm::AnsiToWideChar(input.c_str()).c_str()));
+	comm::println("Utf8<->WideChar: {}", comm::WideCharToAnsi(comm::Utf8ToWideChar(input_u8.c_str()).c_str()));
+	comm::println("Utf8<->Ansi: {}", comm::Utf8ToAnsi(comm::AnsiToUtf8(input.c_str()).c_str()));
+
+}
