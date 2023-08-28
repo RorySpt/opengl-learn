@@ -18,17 +18,18 @@ void LogPrintVec(glm::dvec3 vec)
     );
 }
 void common_unit_testing();
+void delegate_unit_test();
 int main(int argc,char** argv)
 {
-    common_unit_testing();
-    for(int i = 0;i<argc;++i)
-    {
-        std::cout << argv[i] << std::endl;
-    }
-    DisplayWindow w;
-    
-    
-    w.exec();
+    delegate_unit_test();
+    //for(int i = 0;i<argc;++i)
+    //{
+    //    std::cout << argv[i] << std::endl;
+    //}
+    //DisplayWindow w;
+    //
+    //
+    //w.exec();
 
     return 0;
 }
