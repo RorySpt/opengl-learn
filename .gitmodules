@@ -8,3 +8,6 @@
 [submodule "extern/glm"]
 	path = extern/glm
 	url = git@github.com:g-truc/glm.git
+[submodule "extern/json"]
+	path = extern/json
+	url = git@github.com:nlohmann/json.git

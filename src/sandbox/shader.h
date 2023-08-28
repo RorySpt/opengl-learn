@@ -43,7 +43,7 @@ class ShaderBase
 public:
 	enum EShaderType
 	{
-		ST_Auto,// 自动识别类型
+		ST_Auto,// 自动识别类型，根据拓展名.frag/.vert
 		ST_Frag,// 片段着色器类型
 		ST_Vert // 顶点着色器类型
 	};

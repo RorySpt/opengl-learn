@@ -1,4 +1,6 @@
 #pragma once
+#include <boost/functional/hash.hpp>
+
 #include "common.h"
 #include "material.h"
 #include "IModel.h"

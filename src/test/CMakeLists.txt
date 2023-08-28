@@ -33,6 +33,14 @@ target_link_libraries(test PUBLIC
     opengl32.lib
 )
 
+
+if(JSON_PATH)
+    message("found json")
+    target_include_directories(test PRIVATE ${JSON_PATH}/include)
+else(JSON_PATH)
+    message(FATAL_ERROR "found json failed! Check whether the json submodule exists.")
+endif(JSON_PATH)
+
 if(STB_PATH)
     message("found stb")
     target_include_directories(test PRIVATE ${STB_PATH})
@@ -50,14 +58,14 @@ else(ASSIMP_FOUND)
 endif(ASSIMP_FOUND)
 
 
-find_package(GLM CONFIG REQUIRED)
-if(GLM_FOUND)
+#find_package(GLM CONFIG REQUIRED)
+if(GLM_PATH)
     message("found GLM")
-    target_include_directories(test PRIVATE ${GLM_INCLUDE_DIR})
-    target_link_libraries(test PRIVATE glm::glm)
-else(GLM_FOUND)
+    target_include_directories(test PRIVATE ${GLM_PATH})
+    #target_link_libraries(test PRIVATE glm::glm)
+else(GLM_PATH)
     message(WARNING "found GLM failed!")
-endif(GLM_FOUND)
+endif(GLM_PATH)
 
 
 find_package(glfw3 CONFIG REQUIRED)

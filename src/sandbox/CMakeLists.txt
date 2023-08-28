@@ -50,6 +50,13 @@ target_link_libraries(sandbox PUBLIC
     opengl32.lib
 )
 
+if(JSON_PATH)
+    message("found json")
+    target_include_directories(sandbox PRIVATE ${JSON_PATH}/include)
+else(JSON_PATH)
+    message(FATAL_ERROR "found json failed! Check whether the json submodule exists.")
+endif(JSON_PATH)
+
 if(STB_PATH)
     message("found stb")
     target_include_directories(sandbox PRIVATE ${STB_PATH})
@@ -162,6 +169,7 @@ list(PREPEND SANDBOX_GAMEPLAY_CXX_DIR_FILES
     actor.cpp
     player_controller.cpp
 )
+
 source_group("Header Files/gameplay" FILES ${SANDBOX_GAMEPLAY_HXX_DIR_FILES})
 source_group("Source Files/gameplay" FILES ${SANDBOX_GAMEPLAY_CXX_DIR_FILES})
 list(APPEND SANDBOX_EXCLUDE_HXX_DIR_FILES ${SANDBOX_GAMEPLAY_HXX_DIR_FILES})
