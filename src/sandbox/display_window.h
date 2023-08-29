@@ -1,6 +1,7 @@
 #pragma once
 #include "BoxModel.h"
 #include "common.h"
+#include "event_dispatcher.h"
 #include "IlluminantModel.h"
 #include "material.h"
 #include "world.h"

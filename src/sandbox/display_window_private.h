@@ -11,6 +11,8 @@
 
 #include <ranges>
 
+#include "window_manager.h"
+
 // 好乱
 
 
@@ -30,22 +32,22 @@ struct WindowRect
 class DisplayWindowPrivate
 {
 	Q_DECLARE_PUBLIC(DisplayWindow)
+	friend struct WindowManager;
 public:
 	explicit DisplayWindowPrivate(DisplayWindow* parent)
 		: q_ptr(parent),
-		mt(std::random_device("")()),
-		beginTime(DisplayWindow::Clock::now())
-		, currentTime(beginTime)
+		  mt(std::random_device("")()),
+		  beginTime(DisplayWindow::Clock::now())
+		  , currentTime(beginTime), wMouseX(0), wMouseY(0), lastMouseX(0), lastMouseY(0), lastRect()
 	{
-		
 	}
 
 	// 当窗口销毁时，销毁glfw窗口，如果所有窗口都销毁了，调用glfwTerminate
 	~DisplayWindowPrivate()
 	{
-		glfwWindowMap.erase(window);
+		WindowManagerInstance->_windowMap.erase(window);
 		glfwDestroyWindow(window);
-		if(glfwWindowMap.empty())
+		if(WindowManagerInstance->_windowMap.empty())
 		{
 			//glfwTerminate();
 			openglInitialized = false;
@@ -73,14 +75,14 @@ public:
 	static void handleMouseButtonEvent(GLFWwindow* window, int button, int action, int mods);
 	static void handleMouseMoveEvent(GLFWwindow* window, double newX, double newY);
 	static void handleScrollEvent(GLFWwindow* window, double deltaX, double deltaY);
-	
+
 
 	// 每个glfwWindow对应的DisplayWindow
-	static std::map<GLFWwindow*, DisplayWindow*> glfwWindowMap;
 	inline static bool openglInitialized = false;
 	inline static bool gladLoaded = false;
 	DisplayWindow* q_ptr;
 
+	EventDispatcher event_dispatcher;
 
 	std::default_random_engine mt;
 	DisplayWindow::TimePoint beginTime;

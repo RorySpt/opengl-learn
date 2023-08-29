@@ -37,6 +37,7 @@ DisplayWindow::DisplayWindow()
 	d->initializeOpenGL();
 	d->initGLFWWindow();
 	d->initializeImGui();
+
 }
 
 DisplayWindow::~DisplayWindow()
@@ -190,7 +191,8 @@ void DisplayWindow::resizeEvent(int width, int height)
 {
 
 	Q_D(DisplayWindow);
-	
+	d->event_dispatcher.resizeHandler.cast({ width,height });
+
 	for (const auto& render : GlobalRenderList()) {
 		render->resizeEvent(width, height);
 	}
@@ -292,6 +294,9 @@ void DisplayWindow::keyEvent(int keyCode, int scanCode, int keyAction, int keyMo
 
 	}break;
 	}
+
+	d->event_dispatcher.keyHandler.cast({ keyCode, keyAction, keyModifiers });
+
 	for (const auto& render : GlobalRenderList()) {
 		render->keyEvent(keyCode, scanCode, keyAction, keyModifiers);
 	}
@@ -299,6 +304,9 @@ void DisplayWindow::keyEvent(int keyCode, int scanCode, int keyAction, int keyMo
 
 void DisplayWindow::mouseButtonEvent(int buttonCode, int keyAction, int keyModifiers)
 {
+	Q_D(DisplayWindow);
+	d->event_dispatcher.keyHandler.cast({ buttonCode, keyAction, keyModifiers });
+
 	for (const auto& render : GlobalRenderList()) {
 		render->mouseButtonEvent(buttonCode, keyAction, keyModifiers);
 	}
@@ -325,6 +333,7 @@ void DisplayWindow::mouseMoveEvent(float mouseX, float mouseY, float deltaX, flo
 	if (d->mouseMode == MouseMode::Enabled || consumeNextMouseMoveEventIgnore())return;
 
 
+	d->event_dispatcher.mouseMoveHandler.cast({ mouseX,mouseY,deltaX,deltaY });
 	for (const auto& render : GlobalRenderList()) {
 		render->mouseMoveEvent(mouseX, mouseY, deltaX, deltaY);
 	}
@@ -335,6 +344,7 @@ void DisplayWindow::scrollEvent(float deltaX, float deltaY)
 	Q_D(DisplayWindow);
 	if (d->mouseMode == MouseMode::Enabled || consumeNextMouseMoveEventIgnore())return;
 
+	d->event_dispatcher.scrollHandler.cast({ deltaX,deltaY });
 	for (const auto& render : GlobalRenderList()) {
 		render->scrollEvent(deltaX, deltaY);
 	}

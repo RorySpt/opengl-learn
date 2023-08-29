@@ -12,8 +12,7 @@
 
 
 #include "Model.h"
-
-std::map<GLFWwindow*, DisplayWindow*> DisplayWindowPrivate::glfwWindowMap;
+#include "window_manager.h"
 
 
 bool WindowRect::Contains(int x, int y) const
@@ -50,7 +49,11 @@ void DisplayWindowPrivate::initGLFWWindow()
 	Q_Q(DisplayWindow);
 	comm::const_cast_ref(window) = createGLFWWindow();
 	if (window != nullptr)
-		glfwWindowMap.emplace(window, q);
+	{
+		WindowManagerInstance->_windowMap.emplace(window, this);
+		WindowManagerInstance->_dispatcherMap.emplace(window, &event_dispatcher);
+	}
+		
 
 }
 
@@ -375,7 +378,7 @@ void DisplayWindowPrivate::handleFrameBufferResizeEvent(GLFWwindow* window, int 
 	glfwMakeContextCurrent(current_window);
 
 	std::cout << std::format("{{{},{}}}", width, height) << std::endl;
-	glfwWindowMap[window]->resizeEvent(width, height);
+	WindowManagerInstance->_windowMap[window]->q_func()->resizeEvent(width, height);
 }
 
 void DisplayWindowPrivate::handleCloseEvent(GLFWwindow* glfwWindow)
@@ -391,19 +394,19 @@ void DisplayWindowPrivate::handleCloseEvent(GLFWwindow* glfwWindow)
 }
 void DisplayWindowPrivate::handleKeyEvent(GLFWwindow* window, int key, int scanCode, int action, int mods)
 {
-	glfwWindowMap[window]->keyEvent(key, scanCode, action, mods);
+	WindowManagerInstance->_windowMap[window]->q_func()->keyEvent(key, scanCode, action, mods);
 }
 
 void DisplayWindowPrivate::handleMouseButtonEvent(GLFWwindow* window, int button, int action, int mods)
 {
-	glfwWindowMap[window]->mouseButtonEvent(button, action, mods);
+	WindowManagerInstance->_windowMap[window]->q_func()->mouseButtonEvent(button, action, mods);
 }
 
 // 将事件分发给对应窗口，并计算出变化量
 void DisplayWindowPrivate::handleMouseMoveEvent(GLFWwindow* window, double newX, double newY)
 {
 	// 一定会存在
-	const auto display = glfwWindowMap[window];
+	const auto display = WindowManagerInstance->_windowMap[window]->q_func();
 	const auto& displayPrivate = display->d_ptr;
 	if (!displayPrivate->isFirst)
 	{
@@ -430,5 +433,5 @@ void DisplayWindowPrivate::handleMouseMoveEvent(GLFWwindow* window, double newX,
 
 void DisplayWindowPrivate::handleScrollEvent(GLFWwindow* window, double deltaX, double deltaY)
 {
-	glfwWindowMap[window]->scrollEvent(static_cast<float>(deltaX), static_cast<float>(deltaY));
+	WindowManagerInstance->_windowMap[window]->q_func()->scrollEvent(static_cast<float>(deltaX), static_cast<float>(deltaY));
 }
