@@ -106,6 +106,7 @@ CameraManager* PlayerController::GetCameraManager()
 	if (_camera_manager == nullptr)
 	{
 		_camera_manager = GetWorld()->SpawnActor<CameraManager>();
+		_camera_manager->init(GetInputManager()->GetWindow()); // 走这里，必经已经走过init，走过init这里就不可能为空
 	}
 		
 	return _camera_manager;

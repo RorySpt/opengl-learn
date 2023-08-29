@@ -1,7 +1,7 @@
 #pragma once
 #include "actor.h"
 
-
+class GLFWwindow;
 class Camera;
 
 class CameraManager :public Actor
@@ -9,6 +9,11 @@ class CameraManager :public Actor
 	ClassMetaDeclare(CameraManager)
 public:
 	CameraManager();
+	~CameraManager();
+	
+	void init(GLFWwindow*);
+	
+
 
 	std::weak_ptr<Camera> RequestCamera();
 
@@ -21,11 +26,15 @@ public:
 
 	void ResetActivate();
 
-	void ResizeViewport(int w, int h);
+	void OnResizeViewport(int w, int h) const;
 
 	std::shared_ptr<Camera> activatedCamera;
 	std::shared_ptr<Camera> defaultCamera;
 
 	std::set<std::shared_ptr<Camera>> cameras;
+
+	GLFWwindow* window = nullptr;
+
+	void* handle = nullptr;
 };
 

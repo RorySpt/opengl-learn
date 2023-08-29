@@ -2,6 +2,7 @@
 
 #include <format>
 #include <iostream>
+#include "window_manager.h"
 
 
 std::map<std::string, InputActionKeyMapping>& GetInputActionKeyMappings()
@@ -14,6 +15,17 @@ std::map<std::string, InputAxisKeyMapping>& GetInputAxisKeyMappings()
 {
 	static std::map<std::string, InputAxisKeyMapping> g_InputAxisKeyMappings;
 	return g_InputAxisKeyMappings;
+}
+
+InputManager::~InputManager()
+{
+	if (_window != nullptr)
+	{
+		const auto dispatcher = WindowManagerInstance->GetEventDispatcher(_window);
+		dispatcher->mouseMoveHandler.unbind(bind_id_mm);
+		dispatcher->keyHandler.unbind(bind_id_k);
+		dispatcher->scrollHandler.unbind(bind_id_scr);
+	}
 }
 
 void InputManager::EnableInput()
@@ -134,7 +146,26 @@ void InputManager::processAxis()
 
 void InputManager::SetWindow(GLFWwindow* window)
 {
+	if(_window!= nullptr || window == nullptr) return;
+
 	_window = window;
+	const auto dispatcher = WindowManagerInstance->GetEventDispatcher(_window);
+
+	bind_id_mm = dispatcher->mouseMoveHandler.bind([&](const ::Event<::EventType::MouseMove>& e)
+		{
+			mouseMoveEvent(e.getDeltaX(), e.getDeltaY());
+		});
+	bind_id_k = dispatcher->keyHandler.bind([&](const ::Event<::EventType::Key>& e)
+		{
+			if(static_cast<int>(e.getKeyCode() < static_cast<int>(EKeyCode::k_MouseButtonLeft)))
+				keyEvent(e.getKeyCode(), e.getKeyAction(),e.getKeyMod());
+			else
+				mouseButtonEvent(e.getKeyCode(), e.getKeyAction(), e.getKeyMod());
+		});
+	bind_id_scr	 = dispatcher->scrollHandler.bind([&](const ::Event<::EventType::Scroll>& e)
+		{
+			scrollEvent(e.getScrollX(), e.getScrollY());
+		});
 }
 
 GLFWwindow* InputManager::GetWindow() const

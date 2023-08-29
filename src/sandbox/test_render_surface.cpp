@@ -786,33 +786,3 @@ void TestRenderSurface::draw(float deltaTime)
 		}
 	}
 }
-
-void TestRenderSurface::resizeEvent(int width, int height)
-{
-	GUIInterface::resizeEvent(width, height);
-	camera_manager->ResizeViewport(width, height);
-}
-
-void TestRenderSurface::keyEvent(int keyCode, int scanCode, int keyAction, int keyModifiers)
-{
-	GUIInterface::keyEvent(keyCode, scanCode, keyAction, keyModifiers);
-	input->keyEvent(keyCode, keyAction, keyModifiers);
-}
-
-void TestRenderSurface::mouseButtonEvent(int buttonCode, int keyAction, int keyModifiers)
-{
-	GUIInterface::mouseButtonEvent(buttonCode, keyAction, keyModifiers);
-	input->mouseButtonEvent(buttonCode, keyAction, keyModifiers);
-}
-
-void TestRenderSurface::mouseMoveEvent(float mouseX, float mouseY, float deltaX, float deltaY)
-{
-	GUIInterface::mouseMoveEvent(mouseX, mouseY, deltaX, deltaY);
-	input->mouseMoveEvent(deltaX, deltaY);
-}
-
-void TestRenderSurface::scrollEvent(float deltaX, float deltaY)
-{
-	GUIInterface::scrollEvent(deltaX, deltaY);
-	input->scrollEvent(deltaX, deltaY);
-}

@@ -89,7 +89,7 @@ public:
 		float deltaX;
 		float deltaY;
 	};
-
+	~InputManager();
 	void EnableInput();
 	void DisableInput();
 
@@ -132,6 +132,11 @@ private:
 	std::function<void(Axis)> ScrollAxisProcessor;
 
 	GLFWwindow* _window = nullptr; // ”√”⁄≤È—Ø
+
+
+	void* bind_id_mm = nullptr;
+	void* bind_id_k = nullptr;
+	void* bind_id_scr = nullptr;
 };
 
 template <typename Processor> requires std::is_invocable_v<Processor, InputManager::Event>

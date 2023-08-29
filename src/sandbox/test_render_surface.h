@@ -19,17 +19,11 @@ public:
 
 	TestRenderSurface();
 
-public:
+
 	void init(GLFWwindow*) override;
 	void exit() override;
 	void tick(float deltaTime) override;
 	void draw(float deltaTime) override;
-	
-	void resizeEvent(int width, int height) override;
-	void keyEvent(int keyCode, int scanCode, int keyAction, int keyModifiers) override;
-	void mouseButtonEvent(int buttonCode, int keyAction, int keyModifiers) override;
-	void mouseMoveEvent(float mouseX, float mouseY, float deltaX, float deltaY) override;
-	void scrollEvent(float deltaX, float deltaY) override;
 
 private:
 	void UI_CameraTest();

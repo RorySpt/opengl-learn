@@ -21,15 +21,15 @@ void common_unit_testing();
 void delegate_unit_test();
 int main(int argc,char** argv)
 {
-    delegate_unit_test();
-    //for(int i = 0;i<argc;++i)
-    //{
-    //    std::cout << argv[i] << std::endl;
-    //}
-    //DisplayWindow w;
-    //
-    //
-    //w.exec();
+    //delegate_unit_test();
+    for(int i = 0;i<argc;++i)
+    {
+        std::cout << argv[i] << std::endl;
+    }
+    DisplayWindow w;
+    
+    
+    w.exec();
 
     return 0;
 }

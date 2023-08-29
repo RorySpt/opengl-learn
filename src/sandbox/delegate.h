@@ -10,14 +10,14 @@ struct Delegate_MultiCast
     using handle = void*;
 
     template<typename FuncType> requires std::is_invocable_v<FuncType, Args...>
-    handle bind(FuncType func)
+    handle bind(FuncType func) noexcept
     {
         _cbs.emplace_back(std::make_unique<inner_func_type>(func));
         return _cbs.back().get();
     }
     template<typename ClassType, typename FuncType>
         requires std::is_invocable_v<FuncType, ClassType*, Args...>
-    handle bind(ClassType* object, FuncType func)
+    handle bind(ClassType* object, FuncType func) noexcept
     {
         if (object == nullptr)return nullptr;
         _cbs.emplace_back(std::make_unique<inner_func_type>([object, func](Args... args)
@@ -27,7 +27,7 @@ struct Delegate_MultiCast
             }));
         return _cbs.back().get();
     }
-    int unbind(handle handle)
+    int unbind(handle handle) noexcept
     {
         return static_cast<int>(
             std::erase_if(_cbs, [handle](std::unique_ptr<inner_func_type>& ptr)
@@ -35,7 +35,7 @@ struct Delegate_MultiCast
                     return ptr.get() == handle;
                 }));
     }
-    void cast(Args... args)
+    void cast(Args... args) noexcept
     {
         for (auto& cb : _cbs)
         {
@@ -52,14 +52,14 @@ struct Delegate_SingleCast
     using handle = void*;
 
     template<typename FuncType> requires std::is_invocable_r_v<Ret, FuncType, Args...>
-    handle bind(FuncType func)
+    handle bind(FuncType func) noexcept
     {
         _cb = std::make_unique<inner_func_type>(func);
         return _cb.get();
     }
     template<typename ClassType, typename FuncType>
         requires std::is_invocable_r_v<Ret, FuncType, ClassType*, Args...>
-    handle bind(ClassType* object, FuncType func)
+    handle bind(ClassType* object, FuncType func) noexcept
     {
         if (object == nullptr)return nullptr;
         _cb = std::make_unique<inner_func_type>([object, func](Args... args)
@@ -70,12 +70,12 @@ struct Delegate_SingleCast
         return _cb.get();
     }
 
-    int unbind(handle handle)
+    int unbind(handle handle) noexcept
     {
         return handle == _cb.get() ? (_cb.reset(nullptr), 1) : 0;
     }
 
-    Ret cast(Args... args)
+    Ret cast(Args... args) noexcept
     {
         return (*_cb)(std::forward<Args>(args)...);
     }
