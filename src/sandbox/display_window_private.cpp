@@ -51,7 +51,6 @@ void DisplayWindowPrivate::initGLFWWindow()
 	if (window != nullptr)
 	{
 		WindowManagerInstance->_windowMap.emplace(window, this);
-		WindowManagerInstance->_dispatcherMap.emplace(window, &event_dispatcher);
 	}
 		
 

@@ -16,7 +16,8 @@ struct WindowManager
 	static DisplayWindow* GetWindow(const GLFWwindow*);
 
 	static std::map<const GLFWwindow*, DisplayWindowPrivate*> _windowMap;
-	static std::map<const GLFWwindow*, EventDispatcher*> _dispatcherMap;
+	//static std::map<const GLFWwindow*, EventDispatcher*> _dispatcherMap;
 };
 
 inline auto WindowManagerInstance = comm::getOrCreate<WindowManager>();
+

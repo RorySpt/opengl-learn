@@ -2,7 +2,7 @@
 #include "display_window_private.h"
 
 std::map<const GLFWwindow*, DisplayWindowPrivate*> WindowManager::_windowMap;
-std::map<const GLFWwindow*, EventDispatcher*> WindowManager::_dispatcherMap;
+//std::map<const GLFWwindow*, EventDispatcher*> WindowManager::_dispatcherMap;
 
 DisplayWindowPrivate* WindowManager::GetWindowPrivate(const GLFWwindow* glfWwindow)
 {
