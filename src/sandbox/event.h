@@ -1,5 +1,4 @@
 #pragma once
-#include "input_defines.h"
 // 事件类型枚举
 enum class EventType {
     Resize,
@@ -10,10 +9,6 @@ enum class EventType {
 };
 class EventBase {  // NOLINT(cppcoreguidelines-special-member-functions)
 public:
-	virtual ~EventBase() = default;
-
-    virtual EventType getType() = delete;
-
     bool isConsumed() const {
         return consumed;
     }

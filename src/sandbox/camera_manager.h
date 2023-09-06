@@ -1,5 +1,6 @@
 #pragma once
 #include "actor.h"
+#include "event_dispatcher.h"
 
 class GLFWwindow;
 class Camera;
@@ -35,6 +36,6 @@ public:
 
 	GLFWwindow* window = nullptr;
 
-	void* handle = nullptr;
+	EventDispatcher::ResizeHandler::handle handle;
 };
 

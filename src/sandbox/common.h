@@ -56,7 +56,7 @@ constexpr std::string_view path_materials(R"(C:/WorkSpace/MyFile/MyCode/OpenGLEx
 
 
 template <class... Types>
-void println(const std::string_view fmt, Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)) << "\n"; }
+void println(const std::string_view fmt = "", Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)) << "\n"; }
 template <class... Types>
 void print(const std::string_view fmt, Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)); }
 

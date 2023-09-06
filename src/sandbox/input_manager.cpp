@@ -22,9 +22,9 @@ InputManager::~InputManager()
 	if (_window != nullptr)
 	{
 		const auto dispatcher = WindowManagerInstance->GetEventDispatcher(_window);
-		dispatcher->mouseMoveHandler.unbind(bind_id_mm);
-		dispatcher->keyHandler.unbind(bind_id_k);
-		dispatcher->scrollHandler.unbind(bind_id_scr);
+		bind_id_mm.unbind();
+		bind_id_k.unbind();
+		bind_id_scr.unbind();
 	}
 }
 

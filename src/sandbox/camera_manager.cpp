@@ -1,5 +1,6 @@
 #include "camera_manager.h"
 #include "camera.h"
+#include "IlluminationWidget.h"
 #include "window_manager.h"
 CameraManager::CameraManager()
 {

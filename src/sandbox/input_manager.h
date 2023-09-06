@@ -3,6 +3,7 @@
 #include <map>
 #include <queue>
 
+#include "event_dispatcher.h"
 #include "input_defines.h"
 
 // 能够定义一种行为的类，然后能够绑定该行为的响应函数
@@ -134,9 +135,9 @@ private:
 	GLFWwindow* _window = nullptr; // 用于查询
 
 
-	void* bind_id_mm = nullptr;
-	void* bind_id_k = nullptr;
-	void* bind_id_scr = nullptr;
+	EventDispatcher::MouseMoveHandler::handle bind_id_mm;
+	EventDispatcher::KeyHandler::handle bind_id_k;
+	EventDispatcher::ScrollHandler::handle bind_id_scr;
 };
 
 template <typename Processor> requires std::is_invocable_v<Processor, InputManager::Event>

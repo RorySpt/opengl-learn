@@ -4,7 +4,7 @@
 #include "event_dispatcher.h"
 
 class DisplayWindowPrivate;
-class GLFWwindow;
+struct GLFWwindow;
 class DisplayWindow;
 struct DisplayWindowData;
 
