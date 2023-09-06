@@ -14,22 +14,7 @@ struct Delegate_Object
     using cb_func_type = void(Args...);
     using inner_func_type = std::function<cb_func_type>;
 
-    /**
-	 * Execute pending callback functions.
-	 *
-	 * This function is intended to be called in the user's designated thread,
-	 * where the callback functions reside. It performs the following steps:
-	 *
-	 * 1. Locks the internal mutex to ensure thread safety.
-	 * 2. Copies the pending callback functions to a local variable for processing.
-	 * 3. Unlocks the mutex to allow other threads to continue adding callbacks.
-	 * 4. Invokes each callback function in the order they were added.
-	 *
-	 * Note: It is the user's responsibility to ensure that this function is
-	 * called in the correct thread context. Calling it from an incorrect thread
-	 * may lead to unexpected behavior or errors.
-	 */
-    void tick() // thread safe; call this in the user thread, the thread where cb resides
+    void tick() // thread-safe; Call it in the user thread, which is the thread where the cb is located
     {
         mutex.lock();
         decltype(_calls) calls;
