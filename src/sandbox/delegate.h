@@ -14,7 +14,7 @@ struct Delegate_Object
     using cb_func_type = void(Args...);
     using inner_func_type = std::function<cb_func_type>;
 
-    void tick() // thread-safe; Call it in the user thread, which is the thread where the cb is located
+    void tick() // thread-unsafe; Call it in the user thread, which is the thread where the cb is located
     {
         mutex.lock();
         decltype(_calls) calls;
