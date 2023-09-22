@@ -63,6 +63,7 @@ private:
 class object
 {
 public:
+	virtual ~object() = default; // ¥•∑¢this∂‡Ã¨
 	std::string_view name() { return _name; }
 	std::string_view display_name()
 	{
@@ -70,13 +71,7 @@ public:
 	}
 	std::string_view type_name()
 	{
-		const std::string_view name(typeid(*this).name());
-		const auto pos = name.find_last_of(' ');
-		if (pos != std::string_view::npos)
-		{
-			return name.substr(pos);
-		}
-		return name;
+		return get_type_name(this);
 	}
 	void set_self_display_name_generator(DisplayNameGenerator* generator)
 	{
@@ -86,6 +81,26 @@ public:
 	{
 			_name = name;																				 
 			_display_name = (*_self_display_name_generator)(name); 
+	}
+	template<typename T> requires std::is_base_of_v<object, std::remove_cvref_t<T>>
+	static std::string_view get_type_name() 
+	{
+		static const std::string_view type_name(typeid(std::remove_cvref_t<T>).name());
+		static const auto pos = type_name.find_last_of(' ');
+		static const std::string_view name = pos != std::string_view::npos
+			                                     ? type_name.substr(pos + 1)
+			                                     : std::string_view{};
+		return name;
+	}
+	static std::string_view get_type_name(object * obj)
+	{
+		const std::string_view name(typeid(*obj).name());
+		const auto pos = name.find_last_of(' ');
+		if (pos != std::string_view::npos)
+		{
+			return name.substr(pos + 1);
+		}
+		return name;
 	}
 private:
 	std::string _name;
@@ -99,16 +114,16 @@ private:
 
 
 #define ClassMetaDeclare(T)														  \
-	public: std::string_view type_name()												  \
-	{																			  \
-		const std::string_view name(typeid(*this).name());				   \
-		const auto pos = name.find_last_of(' ');						\
-		if (pos != std::string_view::npos)										  \
-		{																		  \
-			return name.substr(pos + 1);										 \
-		}																	   \
-		return name;															\
-	}
+	//public: std::string_view type_name()												  \
+	//{																			  \
+	//	const std::string_view name(typeid(*this).name());				   \
+	//	const auto pos = name.find_last_of(' ');						\
+	//	if (pos != std::string_view::npos)										  \
+	//	{																		  \
+	//		return name.substr(pos + 1);										 \
+	//	}																	   \
+	//	return name;															\
+	//}
 	//public:\
 	//using Type = T;																					 \
 	//constexpr static std::string_view TypeName = #T;
