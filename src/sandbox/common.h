@@ -55,10 +55,45 @@ constexpr std::string_view path_materials(R"(C:/WorkSpace/MyFile/MyCode/OpenGLEx
 
 
 
-template <class... Types>
-void println(const std::string_view fmt = "", Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)) << "\n"; }
-template <class... Types>
-void print(const std::string_view fmt, Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)); }
+//template <typename... Types>
+//void println(const std::string_view fmt = "", Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(std::forward<Types>(args)...)) << "\n"; }
+//template <typename... Types>
+//void print(const std::string_view fmt, Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(std::forward<Types>(args)...)); }
+
+
+inline std::mutex print_mutex;
+
+template <int = 0>
+void println(const std::string_view s = {})
+{
+    std::lock_guard guard(print_mutex);
+    std::cout << s << '\n';
+}
+
+template<typename... Types>
+concept PrintParameterPackConcept = sizeof... (Types) > 0;
+
+constexpr bool b = PrintParameterPackConcept<int>;
+
+template <PrintParameterPackConcept... Types> 
+void println(const std::format_string<Types...> fmt, Types&&... args)
+{
+    std::lock_guard guard(print_mutex);
+    std::cout << std::format(fmt, std::forward<Types>(args)...) << '\n';
+}
+
+template <int = 0>
+void print(const std::string_view s)
+{
+    std::lock_guard guard(print_mutex);
+    std::cout << s;
+}
+template <PrintParameterPackConcept... Types> 
+void print(const std::format_string<Types...> fmt, Types&&... args)
+{
+    std::lock_guard guard(print_mutex);
+    std::cout << std::format(fmt, std::forward<Types>(args)...);
+}
 
 template<typename T>
 T& const_cast_ref(const T& arg)
@@ -69,26 +104,28 @@ T& const_cast_ref(const T& arg)
 template <typename T>
 auto getOrCreate() requires std::is_default_constructible_v<T>
 {
-    static std::shared_ptr<T> inst(new T); return inst;
+    static std::shared_ptr<T> inst = std::make_shared<T>(); return inst;
 }
 
+std::shared_ptr<stbi_uc[]> resize_image(const stbi_uc* source, int w, int h, int channels, int r_w); // 缩放到指定宽度
 std::shared_ptr<stbi_uc[]> resize_image(const stbi_uc* source, int w, int h, int channels, int& r_w, int& r_h);
+
 unsigned int loadTexture(std::string_view path, bool b_flip_vertically = true);
 unsigned int loadTexture(std::string_view fileName, std::string_view directory, bool b_flip_vertically = true);
 std::vector<unsigned int> loadTexture(const std::vector<std::string>& paths, bool b_flip_vertically = true);
 
+//template<typename T>
+//concept ZonedTimeConcept = std::is_base_of<std::chrono::zoned_time<T>,>
 
 
-inline std::string GetCurrentTimeString(std::format_string<std::chrono::zoned_time<std::chrono::system_clock::duration>> fmt)
+inline std::string GetCurrentTimeString(const std::format_string<std::chrono::zoned_time<std::chrono::system_clock::duration>> fmt)
 {
-    const std::chrono::zoned_time cur_time{ std::chrono::current_zone(),
-        std::chrono::system_clock::now() };
-
-    return std::vformat(fmt.get(), std::make_format_args(cur_time));
+    return std::format(fmt, std::chrono::zoned_time{ std::chrono::current_zone(),
+        std::chrono::system_clock::now() });
 }
 inline std::string GetCurrentTimeString()
 {
-    return GetCurrentTimeString("{:L%F %H:%M:%S}");
+    return GetCurrentTimeString("{:L%F %H:%M:%S}{}");
 }
 
 std::string WideCharToAnsi(const wchar_t* ws);

@@ -50,7 +50,20 @@ consteval unsigned int highbit(unsigned int x) {
 	x |= x >> 16;
 	return x - (x >> 1);
 }
+std::shared_ptr<stbi_uc[]> comm::resize_image(const stbi_uc* source, int w, int h, int channels, int r_w)
+{
+	constexpr int resolution_max = 4096;
 
+	//int w_ceil = std::bit_ceil(static_cast<unsigned>(w));
+	r_w = r_w <= resolution_max ? r_w : resolution_max;
+	int r_h = static_cast<unsigned>(h * static_cast<double>(r_w) / w);
+	std::shared_ptr<stbi_uc[]> odata = std::make_shared<stbi_uc[]>(r_w * r_h * channels);
+	if (channels > 3)
+		stbir_resize_uint8_srgb(source, w, h, 0, odata.get(), r_w, r_h, 0, channels, 3, 1);
+	else
+		stbir_resize_uint8(source, w, h, 0, odata.get(), r_w, r_h, 0, channels);
+	return odata;
+}
 std::shared_ptr<stbi_uc[]> comm::resize_image(const stbi_uc* source, int w, int h, int channels, int& r_w, int& r_h)
 {
 	constexpr int resolution_max = 4096;
