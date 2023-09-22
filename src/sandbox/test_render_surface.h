@@ -1,6 +1,7 @@
 #pragma once
 #include "BoxModel.h"
 #include "camera.h"
+#include "DebugDraw.h"
 #include "igui.h"
 #include "IlluminantModel.h"
 #include "input_manager.h"
@@ -40,5 +41,7 @@ private:
 	CameraManager* camera_manager = nullptr;
 	std::shared_ptr<TextureLoader> texture_loader;
 	std::default_random_engine mt;
+
+	std::shared_ptr<DebugDraw> debugDraw;
 };
 

@@ -13,7 +13,7 @@ class CameraComponent :
 public:
 	void BeginPlay() override;
 	void TickComponent(float deltaTime) override;
-
+	void UI_Draw() override;
 
 	std::weak_ptr<Camera> camera_weak_ptr;
 

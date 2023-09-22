@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "demo0_rs.h"
 
+#include <imgui.h>
+
 #include "Model.h"
 #include "player_controller.h"
 

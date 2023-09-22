@@ -130,4 +130,6 @@ void Actor::ProcessComponentAdd()
 		//_owned_components_map[typeid(*component).hash_code()].emplace_back(component);
 	}
 	_components_need_add.clear();
+
+
 }

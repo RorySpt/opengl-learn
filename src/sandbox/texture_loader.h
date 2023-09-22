@@ -32,9 +32,9 @@ public:
 	TextureLoader(GLFWwindow* sharedWindow);
 	~TextureLoader();
 
-	void loadTexture(std::string_view path, const outer_type&);
-	void loadTexture(const std::filesystem::path& path, const outer_type& id_outer);
-	void loadTexture(std::vector<input_type> inputs);
+	void loadTexture2D(std::string_view path, const outer_type&);
+	void loadTexture2D(const std::filesystem::path& path, const outer_type& id_outer);
+	void loadTexture2D(std::vector<input_type> inputs);
 
 	void tick(); // Ö÷Ïß³Ì
 

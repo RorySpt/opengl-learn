@@ -16,7 +16,7 @@ class InputComponent;
 
 class Actor: public object
 {
-	ClassMetaDeclare(Actor)
+
 public:
 	template<typename ActorType> requires std::is_base_of_v<Actor, ActorType>
 	friend ActorType* SpawnActor(World* world);
@@ -36,6 +36,8 @@ public:
 	virtual void Tick(float deltaTime);
 	virtual void Destroy();	// 申请销毁
 	World* GetWorld() const;
+
+	virtual void UI_Draw() {};
 
 	template<typename ComponentType> requires std::is_base_of_v<ActorComponent, ComponentType>
 	ComponentType* CreateDefaultComponent();
@@ -82,17 +84,23 @@ std::vector<ComponentType*> Actor::GetComponentsByType()
 	//{
 	//	return _owned_components_map[hashCode];
 	//}
-	std::vector<ComponentType*> components;
-	for(auto &com: _owned_components)
-	{
-		if(auto actual = dynamic_cast<ComponentType*>(com.get()))
+	//std::vector<ComponentType*> components;
+	//for(auto &com: _owned_components)
+	//{
+	//	if(auto actual = dynamic_cast<ComponentType*>(com.get()))
+	//	{
+	//		components.push_back(actual);
+	//	}
+	//}
+	//std::vector<ComponentType*> (
+	//	);
+	return _owned_components | std::views::transform([](const std::unique_ptr<ActorComponent>& com)
 		{
-			components.push_back(actual);
-		}
-	}
-
-
-	return components;
+			return dynamic_cast<ComponentType*>(com.get());
+		}) | std::views::filter([](const ComponentType* com)->bool
+		{
+			return com;
+		}) | std::ranges::to<std::vector<ComponentType*>>();
 }
 
 
@@ -100,7 +108,7 @@ std::vector<ComponentType*> Actor::GetComponentsByType()
 template<typename ActorType> requires std::is_base_of_v<Actor,ActorType>
 ActorType* SpawnActor(World* world)
 {
-	return world->SpawnActor<ActorType>([world, actor_world_address  = &ActorType::_world]()
+	return world->SpawnActor<ActorType>([world, actor_world_address  = &ActorType::_world]() ->ActorType*
 	{
 		// 定义生成actor的方法
 		auto actor = new ActorType;

@@ -15,7 +15,7 @@ public:
 	virtual void EndPlay();
 	virtual void TickComponent(float deltaTime);
 	virtual void DestroyComponent();	// …Í«Îœ˙ªŸ
-
+	virtual void UI_Draw() {};
 	Actor* GetOwner() const;
 	void SetOwner(Actor* actor);
 

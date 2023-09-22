@@ -11,14 +11,14 @@ public:
 	virtual void TickComponent(float deltaTime) override;
 	virtual void draw(const Camera& camera) override;
 
-	virtual void UI_Draw();
+	virtual void UI_Draw() override;
 
 	std::weak_ptr<LightSource> GetLight();
 
 	glm::vec3 lightColor = { 1, 1, 1 };
-	glm::vec3 lightRatio = { 0.3f, 0.7f, 1.0f };
-
-	int channel = 0;
+	glm::vec3 lightRatio = { 0.3f, 0.7f, 1.0f }; //ambient, diffuse, specular
+	;
+	int channel = 0;									   
 private:
 	std::weak_ptr<LightSource> light_handle;
 };
@@ -46,7 +46,7 @@ public:
 
 	void TickComponent(float deltaTime) override;
 	void draw(const Camera& camera) override;
-	
+	void UI_Draw() override;
 };
 
 class SpotLightComponent : public LightComponent

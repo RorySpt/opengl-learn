@@ -210,6 +210,18 @@ void DisplayWindowPrivate::defaultImGuiDraw()
 			ImGui::BulletText("Video Card: %s", biaoshifu);
 			ImGui::BulletText("OpenGL Version: %s", OpenGLVersion);
 
+			int MAX_TEXTURE_SIZE;
+			glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MAX_TEXTURE_SIZE);
+			ImGui::BulletText("GL_MAX_TEXTURE_SIZE: %d", MAX_TEXTURE_SIZE);
+
+			int MAX_ARRAY_TEXTURE_LAYERS;
+			glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &MAX_ARRAY_TEXTURE_LAYERS);
+			ImGui::BulletText("GL_MAX_ARRAY_TEXTURE_LAYERS: %d", MAX_ARRAY_TEXTURE_LAYERS);
+
+			int MAX_3D_TEXTURE_SIZE;
+			glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &MAX_3D_TEXTURE_SIZE);
+			ImGui::BulletText("GL_MAX_3D_TEXTURE_SIZE: %d", MAX_3D_TEXTURE_SIZE);
+			
 
 			int left, top, width, height;
 

@@ -24,9 +24,9 @@
 
 #pragma comment(lib,"Winmm.lib") 
 
-//extern "C" {
-//	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-//}
+extern "C" {
+	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
 
 DisplayWindow::DisplayWindow()
 	:d_ptr(std::make_unique<DisplayWindowPrivate>(this))
@@ -196,6 +196,8 @@ void DisplayWindow::resizeEvent(int width, int height)
 	for (const auto& render : GlobalRenderList()) {
 		render->resizeEvent(width, height);
 	}
+	constexpr auto s = magic_enum::detail::values<EKeyAction, magic_enum::detail::enum_subtype::common>();
+	constexpr auto ss = magic_enum::enum_name(EKeyCode::K_Menu);
 }
 template<typename EnumType>
 auto FormatModifiers(flags<EnumType> mods)

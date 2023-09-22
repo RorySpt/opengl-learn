@@ -1,6 +1,7 @@
 add_executable(sandbox)
 target_compile_features(sandbox PUBLIC cxx_std_23)
 target_compile_options(sandbox PUBLIC "/MP" "/Zc:preprocessor")
+target_compile_definitions(sandbox PUBLIC NOMINMAX)
 #set(IMGUI_DIR D:/WorkSpace/MyFile/ThirdParty/imgui)
 #set(IMGUI_BACKENDS_DIR ${IMGUI_DIR}/backends)
 
@@ -39,6 +40,7 @@ message("CMAKE_SOURCE_DIR " ${CMAKE_SOURCE_DIR})
 #endforeach()
 
 target_include_directories(sandbox PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/third-party
     ${CMAKE_CURRENT_SOURCE_DIR}/third-party/magic_enum
 )
@@ -138,6 +140,9 @@ list(APPEND SANDBOX_EXCLUDE_CXX_DIR_FILES ${SANDBOX_DATA_CXX_DIR_FILES})
 
 
 # render Ŀ¼ 
+# file(GLOB SANDBOX_RENDER_HXX_DIR_FILES "render/*")
+# file(GLOB SANDBOX_RENDER_CXX_DIR_FILES "render/*")
+
 set(SANDBOX_RENDER_HXX_DIR_FILES 
     igui.h
     demo0_rs.h
@@ -184,6 +189,7 @@ list(PREPEND SANDBOX_MODEL_HXX_DIR_FILES
     IModel.h
     Model.h
     Mesh.h
+    SphereModel.h
 )
 list(PREPEND SANDBOX_MODEL_CXX_DIR_FILES 
     BoxModel.cpp
@@ -193,6 +199,7 @@ list(PREPEND SANDBOX_MODEL_CXX_DIR_FILES
     IModel.cpp
     Model.cpp
     Mesh.cpp
+    SphereModel.cpp
 )
 source_group("Header Files/model" FILES ${SANDBOX_MODEL_HXX_DIR_FILES})
 source_group("Source Files/model" FILES ${SANDBOX_MODEL_CXX_DIR_FILES})

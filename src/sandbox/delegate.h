@@ -27,7 +27,7 @@ struct Delegate_Object
         }
         
     }
-    void feed_for_call(Args... args) // thread safe;
+    void feed_for_call(Args&&... args) // thread safe;
     {
         std::lock_guard guard(mutex);
         _calls.emplace_back(std::forward<Args>(args)...);
@@ -36,13 +36,13 @@ struct Delegate_Object
     //{
     //    calls.push_back(tuple);
     //}
-    void feed_for_call(const std::tuple<Args...>& tuple) // thread safe;
-    {
-        std::lock_guard guard(mutex);
-        _calls.push_back(tuple);
-    }
+    //void feed_for_call(const std::tuple<Args...>& tuple) // thread safe;
+    //{
+    //    std::lock_guard guard(mutex);
+    //    _calls.push_back(tuple);
+    //}
 
-   
+
     void invoke_helper(std::tuple<Args...>& args) // thread unsafe;
     {
         invoke_helper(args, std::index_sequence_for<Args...>{});

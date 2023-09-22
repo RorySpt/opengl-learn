@@ -15,6 +15,9 @@ void CameraComponent::BeginPlay()
 	camera_manager = GetOwner()->GetWorld()->GetPlayerController()->GetCameraManager();
 
 	camera_weak_ptr = camera_manager->RequestCamera();
+
+	const auto camera = camera_weak_ptr.lock();
+	glfwGetWindowSize(camera_manager->window, &camera->VWidth, &camera->VHeight);
 }
 
 void CameraComponent::TickComponent(float deltaTime)
@@ -32,6 +35,16 @@ void CameraComponent::TickComponent(float deltaTime)
 
 	camera->Pitch = glm::degrees(euler.pitch);
 	camera->Yaw = glm::degrees(euler.yaw);
+}
+
+void CameraComponent::UI_Draw()
+{
+	SceneComponent::UI_Draw();
+	auto camera = camera_weak_ptr.lock();
+	if(camera)
+	{
+		camera->drawUI();
+	}
 }
 
 

@@ -6,7 +6,7 @@ class PrimitiveComponent :
     public SceneComponent
 {
     ClassMetaDeclare(PrimitiveComponent)
-
+public:
 	virtual void draw(const Camera& camera) = 0;
 };
 

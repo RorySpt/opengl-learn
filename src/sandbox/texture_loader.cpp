@@ -32,11 +32,11 @@ TextureLoader::~TextureLoader()
 	glfwDestroyWindow(_threadContext);
 }
 extern std::map<std::string, unsigned int> s_textureMap;
-void TextureLoader::loadTexture(std::string_view path, const outer_type& outer)
+void TextureLoader::loadTexture2D(std::string_view path, const outer_type& outer)
 {
-	loadTexture(fs::path(path), outer);
+	loadTexture2D(fs::path(path), outer);
 }
-void TextureLoader::loadTexture(const fs::path& path, const outer_type& outer)
+void TextureLoader::loadTexture2D(const fs::path& path, const outer_type& outer)
 {
 	if (s_textureMap.contains(path.string()))
 	{
@@ -47,7 +47,7 @@ void TextureLoader::loadTexture(const fs::path& path, const outer_type& outer)
 	std::lock_guard guard(raw_mutex);
 	raw_task_queue.emplace(fs::absolute(path), outer);
 }
-void TextureLoader::loadTexture(std::vector<input_type> inputs)
+void TextureLoader::loadTexture2D(std::vector<input_type> inputs)
 {
 	std::lock_guard guard(raw_mutex);
 	for (auto& input : inputs)

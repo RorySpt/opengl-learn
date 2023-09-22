@@ -3,6 +3,8 @@
 #include <imgui.h>
 
 #include "actor.h"
+#include "DebugDraw.h"
+#include "player_controller.h"
 
 
 void LightComponent::OnConstruct()
@@ -43,6 +45,9 @@ void LightComponent::UI_Draw()
 	ImGui::SeparatorText("Light Property");
 	if (ImGui::ColorEdit3("LightColor", reinterpret_cast<float(&)[3]>(lightColor))){}
 	ImGui::DragFloat3("LightRatio", &lightRatio[0], 0.1f, 0, 1);
+
+	
+	
 }
 
 std::weak_ptr<LightSource> LightComponent::GetLight()
@@ -104,6 +109,18 @@ void DirectionLightComponent::draw(const Camera& camera)
 	LightComponent::draw(camera);
 }
 
+void DirectionLightComponent::UI_Draw()
+{
+	LightComponent::UI_Draw();
+	if (const auto camera = GetOwner()->GetWorld()->GetPlayerController()->GetCameraManager()->ActivatedCamera().lock())
+	{
+		g_debug_draw->DrawLine(*camera,
+			{ GetWorldLocation(),
+				GetWorldLocation() + glm::vec3{GetComponentToWorld() * glm::vec4{glm::vec3{0,-10,0},1} } },
+			{ 1,1,0,1 });
+	}
+}
+
 void SpotLightComponent::TickComponent(float deltaTime)
 {
 	LightComponent::TickComponent(deltaTime);
@@ -126,6 +143,8 @@ void SpotLightComponent::draw(const Camera& camera)
 		model.setLightColor(lightColor);
 		model.draw(camera, GetComponentToWorld());
 	}
+
+	
 }
 void SpotLightComponent::UI_Draw()
 {
@@ -142,4 +161,12 @@ void SpotLightComponent::UI_Draw()
 		if (outerCutOff < innerCutOff)outerCutOff = innerCutOff;
 	}
 	ImGui::Checkbox("ShowModel", &b_show_model);
+
+	if (const auto camera = GetOwner()->GetWorld()->GetPlayerController()->GetCameraManager()->ActivatedCamera().lock())
+	{
+		g_debug_draw->DrawLine(*camera,
+			{ GetWorldLocation(),
+				glm::vec3{GetComponentToWorld() * glm::vec4{glm::vec3{0,0,-10},1} } },
+			{ 1,1,0,1 });
+	}
 }
