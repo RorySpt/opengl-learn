@@ -176,14 +176,15 @@ public:
 	[[nodiscard]] std::shared_ptr<ShaderProgram> getOrCreateShaderProgram(const std::string& fragPath, const std::string& vertPath);  // 获取或创建着色器程序
 	[[nodiscard]] std::shared_ptr<ShaderProgram> getOrCreateShaderProgram(const VertShader&, const FragShader&); // 获取或创建着色器程序
 
-
+	[[nodiscard]] constexpr static std::string_view extract_clean_name(std::string_view name);
+	
 	// shader的搜索路径
 	static const std::list<Path>& searchPathList() { return m_searchPathList; }
 protected:
 	ShaderManager() = default;
 
 private:
-	std::map<std::string, std::shared_ptr<ShaderBase>> m_shader_map;
+	std::map<std::string, std::shared_ptr<ShaderBase>,std::less<>> m_shader_map; // key 由非路径组成的name
 	std::map<unsigned long long, std::shared_ptr<ShaderProgram>> m_program_map;
 };
 

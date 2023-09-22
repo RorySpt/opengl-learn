@@ -79,12 +79,13 @@ std::shared_ptr<ShaderBase> ShaderBase::makeShaderByName(const std::string& shad
 
 std::shared_ptr<ShaderBase> ShaderBase::makeShaderByCode(const std::string& shaderCode, EShaderType type)
 {
+    assert(type != ST_Auto);// 无法推断
     std::shared_ptr<ShaderBase> shader;
     switch (type)
     {
     case ST_Frag:shader = std::shared_ptr<ShaderBase>(new FragShader);break;
     case ST_Vert:shader = std::shared_ptr<ShaderBase>(new VertShader);break;
-    case ST_Auto:
+    case ST_Auto:return nullptr;
     default:return nullptr;
     }
     //shader->m_type = type;
@@ -271,26 +272,42 @@ std::shared_ptr<ShaderProgram> ShaderProgram::makeShaderByName(const std::string
     return program;
 }
 
-
+constexpr std::string_view ShaderManager::extract_clean_name(std::string_view name)
+{
+	const auto n1 = name.find_last_of('/');
+    const auto n2 = name.find_last_of('\\');
+    auto n = std::max(n1, n2);
+    if(n == std::string_view::npos)
+    {
+        n = std::min(n1, n2);
+        if (n == std::string_view::npos)
+            return {};
+    }
+    // name为路径
+    return name.substr(n + 1);
+}
 
 std::shared_ptr<FragShader> ShaderManager::getOrCreateFragShader(const std::string& path)
 {
-    auto& ref = m_shader_map[path];
-    if (!ref)
+
+	const auto name = extract_clean_name(path);
+    const auto search = m_shader_map.find(name);
+    if (search == m_shader_map.end())
     {
-        ref = ShaderBase::makeShaderByPath(path, ShaderBase::ST_Frag);
+        m_shader_map[name.data()] = ShaderBase::makeShaderByPath(path, ShaderBase::ST_Frag);
     }
-    return std::dynamic_pointer_cast<FragShader>(ref);
+    return std::dynamic_pointer_cast<FragShader>(search->second);
 }
 
 std::shared_ptr<VertShader> ShaderManager::getOrCreateVertShader(const std::string& path)
 {
-    auto& ref = m_shader_map[path];
-    if (!ref)
+    const auto name = extract_clean_name(path);
+    const auto search = m_shader_map.find(name);
+    if (search == m_shader_map.end())
     {
-        ref = ShaderBase::makeShaderByPath(path, ShaderBase::ST_Vert);
+        m_shader_map[name.data()] = ShaderBase::makeShaderByPath(path, ShaderBase::ST_Vert);
     }
-    return std::dynamic_pointer_cast<VertShader>(ref);
+    return std::dynamic_pointer_cast<VertShader>(search->second);
 }
 
 std::shared_ptr<ShaderProgram> ShaderManager::getOrCreateShaderProgram(const std::string& fragPath, const std::string& vertPath)
