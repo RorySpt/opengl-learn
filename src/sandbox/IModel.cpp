@@ -1,10 +1,9 @@
 ﻿#include "stdafx.h"
 #include "IModel.h"
 
-void IModel::draw(const Camera& camera, const std::vector<glm::mat4>& wMats)
+void IModel::draw(const Camera& camera, const glm::mat4& wMat)
 {
-	for(auto& mat:wMats)
-	{
-		draw(camera, mat);
-	}
+	draw(camera, std::vector{ wMat });
 }
+
+
