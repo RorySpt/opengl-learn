@@ -2,10 +2,8 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
-#include "common.h"
 #include "euler_angle_utils.h"
 #include "flags.h"
-#include "imgui.h"
 
 
 constexpr float CAMERA_DEFAULT_YAW = 0.f;
@@ -63,8 +61,8 @@ public:
 
 	int VWidth = 1200;
 	int VHeight = 800;
-	float ZFar = 100.f;	//Ô¶²Ã¼ôÃæ
-	float ZNear = 0.1f; //½ü²Ã¼ôÃæ	
+	float ZFar = 10000.f;	//Ô¶²Ã¼ôÃæ
+	float ZNear = 0.01f; //½ü²Ã¼ôÃæ	
 
 	Camera_KeyActions FrameKeyAction;
 
@@ -76,18 +74,19 @@ public:
 	[[nodiscard]] glm::mat4 getProjMatrix()const;
 
 	void processKeyAction(Camera_KeyActions keyActions);
-	void processMouseMove(float x_offset, float y_offset, GLboolean constrainPitch = true);
+	void processMouseMove(float x_offset, float y_offset, bool constrainPitch = true);
 	void processMouseScroll(float);
 	
 	void resizeViewport(int w, int h);
 
 	void update(float deltaTime);
-	
+
+	void drawUI();
 private:
 	void updateCameraVector();
 	void updateCameraByKeyAction(float deltaTime);
 	void drawDebugInfo();
-
+	
 	static glm::vec2 convertKeyActionsToVec2(Camera_KeyActions);
 };
 
@@ -103,8 +102,7 @@ inline Camera::Camera()
 	  MovementSpeedMax(CAMERA_DEFAULT_SPEED_MAX),
 	  MouseSensitivity(CAMERA_DEFAULT_SENSITIVITY),
 	  Zoom(CAMERA_DEFAULT_ZOOM),
-	  ZFar(100.f),
-	  ZNear(0.1f), FrameKeyAction(IDLE), bShowDebugWindow(false)
+	  FrameKeyAction(IDLE), bShowDebugWindow(false)
 {
 	//updateCameraVector();
 }
@@ -164,63 +162,6 @@ inline void Camera::updateCameraVector()
 
 }
 
-inline void Camera::updateCameraByKeyAction(float deltaTime)
-{
-	const Camera_KeyActions actions = std::exchange(FrameKeyAction, IDLE);
-
-
-	//MovementSpeedRatio = actions.testFlag(SPEED_UP) ? CAMERA_DEFAULT_SPEED_ACCELERATION : -CAMERA_DEFAULT_SPEED_DECELERATION;
-	ImGui::Begin("Debug");
-	MovementSpeed = actions.testFlag(SPEED_UP) ? MovementSpeedMax:MovementSpeedMin;
-	
-	//MovementSpeedRatio = actions.testFlag(SPEED_UP) ? 1.0f : 1.0f;
-	//MovementSpeed = glm::clamp(MovementSpeed, CAMERA_DEFAULT_SPEED_MIN, CAMERA_DEFAULT_SPEED_MAX);
-	const float velocity = MovementSpeed * MovementSpeedRatio;
-	const glm::vec2 direction = convertKeyActionsToVec2(actions);
-	//comm::print("direction: {}, {}\n", direction.x,direction.y);
-
-	//std::string_view s("direction: {}, {}");
-	//std::cout << std::format(std::string_view("direction: {}, {}"), direction.x, direction.y) << std::endl;
-	if (actions & 0X0F)
-	{
-		const glm::vec3 moveDirection = normalize((Front * direction.y + Right * direction.x));
-		Position += moveDirection * velocity * deltaTime;
-	}
-	
-	ImGui::Text("%s", std::format("direction: {}, {}", direction.x, direction.y).c_str());
-	ImGui::End();
-}
-
-inline void Camera::drawDebugInfo()
-{
-	Camera& camera = *this;
-	ImGui::Begin("Camera",&bShowDebugWindow);
-
-	ImGui::Text("camera current speed: %f", MovementSpeed * MovementSpeedRatio);
-	ImGui::DragFloat3("camera current position", &Position[0],0.1);
-	
-	ImGui::SliderFloat("camera MovementSpeedRatio", &camera.MovementSpeedRatio, 1.0, 10);
-	ImGui::SliderFloat("camera MovementSpeedMax", &camera.MovementSpeedMax, camera.MovementSpeedMin, 100);
-	ImGui::SliderFloat("camera MovementNormalSpeed", &camera.MovementSpeedMin, 0, 100);
-
-	ImGui::SliderFloat("camera ZFar", &camera.ZFar, camera.ZNear, 1000);
-	ImGui::SliderFloat("camera ZNear", &camera.ZNear, 0, 100);
-
-	ImGui::SliderFloat("camera Zoom", &camera.Zoom,10, 360);
-
-	ImGui::SliderFloat("camera pitch", &camera.Pitch, -89, 89);
-	auto inverseYaw = -camera.Yaw;
-	ImGui::SliderFloat("camera -yaw", &inverseYaw, -180, 180);
-	camera.Yaw = -inverseYaw;
-
-	ImGui::Text("camera right-vector: % .5f, % .5f, % .5f", camera.Right.x, camera.Right.y, camera.Right.z);
-	ImGui::Text("camera up-vector: % .5f, % .5f, % .5f", camera.Up.x, camera.Up.y, camera.Up.z);
-	ImGui::Text("camera front-vector: % .5f, % .5f, % .5f", camera.Front.x, camera.Front.y, camera.Front.z);
-
-
-
-	ImGui::End();
-}
 
 inline glm::vec2 Camera::convertKeyActionsToVec2(const Camera_KeyActions direction)
 {
@@ -230,7 +171,7 @@ inline glm::vec2 Camera::convertKeyActionsToVec2(const Camera_KeyActions directi
 	};
 }
 
-inline void Camera::processMouseMove(float x_offset, float y_offset,const GLboolean constrainPitch)
+inline void Camera::processMouseMove(float x_offset, float y_offset,const bool constrainPitch)
 {
 	x_offset *= MouseSensitivity;
 	y_offset *= MouseSensitivity;
