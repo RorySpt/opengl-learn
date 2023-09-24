@@ -10,6 +10,7 @@
 class SphereModel :IModel
 {
 public:
+	using IModel::draw;
 	struct VertexInfo
 	{
 		glm::vec3 location;
@@ -24,10 +25,6 @@ public:
 	}
 	void initSphereVertexes(float radius, int segment = 10);
 
-	void draw(const Camera& camera, const glm::mat4& wMat) override
-	{
-		draw(camera, std::vector{ wMat });
-	}
 	void draw(const Camera& camera, const std::vector<glm::mat4>& wMats) override;
 
 	Material3 _material;

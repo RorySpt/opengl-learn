@@ -190,6 +190,8 @@ list(PREPEND SANDBOX_MODEL_HXX_DIR_FILES
     Model.h
     Mesh.h
     SphereModel.h
+    SpaceBox.h
+    SnowFlakeModel.h
 )
 list(PREPEND SANDBOX_MODEL_CXX_DIR_FILES 
     BoxModel.cpp
@@ -200,6 +202,8 @@ list(PREPEND SANDBOX_MODEL_CXX_DIR_FILES
     Model.cpp
     Mesh.cpp
     SphereModel.cpp
+    SpaceBox.cpp
+    SnowFlakeModel.cpp
 )
 source_group("Header Files/model" FILES ${SANDBOX_MODEL_HXX_DIR_FILES})
 source_group("Source Files/model" FILES ${SANDBOX_MODEL_CXX_DIR_FILES})

@@ -39,6 +39,7 @@ class F22PrimitiveComponent :public PrimitiveComponent
 public:
 	void BeginPlay() override
 	{
+		bHasBlend = true;
 		PrimitiveComponent::BeginPlay();
 
 		shader = ShaderProgram::makeShaderByName("common.frag", "common.vert");
@@ -314,7 +315,7 @@ public:
 		//	else glDisable(GL_LINE_SMOOTH);
 		//}
 		int times = _snow_flake_model->iterations;
-		if (ImGui::SliderInt("Iteration Times", &times, 0, 20))
+		if (ImGui::SliderInt("Iteration Times", &times, 0, 14))
 		{
 			_snow_flake_model->iterations = times;
 		}

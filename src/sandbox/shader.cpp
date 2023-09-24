@@ -50,7 +50,7 @@ std::shared_ptr<ShaderBase> ShaderBase::makeShaderByPath(const std::filesystem::
     return makeShaderByCode(shaderCode, type);
 }
 
-std::shared_ptr<ShaderBase> ShaderBase::makeShaderByName(const std::string& shaderName, EShaderType type)
+std::shared_ptr<ShaderBase> ShaderBase::makeShaderByName(std::string_view shaderName, EShaderType type)
 {
     if(type == EShaderType::ST_Auto)
     {
@@ -77,7 +77,7 @@ std::shared_ptr<ShaderBase> ShaderBase::makeShaderByName(const std::string& shad
 
 }
 
-std::shared_ptr<ShaderBase> ShaderBase::makeShaderByCode(const std::string& shaderCode, EShaderType type)
+std::shared_ptr<ShaderBase> ShaderBase::makeShaderByCode(std::string_view shaderCode, EShaderType type)
 {
     assert(type != ST_Auto);// 无法推断
     std::shared_ptr<ShaderBase> shader;
@@ -112,12 +112,12 @@ ShaderBase::EShaderType ShaderBase::identifyShaderByPath(const ShaderBase::path_
         return EShaderType::ST_Auto;
 }
 
-void ShaderBase::compile(const std::string& shaderCode)
+void ShaderBase::compile(std::string_view shaderCode)
 {
     if (type() == ST_Auto)
         return;
     m_hShader = glCreateShader(type() == ST_Vert ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
-    const char* vShaderCode = shaderCode.c_str();
+    const char* vShaderCode = shaderCode.data();
     glShaderSource(m_hShader, 1, &vShaderCode, nullptr);
     glCompileShader(m_hShader);
     // 获取着色器编译状态信息，打印编译错误（如果有的话）
@@ -172,12 +172,12 @@ void ShaderProgram::use() const
 }
 
 
-void ShaderProgram::compile(const std::string& vertexCode, const std::string& fragmentCode)
+void ShaderProgram::compile(std::string_view vertexCode, std::string_view fragmentCode)
 {
     unsigned int vertexShader, fragmentShader;
 
-    const char* vShaderCode = vertexCode.c_str();
-    const char* fShaderCode = fragmentCode.c_str();
+    const char* vShaderCode = vertexCode.data();
+    const char* fShaderCode = fragmentCode.data();
 
     // 编译顶点着色器
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -258,8 +258,8 @@ std::shared_ptr<ShaderProgram> ShaderProgram::makeShaderByPath(const path_type& 
     return program;
 }
 
-std::shared_ptr<ShaderProgram> ShaderProgram::makeShaderByName(const std::string& vertexName,
-    const std::string& fragmentName)
+std::shared_ptr<ShaderProgram> ShaderProgram::makeShaderByName(std::string_view vertexName,
+                                                               std::string_view fragmentName)
 {
     const std::shared_ptr vert = ShaderBase::makeShaderByName(vertexName, ShaderBase::ST_Vert);
     const std::shared_ptr frag = ShaderBase::makeShaderByName(fragmentName, ShaderBase::ST_Frag);
@@ -287,7 +287,7 @@ constexpr std::string_view ShaderManager::extract_clean_name(std::string_view na
     return name.substr(n + 1);
 }
 
-std::shared_ptr<FragShader> ShaderManager::getOrCreateFragShader(const std::string& path)
+std::shared_ptr<FragShader> ShaderManager::getOrCreateFragShader(std::string_view path)
 {
 
 	const auto name = extract_clean_name(path);
@@ -299,7 +299,7 @@ std::shared_ptr<FragShader> ShaderManager::getOrCreateFragShader(const std::stri
     return std::dynamic_pointer_cast<FragShader>(search->second);
 }
 
-std::shared_ptr<VertShader> ShaderManager::getOrCreateVertShader(const std::string& path)
+std::shared_ptr<VertShader> ShaderManager::getOrCreateVertShader(std::string_view path)
 {
     const auto name = extract_clean_name(path);
     const auto search = m_shader_map.find(name);
@@ -310,7 +310,7 @@ std::shared_ptr<VertShader> ShaderManager::getOrCreateVertShader(const std::stri
     return std::dynamic_pointer_cast<VertShader>(search->second);
 }
 
-std::shared_ptr<ShaderProgram> ShaderManager::getOrCreateShaderProgram(const std::string& fragPath, const std::string& vertPath)
+std::shared_ptr<ShaderProgram> ShaderManager::getOrCreateShaderProgram(std::string_view fragPath, std::string_view vertPath)
 {
     auto vert = getOrCreateVertShader(vertPath);
     auto frag = getOrCreateFragShader(fragPath);

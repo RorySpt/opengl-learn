@@ -61,15 +61,15 @@ public:
 	// 通过路径创建片段着色器/顶点着色器（由传入类型决定），后需经过ShaderProgram链接
 	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByPath(const std::filesystem::path& shaderPath, EShaderType type = ST_Auto);
 	// 通过名字查找着色器代码
-	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByName(const std::string& shaderName, EShaderType type = ST_Auto);
+	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByName(std::string_view shaderName, EShaderType type = ST_Auto);
 	// 使用存放着色器代码的字符串创建着色器类
-	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByCode(const std::string& shaderCode, EShaderType type);
+	[[nodiscard]] static std::shared_ptr<ShaderBase> makeShaderByCode(std::string_view shaderCode, EShaderType type);
 	virtual ~ShaderBase();
 
 protected:
 	ShaderBase() = default;
 
-	void compile(const std::string& shaderCode); // 编译着色器代码
+	void compile(std::string_view shaderCode); // 编译着色器代码
 	void checkCompileErrors();					// 检查编译错误
 
 	// 通过路径识别着色器类型
@@ -126,9 +126,9 @@ public:
 
 	// 提供直接创建着色器程序方法，推荐使用
 	[[nodiscard]] static std::shared_ptr<ShaderProgram> makeShaderByPath(const path_type& vertexPath, const path_type& fragmentPath);
-	[[nodiscard]] static std::shared_ptr<ShaderProgram> makeShaderByName(const std::string& vertexName, const std::string& fragmentName);
+	[[nodiscard]] static std::shared_ptr<ShaderProgram> makeShaderByName(std::string_view vertexName, std::string_view fragmentName);
 private:
-	void compile(const std::string& vertexCode, const std::string& fragmentCode);	// 编译链接着色器代码
+	void compile(std::string_view vertexCode, std::string_view fragmentCode);	// 编译链接着色器代码
 	void compile(const VertShader& vert, const FragShader& frag);					// 链接顶点着色器和片段着色器
 	void checkCompileErrors(unsigned int shader, const std::string& type) const;	// 检查编译错误
 
@@ -171,9 +171,9 @@ public:
 		}
 		return shader;
 	}
-	[[nodiscard]] std::shared_ptr<FragShader> getOrCreateFragShader(const std::string& path); // 获取或创建片段着色器
-	[[nodiscard]] std::shared_ptr<VertShader> getOrCreateVertShader(const std::string& path); // 获取或创建顶点着色器
-	[[nodiscard]] std::shared_ptr<ShaderProgram> getOrCreateShaderProgram(const std::string& fragPath, const std::string& vertPath);  // 获取或创建着色器程序
+	[[nodiscard]] std::shared_ptr<FragShader> getOrCreateFragShader(std::string_view path); // 获取或创建片段着色器
+	[[nodiscard]] std::shared_ptr<VertShader> getOrCreateVertShader(std::string_view path); // 获取或创建顶点着色器
+	[[nodiscard]] std::shared_ptr<ShaderProgram> getOrCreateShaderProgram(std::string_view fragPath, std::string_view vertPath);  // 获取或创建着色器程序
 	[[nodiscard]] std::shared_ptr<ShaderProgram> getOrCreateShaderProgram(const VertShader&, const FragShader&); // 获取或创建着色器程序
 
 	[[nodiscard]] constexpr static std::string_view extract_clean_name(std::string_view name);

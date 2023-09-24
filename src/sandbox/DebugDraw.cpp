@@ -22,7 +22,7 @@ DebugDraw::~DebugDraw()
 void DebugDraw::init_shaders()
 {
 	// 创建着色器
-	constexpr std::string_view vertex_shader_code =
+	constexpr std::string_view single_color_vertex_shader_code =
 		"#version 460 core\n											 "
 		"layout(location = 0) in vec3 aPos;								 "
 		"																 "
@@ -38,7 +38,7 @@ void DebugDraw::init_shaders()
 		"	gl_Position = projection * view * model * vec4(aPos, 1.0);	 "
 		"}																 "
 		;
-	constexpr std::string_view fragment_shader_code =
+	constexpr std::string_view single_color_fragment_shader_code =
 		"#version 460 core\n											 "
 		"out vec4 FragColor;											 "
 		"																 "
@@ -52,8 +52,12 @@ void DebugDraw::init_shaders()
 		"}																 "
 		;
 
-	shader_single_color = std::make_shared<ShaderProgram>(*ShaderBase::makeShaderByCode(vertex_shader_code.data(), ShaderBase::ST_Vert)->asVertShader()
-		, *ShaderBase::makeShaderByCode(fragment_shader_code.data(), ShaderBase::ST_Frag)->asFragShader());
+	shader_single_color = std::make_shared<ShaderProgram>(*ShaderBase::makeShaderByCode(single_color_vertex_shader_code.data(), ShaderBase::ST_Vert)->asVertShader()
+		, *ShaderBase::makeShaderByCode(single_color_fragment_shader_code.data(), ShaderBase::ST_Frag)->asFragShader());
+
+
+
+
 
 	glCreateVertexArrays(1, &vao);
 	glCreateBuffers(1, &vbo);

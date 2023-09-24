@@ -130,32 +130,32 @@ private:
 
 
 
-	/*virtual std::string_view name() { return T::_name; }													\
-	virtual std::string_view display_name() \
-	{\
-		/*static std::string display_name;\
-		display_name = id ? _name + "_" + std::to_string(id) : _name;\
-		return _display_name;\
-	}\
-	virtual std::string_view type_name()																	 \
-	{																								 \
-		static const std::string name(typeid(Type).name());									   \
-		const auto pos = name.find_last_of(' ');										   \
-		if (pos != std::string_view::npos)															 \
-		{																							 \
-			return name.substr(pos);															\
-		}																							 \
-		return name;																				 \
-	}																								 \
-	void set_name(std::string_view name){																	\
-		_name = name;																				 \
-		_display_name = (*_self_display_name_generator)(name);\
-	}\
-	std::string _name = #T;																			\
-	std::string _display_name = g_display_name_generator(#T);										\
-	DisplayNameGenerator* _self_display_name_generator = &g_display_name_generator;				\
-	private:																						\
-		int id = instance_count++;																	\
-		inline static int instance_count = 0;														*/
+	//virtual std::string_view name() { return T::_name; }													\
+	//virtual std::string_view display_name() \
+	//{\
+	//	/*static std::string display_name;\
+	//	display_name = id ? _name + "_" + std::to_string(id) : _name;\
+	//	return _display_name;\
+	//}\
+	//virtual std::string_view type_name()																	 \
+	//{																								 \
+	//	static const std::string name(typeid(Type).name());									   \
+	//	const auto pos = name.find_last_of(' ');										   \
+	//	if (pos != std::string_view::npos)															 \
+	//	{																							 \
+	//		return name.substr(pos);															\
+	//	}																							 \
+	//	return name;																				 \
+	//}																								 \
+	//void set_name(std::string_view name){																	\
+	//	_name = name;																				 \
+	//	_display_name = (*_self_display_name_generator)(name);\
+	//}\
+	//std::string _name = #T;																			\
+	//std::string _display_name = g_display_name_generator(#T);										\
+	//DisplayNameGenerator* _self_display_name_generator = &g_display_name_generator;				\
+	//private:																						\
+	//	int id = instance_count++;																	\
+	//	inline static int instance_count = 0;														*/
 
 #define MetaClassDefine

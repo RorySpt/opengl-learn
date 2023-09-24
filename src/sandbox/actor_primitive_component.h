@@ -8,5 +8,7 @@ class PrimitiveComponent :
     ClassMetaDeclare(PrimitiveComponent)
 public:
 	virtual void draw(const Camera& camera) = 0;
+
+    bool bHasBlend = false;
 };
 
