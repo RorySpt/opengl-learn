@@ -1,12 +1,10 @@
 #pragma once
+#include <chrono>
 #include <format>
 #include <iostream>
 #include <string>
 #include <type_traits>
-#include <chrono>
-#include <imstb_truetype.h>
-#include <stb_image.h>
-#include <stb_image_resize.h>
+
 #define _COMM_BEGIN namespace comm{
 #define _COMM_END }
 #define _COMM ::comm::
@@ -107,8 +105,8 @@ auto getOrCreate() requires std::is_default_constructible_v<T>
     static std::shared_ptr<T> inst = std::make_shared<T>(); return inst;
 }
 
-std::shared_ptr<stbi_uc[]> resize_image(const stbi_uc* source, int w, int h, int channels, int r_w); // 缩放到指定宽度
-std::shared_ptr<stbi_uc[]> resize_image(const stbi_uc* source, int w, int h, int channels, int& r_w, int& r_h);
+std::shared_ptr<unsigned char[]> resize_image(const unsigned char* source, int w, int h, int channels, int r_w); // 缩放到指定宽度
+std::shared_ptr<unsigned char[]> resize_image(const unsigned char* source, int w, int h, int channels, int& r_w, int& r_h);
 
 unsigned int loadTexture(std::string_view path, bool b_flip_vertically = true);
 unsigned int loadTexture(std::string_view fileName, std::string_view directory, bool b_flip_vertically = true);

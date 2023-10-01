@@ -1,6 +1,6 @@
 add_executable(sandbox)
 target_compile_features(sandbox PUBLIC cxx_std_23)
-target_compile_options(sandbox PUBLIC "/MP" "/Zc:preprocessor")
+target_compile_options(sandbox PUBLIC "/MP" "/Zc:preprocessor" "/experimental:module")
 target_compile_definitions(sandbox PUBLIC NOMINMAX)
 #set(IMGUI_DIR D:/WorkSpace/MyFile/ThirdParty/imgui)
 #set(IMGUI_BACKENDS_DIR ${IMGUI_DIR}/backends)

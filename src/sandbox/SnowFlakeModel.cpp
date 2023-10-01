@@ -28,7 +28,7 @@ SnowFlakeModel::~SnowFlakeModel()
 void SnowFlakeModel::init()
 {
 	IModel::init();
-	thread = std::thread([&]()
+	thread = std::jthread([&]()
 		{
 			while (thread_alive)
 			{

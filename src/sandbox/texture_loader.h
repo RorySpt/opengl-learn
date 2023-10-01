@@ -46,7 +46,7 @@ private:
 
 	bool bSurvival = true;
 
-	int max_concurrency = std::thread::hardware_concurrency() > 3 ? static_cast<int>(std::thread::hardware_concurrency()) / 2: 1;
+	int max_concurrency = std::jthread::hardware_concurrency() > 3 ? static_cast<int>(std::jthread::hardware_concurrency()) * 2 / 3 : 1;
 
 	std::mutex raw_mutex, gen_mutex, res_mutex;
 	std::queue<TaskInfo> raw_task_queue;

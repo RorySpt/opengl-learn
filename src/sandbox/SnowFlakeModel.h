@@ -1,16 +1,18 @@
 #pragma once
-#include <mutex>
-
 #include "IModel.h"
+#include "common.h"
+#include <mutex>
 #include <thread>
+
 class SnowFlakeModel :
     public IModel
 {
 public:
+	CLASS_DEFAULT_COPY_AND_MOVE(SnowFlakeModel)
 	using IModel::draw;
 
 	SnowFlakeModel();
-	~SnowFlakeModel();
+	~SnowFlakeModel() override;
 
 	void init() override;
 	void draw(const Camera& camera, const std::vector<glm::mat4>& wMats) override;
@@ -20,7 +22,7 @@ public:
 	std::vector <std::vector<glm::vec3>> vertexes;
 	std::vector <unsigned int> vao_s;
 
-	std::thread thread;
+	std::jthread thread;
 	size_t iterations = 5;
 	float line_width = 1;
 	bool thread_alive = true;

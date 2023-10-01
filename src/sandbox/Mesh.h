@@ -1,9 +1,5 @@
 #pragma once
 #include <glm/glm.hpp>
-#include <utility>
-#include <optional>
-#include <assimp/types.h>
-
 #include "shader.h"
 
 struct Vertex

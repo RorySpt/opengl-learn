@@ -73,7 +73,7 @@ int DisplayWindow::exec()
 		}
 		else
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			std::this_thread::yield();
 		}
 
 	}
@@ -90,7 +90,7 @@ void DisplayWindow::render_init()
 	d->wMouseX = w / 2;
 	d->wMouseY = h / 2;
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
 	
