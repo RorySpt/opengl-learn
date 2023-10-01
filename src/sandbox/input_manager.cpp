@@ -144,28 +144,30 @@ void InputManager::processAxis()
 	expendAll(_scrollEvents, ScrollAxisProcessor);
 }
 
+
+
 void InputManager::SetWindow(GLFWwindow* window)
 {
 	if(_window!= nullptr || window == nullptr) return;
 
 	_window = window;
 	const auto dispatcher = WindowManagerInstance->GetEventDispatcher(_window);
-
-	bind_id_mm = dispatcher->mouseMoveHandler.bind([&](const ::Event<::EventType::MouseMove>& e)
+	
+	bind_id_mm = dispatcher->mouseMoveHandler.bind(this, [&](const ::Event<::EventType::MouseMove>& e)
 		{
 			mouseMoveEvent(e.getDeltaX(), e.getDeltaY());
-		});
-	bind_id_k = dispatcher->keyHandler.bind([&](const ::Event<::EventType::Key>& e)
+		}, ExecutionPolicy::Async);
+	bind_id_k = dispatcher->keyHandler.bind(this, [&](const ::Event<::EventType::Key>& e)
 		{
 			if(static_cast<int>(e.getKeyCode() < static_cast<int>(EKeyCode::k_MouseButtonLeft)))
 				keyEvent(e.getKeyCode(), e.getKeyAction(),e.getKeyMod());
 			else
 				mouseButtonEvent(e.getKeyCode(), e.getKeyAction(), e.getKeyMod());
-		});
-	bind_id_scr	 = dispatcher->scrollHandler.bind([&](const ::Event<::EventType::Scroll>& e)
+		}, ExecutionPolicy::Async);
+	bind_id_scr	 = dispatcher->scrollHandler.bind(this, [&](const ::Event<::EventType::Scroll>& e)
 		{
 			scrollEvent(e.getScrollX(), e.getScrollY());
-		});
+		}, ExecutionPolicy::Async);
 }
 
 GLFWwindow* InputManager::GetWindow() const

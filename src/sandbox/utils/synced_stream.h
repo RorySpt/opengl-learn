@@ -15,15 +15,15 @@ namespace sync
 
 		synced_stream(storage_t file) : out(file) {}
 
-		template <class... _Types>
-		void print(const std::format_string<_Types...> _Fmt, _Types&&... _Args) {
+		template <class... Types>
+		void print(const std::format_string<Types...> fmt, Types&&... args) {
 			std::lock_guard guard(mutex);
-			std::print(out, _Fmt, std::forward<_Types>(_Args)...);
+			std::print(out, fmt, std::forward<Types>(args)...);
 		}
-		template <class... _Types>
-		void println(const std::format_string<_Types...> _Fmt, _Types&&... _Args) {
+		template <class... Types>
+		void println(const std::format_string<Types...> fmt, Types&&... args) {
 			std::lock_guard guard(mutex);
-			std::println(out, _Fmt, std::forward<_Types>(_Args)...);
+			std::println(out, fmt, std::forward<Types>(args)...);
 		}
 
 	private:
@@ -34,12 +34,12 @@ namespace sync
 	inline synced_stream sync_out(stdout);
 	inline synced_stream<std::ostream> sync_cout(std::cout);
 
-	template <class... _Types>
-		void print(const std::format_string<_Types...> _Fmt, _Types&&... _Args) {
-		sync_out.print(_Fmt, std::forward<_Types>(_Args)...);
+	template <class... Types>
+		void print(const std::format_string<Types...> fmt, Types&&... args) {
+		sync_out.print(fmt, std::forward<Types>(args)...);
 	}
-	template <class... _Types>
-		void println(const std::format_string<_Types...> _Fmt, _Types&&... _Args) {
-		sync_out.println(_Fmt, std::forward<_Types>(_Args)...);
+	template <class... Types>
+		void println(const std::format_string<Types...> fmt, Types&&... args) {
+		sync_out.println(fmt, std::forward<Types>(args)...);
 	}
 }

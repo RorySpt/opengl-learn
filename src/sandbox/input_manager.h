@@ -5,6 +5,7 @@
 
 #include "event_dispatcher.h"
 #include "input_defines.h"
+#include "object.h"
 
 // 能够定义一种行为的类，然后能够绑定该行为的响应函数
 // 比如定义一种行为为MoveForward，那么在在接收到指定事件满足MoveForward时执行响应函数
@@ -63,7 +64,7 @@ DEF_InputAxis( MoveBack, EKeyCode::K_S, 1.0f);
 DEF_InputAxis( MoveLeft, EKeyCode::K_A, 1.0f);
 DEF_InputAxis( MoveRight, EKeyCode::K_D, 1.0f);
 // 接受外部输入，并在合适的时机处理
-class InputManager
+class InputManager : public object
 {
 public:
 	enum class EventType
@@ -135,9 +136,9 @@ private:
 	GLFWwindow* _window = nullptr; // 用于查询
 
 
-	EventDispatcher::MouseMoveHandler::handle bind_id_mm;
-	EventDispatcher::KeyHandler::handle bind_id_k;
-	EventDispatcher::ScrollHandler::handle bind_id_scr;
+	EventDispatcher::MouseMoveHandler::handle_t bind_id_mm;
+	EventDispatcher::KeyHandler::handle_t bind_id_k;
+	EventDispatcher::ScrollHandler::handle_t bind_id_scr;
 };
 
 template <typename Processor> requires std::is_invocable_v<Processor, InputManager::Event>

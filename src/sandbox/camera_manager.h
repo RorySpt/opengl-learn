@@ -36,6 +36,6 @@ public:
 
 	GLFWwindow* window = nullptr;
 
-	EventDispatcher::ResizeHandler::handle handle;
+	EventDispatcher::ResizeHandler::handle_t handle;
 };
 

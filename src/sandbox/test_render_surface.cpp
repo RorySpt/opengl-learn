@@ -360,6 +360,8 @@ void TestRenderSurface::tick(float deltaTime)
 	world.Tick(deltaTime);
 
 	g_texture_loader->tick();
+
+	delegate_handle_handler<object>::tick_handle();
 }
 
 void TestRenderSurface::draw(float deltaTime)

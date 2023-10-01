@@ -3,8 +3,9 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <ranges>
 #include <string>
-
+#include "delegate.h"
 // 用于保证名字唯一
 class DisplayNameGenerator
 {
@@ -83,25 +84,9 @@ public:
 			_display_name = (*_self_display_name_generator)(name); 
 	}
 	template<typename T> requires std::is_base_of_v<object, std::remove_cvref_t<T>>
-	static std::string_view get_type_name() 
-	{
-		static const std::string_view type_name(typeid(std::remove_cvref_t<T>).name());
-		static const auto pos = type_name.find_last_of(' ');
-		static const std::string_view name = pos != std::string_view::npos
-			                                     ? type_name.substr(pos + 1)
-			                                     : std::string_view{};
-		return name;
-	}
-	static std::string_view get_type_name(object * obj)
-	{
-		const std::string_view name(typeid(*obj).name());
-		const auto pos = name.find_last_of(' ');
-		if (pos != std::string_view::npos)
-		{
-			return name.substr(pos + 1);
-		}
-		return name;
-	}
+	static std::string_view get_type_name();
+	static std::string_view get_type_name(object * obj);
+
 private:
 	std::string _name;
 	std::string _display_name;
@@ -111,6 +96,50 @@ private:
 	inline static int instance_count = 0;
 };
 
+template <typename T> requires std::is_base_of_v<object, std::remove_cvref_t<T>>
+std::string_view object::get_type_name()
+{
+	static const std::string_view type_name(typeid(std::remove_cvref_t<T>).name());
+	static const auto pos = type_name.find_last_of(' ');
+	static const std::string_view name = pos != std::string_view::npos
+		                                     ? type_name.substr(pos + 1)
+		                                     : std::string_view{};
+	return name;
+}
+
+
+// 处理跟对象相关的通讯
+extern std::map<const object*, std::vector<std::shared_ptr<Delegate_Handle_Base>>> object_handles;
+
+template<typename T> requires std::is_base_of_v<object, std::remove_cvref_t<T>>
+struct delegate_handle_handler<T>
+{
+	static void tick_handle() // 调用这个函数可以把收到的消息拉到函数调用所在线程
+	{
+		for(const auto& handle : object_handles | std::views::values | std::views::join)
+		{
+			handle->tick();
+		}
+	}
+	// 下面的方法为回调，用以通知handle的创建和移除
+	template<typename H> requires std::is_base_of_v<Delegate_Handle_Base, std::remove_cvref_t<H>>
+	static void add_handle(const object& obj, H handle)
+	{
+		object_handles[&obj].emplace_back(std::dynamic_pointer_cast<Delegate_Handle_Base>(std::make_shared<H>(handle)) );
+	}
+
+	template<typename H> requires std::is_base_of_v<Delegate_Handle_Base, std::remove_cvref_t<H>>
+	static void remove_handle(const object& obj, H handle)
+	{
+		std::erase_if(object_handles[&obj], [&](const auto& object_handle)
+			{
+				return object_handle->id == handle.id;
+			});
+	}
+
+
+	
+};
 
 
 #define ClassMetaDeclare(T)														  \

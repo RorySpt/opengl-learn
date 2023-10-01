@@ -7,51 +7,54 @@
 
 #include "synced_stream.h"
 
- 
-template<typename  Func, typename ...Args> requires std::is_invocable_v<Func, Args...>
-struct packaged_invoke
+namespace details
 {
-	using ReturnType = std::invoke_result_t<Func, Args...>;
-
-	auto get_future() -> std::future<ReturnType>
+	template<typename  Callable, typename ...Args> requires std::is_invocable_v<Callable, Args...>
+	struct packaged_invoke
 	{
-		return promise.get_future();
-	}
-	auto get_value() -> ReturnType
-	{
-		return get_future().get();
-	}
-	void operator()() const
-	{
-		function();
-	}
+		using ReturnType = std::invoke_result_t<Callable, Args...>;
 
-	std::function<void()> function;
-	std::promise<ReturnType> promise;
-};
-
-
-template<typename Func, typename ...Args>
-	requires std::is_invocable_v<Func, Args...>
-auto make_package(Func&& func, Args&& ...args)
-{
-	using ReturnType = std::invoke_result_t<Func, Args...>;
-	packaged_invoke<Func, Args...> packaged;
-	packaged.function = [=, &promise = packaged.promise]() mutable
+		auto get_future() -> std::future<ReturnType>
 		{
+			return promise.get_future();
+		}
+		auto get_value() -> ReturnType
+		{
+			return get_future().get();
+		}
+		void operator()() const
+		{
+			function();
+		}
 
-			if constexpr (!std::is_same_v<ReturnType, void>)
+		std::function<void()> function;
+		std::promise<ReturnType> promise;
+	};
+
+
+	template<typename Callable, typename ...Args>
+		requires std::is_invocable_v<Callable, Args...>
+	auto make_package(Callable&& func, Args&& ...args)
+	{
+		using ReturnType = std::invoke_result_t<Callable, Args...>;
+		packaged_invoke<Callable, Args...> packaged;
+		packaged.function = [=, &promise = packaged.promise]() mutable
 			{
-				static_cast<Func&&>(func);
-				promise.set_value(std::invoke_r<ReturnType>(func, std::forward<Args>(args)...));
-			}
-			else
-			{
-				std::invoke(func, std::forward<Args>(args)...);
-				promise.set_value();
-			}
-		};
-	return packaged;
+
+				if constexpr (!std::is_same_v<ReturnType, void>)
+				{
+					static_cast<Callable&&>(func);
+					promise.set_value(std::invoke_r<ReturnType>(func, std::forward<Args>(args)...));
+				}
+				else
+				{
+					std::invoke(func, std::forward<Args>(args)...);
+					promise.set_value();
+				}
+			};
+		return packaged;
+	}
+
 }
 
 
@@ -68,10 +71,10 @@ public:
 		_destroy_threads();
 	}
 
-	template<typename  Func, typename ...Args> requires std::is_invocable_v<Func, Args...>
-	auto submit(Func&& func, Args&& ...args) -> std::future<std::invoke_result_t<Func, Args...>>
+	template<typename  Callable, typename ...Args> requires std::is_invocable_v<Callable, Args...>
+	auto submit(Callable&& func, Args&& ...args) -> std::future<std::invoke_result_t<Callable, Args...>>
 	{
-		using ReturnType = std::invoke_result_t<Func, Args...>;
+		using ReturnType = std::invoke_result_t<Callable, Args...>;
 		auto promise = std::make_shared<std::promise<ReturnType>>();
 		auto future = promise->get_future();
 		std::lock_guard guard(_task_mutex);
@@ -138,7 +141,7 @@ private:
 };
 
 
-void thread_pool_unit_test()
+inline void thread_pool_unit_test()
 {
 	ThreadPool pool;
 	std::vector<std::future<int>> futures;
