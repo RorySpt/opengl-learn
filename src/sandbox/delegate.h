@@ -12,8 +12,8 @@ struct Delegate_SingleCast;
 template <typename... Args>
 struct Delegate_Object
 {
-	using cb_func_t = void(Args...);
-	using inner_func_t = std::function<cb_func_t>;
+	using callback_t = void(Args...);
+	using function_t = std::function<callback_t>;
 
 	void tick() // thread-unsafe; Call it in the user thread, which is the thread where the cb is located
 	{
@@ -56,7 +56,7 @@ struct Delegate_Object
 		_cb(std::get<ints>(args)...);
 	}
 
-	inner_func_t _cb;
+	function_t _cb;
 	std::vector<std::tuple<Args...>> _calls{};
 	std::mutex mutex{};
 };
@@ -112,16 +112,16 @@ template <typename T>
 struct delegate_handle_handler
 {
 	template <typename H>
-	void add_handle(const T& obj, H& handle) = delete;
+	void add_handle(const T& obj, H&& handle) = delete;
 
 	template <typename H>
-	void remove_handle(const T& obj, H& handle) = delete;
+	void remove_handle(const T& obj, H&& handle) = delete;
 };
 
 
 template <typename T>
-concept Delegate_Bindable_Objcet = requires(T&& object, delegate_handle_handler<T> handler,
-	Delegate_Handle_Base handle)
+concept Delegate_Bindable_Objcet = requires(T&& object, delegate_handle_handler<std::remove_cvref_t<T>> handler,
+	Delegate_MultiCast_Handle<> handle)
 {
 	handler.add_handle(std::forward<T>(object), handle);
 	handler.remove_handle(std::forward<T>(object), handle);
@@ -130,16 +130,8 @@ concept Delegate_Bindable_Objcet = requires(T&& object, delegate_handle_handler<
 
 namespace ExecutionPolicy
 {
-	struct SyncPolicy
-	{
-	};
-
-	struct AsyncPolicy
-	{
-	};
-
-	constexpr SyncPolicy Sync;
-	constexpr AsyncPolicy Async;
+	constexpr struct SyncPolicy { } Sync;
+	constexpr struct AsyncPolicy { } Async;
 };
 
 template <typename T>
@@ -151,8 +143,8 @@ template <typename... Args>
 struct Delegate_MultiCast
 {
 	using self_t = Delegate_MultiCast;
-	using cb_t = void(Args...);
-	using func_t = std::function<cb_t>;
+	using callback_t = void(Args...);
+	using function_t = std::function<callback_t>;
 	using handle_t = Delegate_MultiCast_Handle<Args...>;
 
 
@@ -162,17 +154,17 @@ struct Delegate_MultiCast
 	{
 		if constexpr (std::is_same_v<EP, ExecutionPolicy::SyncPolicy>)
 		{
-			_cbs.emplace_back(std::make_unique<func_t>(func));
-			return {this, _cbs.back().get()}; // NOLINT(clang-diagnostic-missing-braces)
+			_callback_uniques.emplace_back(std::make_unique<function_t>(func));
+			return {this, _callback_uniques.back().get()}; // NOLINT(clang-diagnostic-missing-braces)
 		}
 		else
 		{
 			auto delegate_object = std::make_shared<Delegate_Object<Args...>>(func);
-			_cbs.emplace_back(std::make_unique<func_t>([delegate_object](Args... args)
+			_callback_uniques.emplace_back(std::make_unique<function_t>([delegate_object](Args... args)
 			{
 				delegate_object->feed_for_call(std::forward<Args>(args)...);
 			}));
-			return {this, _cbs.back().get(), delegate_object};
+			return {this, _callback_uniques.back().get(), delegate_object};
 		}
 	}
 
@@ -184,7 +176,7 @@ struct Delegate_MultiCast
 		if (object == nullptr)return {};
 		if constexpr (std::is_same_v<EP, ExecutionPolicy::SyncPolicy>)
 		{
-			_cbs.emplace_back(std::make_unique<func_t>([object, func](Args... args)
+			_callback_uniques.emplace_back(std::make_unique<function_t>([object, func](Args... args)
 			{
 				//(object->*func)(std::forward<Args>(args)...);
 				if constexpr (std::is_member_function_pointer_v<Callable>)
@@ -192,7 +184,7 @@ struct Delegate_MultiCast
 				else
 					std::invoke(func, std::forward<Args>(args)...);
 			}));
-			return {this, _cbs.back().get()};
+			return {this, _callback_uniques.back().get()};
 		}
 		else
 		{
@@ -205,16 +197,16 @@ struct Delegate_MultiCast
 					else
 						std::invoke(func, std::forward<Args>(args)...);
 				});
-			_cbs.emplace_back(std::make_unique<func_t>([delegate_object](Args&&... args)
+			_callback_uniques.emplace_back(std::make_unique<function_t>([delegate_object](Args&&... args)
 			{
 				delegate_object->feed_for_call(std::forward<Args>(args)...);
 			}));
 
-			if constexpr (Delegate_Bindable_Objcet<std::remove_cvref_t<ClassType>>)
+			if constexpr (Delegate_Bindable_Objcet<ClassType>)
 			{
 				delegate_handle_handler<std::remove_cvref_t<ClassType>> handler;
 				handle_t handle{
-					this, _cbs.back().get(), delegate_object
+					this, _callback_uniques.back().get(), delegate_object
 					, std::make_shared<std::function<void(handle_t)>>([=](handle_t h) { handler.remove_handle(*object, h); })
 				};
 				handler.add_handle(*object, handle);
@@ -222,7 +214,7 @@ struct Delegate_MultiCast
 			}
 			else
 			{
-				return {this, _cbs.back().get(), delegate_object};
+				return {this, _callback_uniques.back().get(), delegate_object};
 			}
 		}
 	}
@@ -239,37 +231,38 @@ struct Delegate_MultiCast
 			return 0;
 		auto id = handle.id;
 		return static_cast<int>(
-			std::erase_if(_cbs, [id](std::unique_ptr<func_t>& ptr)
+			std::erase_if(_callback_uniques, [id](std::unique_ptr<function_t>& ptr)
 			{
 				return ptr.get() == id;
 			}));
 	}
 
-	void cast(Args... args) noexcept
+	template<typename ...Types> requires std::invocable<function_t, Types...>
+	void cast(Types&&... args) noexcept
 	{
-		for (auto& cb : _cbs)
+		for (auto& cb : _callback_uniques)
 		{
-			(*cb)(std::forward<Args>(args)...);
+			(*cb)(std::forward<Types>(args)...);
 		}
 	}
 
-	std::vector<std::unique_ptr<func_t>> _cbs;
+	std::vector<std::unique_ptr<function_t>> _callback_uniques;
 };
 
 template <typename Ret, typename... Args>
 struct Delegate_SingleCast
 {
 	using self_t = Delegate_SingleCast;
-	using cb_t = Ret(Args...);
-	using function_t = std::function<cb_t>;
+	using callback_t = Ret(Args...);
+	using function_t = std::function<callback_t>;
 	using handle_t = Delegate_SingleCast_Handle<Ret, Args...>;
 
 
 	template <typename Callable> requires std::is_invocable_r_v<Ret, Callable, Args...>
 	handle_t bind(Callable func) noexcept
 	{
-		_cb = std::make_unique<function_t>(func);
-		return {this, _cb.get()};
+		_callback_unique = std::make_unique<function_t>(func);
+		return {this, _callback_unique.get()};
 	}
 
 	template <typename ClassType, typename Callable>
@@ -277,12 +270,12 @@ struct Delegate_SingleCast
 	handle_t bind(ClassType* object, Callable func) noexcept
 	{
 		if (object == nullptr)return {};
-		_cb = std::make_unique<function_t>([object, func](Args... args)
+		_callback_unique = std::make_unique<function_t>([object, func](Args... args)
 		{
 			//(object->*func)(std::forward<Args>(args)...);
 			std::invoke(func, object, std::forward<Args>(args)...);
 		});
-		return {this, _cb.get()};
+		return {this, _callback_unique.get()};
 	}
 
 	//int unbind(const Delegate_Handle& handle) noexcept
@@ -295,15 +288,16 @@ struct Delegate_SingleCast
 	int unbind(handle_t handle) noexcept
 	{
 		//if (handle.owner != this) return 0;
-		return handle.id == _cb.get() ? (_cb.reset(nullptr), 1) : 0;
+		return handle.id == _callback_unique.get() ? (_callback_unique.reset(nullptr), 1) : 0;
 	}
 
-	Ret cast(Args... args) noexcept
+	template<typename ...Types> requires std::invocable<function_t, Types...>
+	Ret cast(Types&&... args) noexcept
 	{
-		return (*_cb)(std::forward<Args>(args)...);
+		return (*_callback_unique)(std::forward<Types>(args)...);
 	}
 
-	std::unique_ptr<function_t> _cb;
+	std::unique_ptr<function_t> _callback_unique;
 };
 
 void delegate_unit_test();

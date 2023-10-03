@@ -111,7 +111,8 @@ std::string_view object::get_type_name()
 // 处理跟对象相关的通讯
 extern std::map<const object*, std::vector<std::shared_ptr<Delegate_Handle_Base>>> object_handles;
 
-template<typename T> requires std::is_base_of_v<object, std::remove_cvref_t<T>>
+// T 不允许有cv和ref属性
+template<typename T> requires std::is_base_of_v<object, T>
 struct delegate_handle_handler<T>
 {
 	static void tick_handle() // 调用这个函数可以把收到的消息拉到函数调用所在线程

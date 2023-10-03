@@ -35,11 +35,11 @@ namespace sync
 	inline synced_stream<std::ostream> sync_cout(std::cout);
 
 	template <class... Types>
-		void print(const std::format_string<Types...> fmt, Types&&... args) {
+	void print(const std::format_string<Types...> fmt, Types&&... args) {
 		sync_out.print(fmt, std::forward<Types>(args)...);
 	}
 	template <class... Types>
-		void println(const std::format_string<Types...> fmt, Types&&... args) {
+	void println(const std::format_string<Types...> fmt, Types&&... args) {
 		sync_out.println(fmt, std::forward<Types>(args)...);
 	}
 }

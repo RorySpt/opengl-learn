@@ -80,12 +80,10 @@ public:
 		std::lock_guard guard(_task_mutex);
 		_task_deq.emplace_back([=]()mutable
 			{
-				if constexpr (!std::is_same_v<ReturnType, void>)
-				{
+				if constexpr (!std::is_same_v<ReturnType, void>) {
 					promise->set_value(std::invoke_r<ReturnType>(func, std::forward<Args>(args)...));
 				}
-				else
-				{
+				else {
 					std::invoke(func, std::forward<Args>(args)...);
 					promise->set_value();
 				}
