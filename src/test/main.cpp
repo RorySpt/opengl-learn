@@ -1,137 +1,123 @@
-#include <format>
-#include <iostream>
-#include <functional>
+//import std;
 
-template <class... Types>
-void println(const std::string_view fmt, Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)) << "\n"; }
-template <class... Types>
-void print(const std::string_view fmt, Types&&... args) { std::cout << std::vformat(fmt, std::make_format_args(args...)); }
+#include <algorithm>
+#include <cctype>
+#include <print>
+#include <string_view>
+#include <ranges>
 
-
-template<typename  ...Args>
-struct Delegate_MultiCast
+constexpr std::string_view trim(const std::string_view sv)
 {
-    using cb_func_type = void(Args...);
-    using inner_func_type = std::function<cb_func_type>;
-    using handle = void*;
-
-    template<typename FuncType> requires std::is_invocable_v<FuncType, Args...>
-    handle bind(FuncType func)
-    {
-    	_cbs.emplace_back(std::make_unique<inner_func_type>(func));
-        return _cbs.back().get();
-    }
-    template<typename ClassType, typename FuncType>
-		requires std::is_invocable_v<FuncType, ClassType*, Args...>
-    handle bind(ClassType* object, FuncType func)
-    {
-        if (object == nullptr)return nullptr;
-        _cbs.emplace_back(std::make_unique<inner_func_type>([object, func](Args... args)
-	        {
-                //(object->*func)(std::forward<Args>(args)...);
-                std::invoke(func, object, std::forward<Args>(args)...);
-	        }));
-        return _cbs.back().get();
-    }
-    int unbind(handle handle)
-    {
-        return static_cast<int>(
-            std::erase_if(_cbs, [handle](std::unique_ptr<inner_func_type>& ptr)
-            {
-                return ptr.get() == handle;
-            }));
-    }
-    void cast(Args... args)
-    {
-	    for(auto& cb:_cbs)
-	    {
-            (*cb)(std::forward<Args>(args)...);
-	    }
-    }
-    std::vector<std::unique_ptr<inner_func_type>> _cbs;
-};
-template<typename Ret, typename  ...Args>
-struct Delegate_SingleCast
-{
-    using cb_func_type = Ret(Args...);
-    using inner_func_type = std::function<cb_func_type>;
-    using handle = void*;
-
-    template<typename FuncType> requires std::is_invocable_r_v<Ret, FuncType, Args...>
-    handle bind(FuncType func)
-    {
-        _cb = std::make_unique<inner_func_type>(func);
-        return _cb.get();
-    }
-    template<typename ClassType, typename FuncType>
-        requires std::is_invocable_r_v<Ret, FuncType, ClassType*, Args...>
-    handle bind(ClassType* object, FuncType func)
-    {
-        if (object == nullptr)return nullptr;
-        _cb = std::make_unique<inner_func_type>([object, func](Args... args)
-            {
-                //(object->*func)(std::forward<Args>(args)...);
-                std::invoke(func, object, std::forward<Args>(args)...);
-            });
-        return _cb.get();
-    }
-
-    int unbind(handle handle)
-    {
-        return handle == _cb.get() ? (_cb.reset(nullptr), 1) : 0;
-    }
-
-    Ret cast(Args... args)
-    {
-        return (*_cb)(std::forward<Args>(args)...);
-    }
-
-    std::unique_ptr<inner_func_type> _cb;
-
-};
-
-void func(int a, float b)
-{
-    println("{}: int({}), float({})",__FUNCTION__, a, b);
+	constexpr auto is_space = [](const int c) -> int {return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v'; };
+	const auto first = std::ranges::find_if_not(sv, is_space);
+	const auto last = std::ranges::find_if_not(sv | std::views::reverse, is_space).base() - 1;
+	return last >= first ? sv.substr(first - sv.begin(), last - first + 1) : std::string_view{};
 }
-struct A
+constexpr std::string_view trim1(const std::string_view sv)
 {
-    void func(int a, float b)
-    {
-        println("{}: int({}), float({})", __FUNCTION__, a, b);
-    }
+	const auto first = sv.find_first_not_of(" \f\n\r\t\v");
+	const auto last = sv.find_last_not_of(" \f\n\r\t\v");
+	return last >= first ? sv.substr(first, last - first + 1) : std::string_view{};
+}
+
+[[nodiscard]]
+constexpr bool is_space(char ch) noexcept
+{
+	switch (ch)
+	{
+	case ' ':
+	case '\t':
+	case '\n':
+	case '\v':
+	case '\r':
+	case '\f':
+		return true;
+	}
+	return false;
 };
+
+[[nodiscard]]
+constexpr std::string_view trim_left(std::string_view const in) noexcept
+{
+	auto ranges = in | std::views::drop_while(is_space);
+	return {ranges.begin(), ranges.end()};
+}
+
+
+
+
+
+
+
+
+
+//constexpr std::string_view trim2(const std::string_view sv)
+//{
+//	constexpr auto is_space = [](const int c) -> int {return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v'; };
+//	auto ranges = sv | std::views::drop_while(is_space) /*| std::views::take_while([](const int c) {return !is_space(c); })*/;
+//	return ranges;
+//}
+consteval std::string_view trim3(const std::string_view sv)
+{
+	constexpr auto is_space = [](const int c) -> int {return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v'; };
+	const auto first = std::find_if_not(sv.cbegin(), sv.cend(), is_space);
+	const auto last = std::find_if_not(sv.crbegin(), sv.crend(), is_space).base() - 1;
+	return last >= first ? sv.substr(first - sv.begin(), last - first + 1) : std::string_view{};
+}
+
+void trim_unit_test()
+{
+	// 字面类型字符串
+	{
+		constexpr std::string_view sv = trim("   123   ");
+		std::println("|{}|", sv); // 打印 |123|
+	}
+	// 常量字符串
+	{
+		const std::string s = "   123   ";
+		const std::string_view sv = trim(s);
+		std::println("|{}|", sv); // 打印 |123|
+	}
+	// 右值字符串
+	{
+		const std::string sv{ trim("   123   ") };
+		std::println("|{}|", sv); // 打印 |123|
+	}
+}
+
+
+consteval int f(int a, int b) {
+	int c;
+	do {
+		c = a ^ b;
+		b = a & b << 1;
+		a = c;
+	} while (b != 0);
+	return c;
+}
+
+
+
 int main()
 {
-    Delegate_MultiCast<int, float> delegate;
+	constexpr int r = 47 & -42;
 
-    auto lambda = [](int a, float b)
-    {
-        println("{}: int({}), float({})", __FUNCTION__, a, b);
-    };
 
-    A a;
-    static_assert(std::is_invocable_v<decltype(&A::func), A*, int, float>);
+	trim_unit_test();
 
-    std::invoke(&A::func, &a, 1, 2.1f);
-    auto id0 = delegate.bind(lambda);
-    auto id1 = delegate.bind(func);
-    auto id2 = delegate.bind(&a, &A::func);
+	constexpr auto is_space = [](const int c) -> int {return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v'; };
 
-    delegate.cast(1, 2.1f);
+	constexpr std::string_view sv = "123456789";
 
-    println("{:*>60}"," ");
 
-    delegate.unbind(id2);
-    delegate.cast(0, 9.2f);
+	constexpr auto rrbegin = std::make_reverse_iterator(std::make_reverse_iterator(sv.begin()));
+	constexpr auto rrend = std::make_reverse_iterator(std::make_reverse_iterator(sv.begin()));
 
-    println("{:*>60}", " ");
-    Delegate_SingleCast<void, int, float> single_delegate;
+	constexpr auto c = *rrbegin;
+	
+	for(auto it = rrbegin.base().base(); it != sv.end(); ++it)
+	{
+		std::print("{}", *it);
+	}
 
-    static_assert(std::is_invocable_r_v<void, decltype(&A::func), A*, int, float>);
-    single_delegate.bind(lambda);
-    delegate.cast(11, 2.1f);
-    single_delegate.bind(func);
-    delegate.cast(22, 5.1f);
-}	
-
+}

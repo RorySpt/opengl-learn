@@ -56,8 +56,8 @@ std::shared_ptr<stbi_uc[]> comm::resize_image(const stbi_uc* source, int w, int 
 
 	//int w_ceil = std::bit_ceil(static_cast<unsigned>(w));
 	r_w = r_w <= resolution_max ? r_w : resolution_max;
-	int r_h = static_cast<unsigned>(h * static_cast<double>(r_w) / w);
-	std::shared_ptr<stbi_uc[]> odata = std::make_shared<stbi_uc[]>(r_w * r_h * channels);
+	const int r_h = static_cast<int>(h * static_cast<double>(r_w) / w);
+	std::shared_ptr<stbi_uc[]> odata = std::make_shared<stbi_uc[]>(static_cast<std::size_t>(r_w) * r_h * channels);
 	if (channels > 3)
 		stbir_resize_uint8_srgb(source, w, h, 0, odata.get(), r_w, r_h, 0, channels, 3, 1);
 	else

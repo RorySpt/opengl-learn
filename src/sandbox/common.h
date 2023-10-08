@@ -123,7 +123,7 @@ inline std::string GetCurrentTimeString(const std::format_string<std::chrono::zo
 }
 inline std::string GetCurrentTimeString()
 {
-    return GetCurrentTimeString("{:L%F %H:%M:%S}{}");
+    return GetCurrentTimeString("{:L%F %H:%M:%OS}");
 }
 
 std::string WideCharToAnsi(const wchar_t* ws);

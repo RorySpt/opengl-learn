@@ -5,60 +5,12 @@
 #include <type_traits>
 #include <thread>
 
+#ifdef ENABLE_TEST
 #include "synced_stream.h"
-
-namespace details
-{
-	template<typename  Callable, typename ...Args> requires std::is_invocable_v<Callable, Args...>
-	struct packaged_invoke
-	{
-		using ReturnType = std::invoke_result_t<Callable, Args...>;
-
-		auto get_future() -> std::future<ReturnType>
-		{
-			return promise.get_future();
-		}
-		auto get_value() -> ReturnType
-		{
-			return get_future().get();
-		}
-		void operator()() const
-		{
-			function();
-		}
-
-		std::function<void()> function;
-		std::promise<ReturnType> promise;
-	};
+#endif
 
 
-	template<typename Callable, typename ...Args>
-		requires std::is_invocable_v<Callable, Args...>
-	auto make_package(Callable&& func, Args&& ...args)
-	{
-		using ReturnType = std::invoke_result_t<Callable, Args...>;
-		packaged_invoke<Callable, Args...> packaged;
-		packaged.function = [=, &promise = packaged.promise]() mutable
-			{
-
-				if constexpr (!std::is_same_v<ReturnType, void>)
-				{
-					static_cast<Callable&&>(func);
-					promise.set_value(std::invoke_r<ReturnType>(func, std::forward<Args>(args)...));
-				}
-				else
-				{
-					std::invoke(func, std::forward<Args>(args)...);
-					promise.set_value();
-				}
-			};
-		return packaged;
-	}
-
-}
-
-
-class ThreadPool   // NOLINT(cppcoreguidelines-special-member-functions)
+class ThreadPool
 {
 public:
 	ThreadPool(std::size_t n = std::thread::hardware_concurrency())
@@ -70,6 +22,9 @@ public:
 	{
 		_destroy_threads();
 	}
+	ThreadPool(const ThreadPool&) = delete;
+	ThreadPool& operator=(const ThreadPool&) = delete;
+
 
 	template<typename  Callable, typename ...Args> requires std::is_invocable_v<Callable, Args...>
 	auto submit(Callable&& func, Args&& ...args) -> std::future<std::invoke_result_t<Callable, Args...>>
@@ -81,7 +36,8 @@ public:
 		_task_deq.emplace_back([=]()mutable
 			{
 				if constexpr (!std::is_same_v<ReturnType, void>) {
-					promise->set_value(std::invoke_r<ReturnType>(func, std::forward<Args>(args)...));
+					promise->set_value(std::invoke_r<ReturnType>(func
+						, std::forward<Args>(args)...));
 				}
 				else {
 					std::invoke(func, std::forward<Args>(args)...);
@@ -91,7 +47,8 @@ public:
 		cv.notify_one();
 		return future;
 	}
-	size_t get_thread_count() const { return _thread_count; }
+
+	[[nodiscard]] size_t get_thread_count() const { return _thread_count; }
 private:
 
 	void _initialize_threads()
@@ -112,7 +69,7 @@ private:
 						auto task = std::move(_task_deq.back());
 						_task_deq.pop_back();
 						unique_lock.unlock();
-						task();
+						std::invoke(task);
 					}
 				});
 		}
@@ -138,21 +95,21 @@ private:
 	std::size_t _thread_count;
 };
 
-
+#ifdef ENABLE_TEST
 inline void thread_pool_unit_test()
 {
 	ThreadPool pool;
 	std::vector<std::future<int>> futures;
-	for (int i = 0; i < pool.get_thread_count(); ++i)
+	for (std::size_t i = 0; i < pool.get_thread_count(); ++i)
 		futures.emplace_back(pool.submit([=]()
 			{
-				const auto tp = std::chrono::high_resolution_clock::now();
+				using clock = std::chrono::high_resolution_clock;
+				const auto tp = clock::now();
 				int count = 0;
-				while (std::chrono::high_resolution_clock::now() - tp < std::chrono::seconds(2))
+				while (clock::now() - tp < std::chrono::seconds(2))
 				{
 					sync::println("I'm thread {}", i);
-					std::this_thread::sleep_for(std::chrono::milliseconds(500));
-					//std::this_thread::yield();
+					std::this_thread::yield();
 					++count;
 				}
 				return count;
@@ -169,5 +126,5 @@ inline void thread_pool_unit_test()
 	}
 	sync::println("");
 }
-
+#endif
 

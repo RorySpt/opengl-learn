@@ -2,8 +2,6 @@
 #include "stdafx.h"
 #include "display_window.h"
 #include "utils/synced_stream.h"
-#include "utils/thread_pool.h"
-
 
 void LogPrintEuler(glm::dvec3 euler)
 {
@@ -19,8 +17,10 @@ void LogPrintVec(glm::dvec3 vec)
         , vec[0], vec[1], vec[2]
     );
 }
-void common_unit_testing();
-void delegate_unit_test();
+
+extern void common_unit_testing();
+extern void delegate_unit_test();
+
 int main(int argc,char** argv)
 {
     //sync::println("hello, world!");
@@ -28,8 +28,12 @@ int main(int argc,char** argv)
     //thread_pool_unit_test();
     for(int i = 0;i<argc;++i)
     {
-        std::cout << argv[i] << std::endl;
+        sync::println(comm::GetCurrentTimeString() + ' ' +argv[i]);
     }
+    std::chrono::hh_mm_ss hh_mm_ss(std::chrono::zoned_time{ std::chrono::current_zone(),
+        std::chrono::system_clock::now() }.get_local_time().time_since_epoch());
+
+    sync::println("{}:{}:{}", (hh_mm_ss.hours() - std::chrono::duration_cast<std::chrono::days>(hh_mm_ss.hours())).count(), hh_mm_ss.minutes().count(), hh_mm_ss.seconds().count());
     DisplayWindow w;
     
     
