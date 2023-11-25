@@ -16,6 +16,7 @@ file(GLOB_RECURSE SANDBOX_HXX_FILES
     *.h
     *.hpp
 )
+
 #target_precompile_headers(sandbox PUBLIC stdafx.h)
 
 

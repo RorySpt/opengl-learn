@@ -61,7 +61,7 @@ public:
 
 	int VWidth = 1200;
 	int VHeight = 800;
-	float ZFar = 10000.f;	//‘∂≤√ºÙ√Ê
+	float ZFar = 1000.f;	//‘∂≤√ºÙ√Ê
 	float ZNear = 0.01f; //Ω¸≤√ºÙ√Ê	
 
 	Camera_KeyActions FrameKeyAction;

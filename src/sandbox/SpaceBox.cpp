@@ -160,13 +160,16 @@ void SpaceBox::draw(const Camera& camera, const std::vector<glm::mat4>& wMats)
 	shader_program->use();
 	for(const auto mat:wMats)
 	{
-		shader_program->glUniform("projection", camera.getProjMatrix());
+		Camera _camera = camera;
+		_camera.ZFar = 10000000.f;
+		shader_program->glUniform("projection", _camera.getProjMatrix());
 		shader_program->glUniform("view", camera.getViewMatrix());
 		shader_program->glUniform("model", mat);
 		glBindTextureUnit(0, texture_id);
 		glBindVertexArray(VAO);
 		//glDepthMask(GL_FALSE);
 		//glDrawArrays(GL_TRIANGLES, 0,108);
+		
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
 		//glDepthMask(GL_TRUE);

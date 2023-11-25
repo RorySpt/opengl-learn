@@ -6,6 +6,9 @@
 #include <string_view>
 #include <ranges>
 
+
+
+
 constexpr std::string_view trim(const std::string_view sv)
 {
 	constexpr auto is_space = [](const int c) -> int {return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v'; };

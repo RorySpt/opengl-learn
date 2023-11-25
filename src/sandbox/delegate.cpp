@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <execution>
 
-#include "utils/synced_stream.h"
-
+//#include "utils/synced_stream.h"
+import synced_stream;
 
 void func(int a, float b)
 {

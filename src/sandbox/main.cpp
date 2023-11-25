@@ -3,6 +3,9 @@
 #include "display_window.h"
 #include "utils/synced_stream.h"
 
+#define ENABLE_TEST
+#include "utils/thread_pool.h"
+
 void LogPrintEuler(glm::dvec3 euler)
 {
     auto quat = glm::dquat{ euler };
@@ -21,23 +24,28 @@ void LogPrintVec(glm::dvec3 vec)
 extern void common_unit_testing();
 extern void delegate_unit_test();
 
+import worker;
+
+
+
 int main(int argc,char** argv)
 {
+    utils::worker_test();
     //sync::println("hello, world!");
     //delegate_unit_test();
-    //thread_pool_unit_test();
-    for(int i = 0;i<argc;++i)
-    {
-        sync::println(comm::GetCurrentTimeString() + ' ' +argv[i]);
-    }
-    std::chrono::hh_mm_ss hh_mm_ss(std::chrono::zoned_time{ std::chrono::current_zone(),
-        std::chrono::system_clock::now() }.get_local_time().time_since_epoch());
-
-    sync::println("{}:{}:{}", (hh_mm_ss.hours() - std::chrono::duration_cast<std::chrono::days>(hh_mm_ss.hours())).count(), hh_mm_ss.minutes().count(), hh_mm_ss.seconds().count());
-    DisplayWindow w;
-    
-    
-    w.exec();
+	//thread_pool_unit_test();
+    //for(int i = 0;i<argc;++i)
+    //{
+    //    sync::println(comm::GetCurrentTimeString() + ' ' +argv[i]);
+    //}
+    //const std::chrono::hh_mm_ss hh_mm_ss(std::chrono::zoned_time{ std::chrono::current_zone(),
+    //    std::chrono::system_clock::now() }.get_local_time().time_since_epoch());
+    //
+    //sync::println("{}:{}:{}", (hh_mm_ss.hours() - std::chrono::duration_cast<std::chrono::days>(hh_mm_ss.hours())).count(), hh_mm_ss.minutes().count(), hh_mm_ss.seconds().count());
+    //DisplayWindow w;
+    //
+    //
+    //w.exec();
 
     return 0;
 }
