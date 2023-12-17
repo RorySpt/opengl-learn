@@ -1,0 +1,13 @@
+[submodule "extern/imgui"]
+	path = extern/imgui
+	url = git@github.com:ocornut/imgui.git
+	branch = docking
+[submodule "extern/stb"]
+	path = extern/stb
+	url = git@github.com:nothings/stb.git
+[submodule "extern/glm"]
+	path = extern/glm
+	url = git@github.com:g-truc/glm.git
+[submodule "extern/json"]
+	path = extern/json
+	url = git@github.com:nlohmann/json.git
