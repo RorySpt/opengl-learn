@@ -3,6 +3,7 @@ module;
 #include <map>
 #include <mutex>
 #include <print>
+#include <ranges>
 export module signals;
 
 
@@ -14,6 +15,8 @@ export namespace utils
 	{
 		using slot_t = std::function<void(Args...)>;
 		using id_t = size_t;
+
+		static inline constexpr bool is_null_param_v = sizeof...(Args) == 0;
 
 		struct connection
 		{
@@ -28,7 +31,7 @@ export namespace utils
 			auto id = id_count++;
 			slots.emplace(id, [=](Args&& ...args)
 				{
-					if constexpr (sizeof...(Args) > 0)
+					if constexpr (sizeof...(Args) > 0)	
 						f(std::forward<Args>(args)...);
 					else
 						f();
@@ -41,18 +44,28 @@ export namespace utils
 			std::lock_guard guard(mutex);
 			return slots.erase(connection.id);
 		}
-		void emit(Args&& ...args)
+		template <typename ...InArgs> requires std::is_invocable_v<slot_t, InArgs...>
+		void emit(InArgs&& ...args)
 		{
 			std::lock_guard guard(mutex);
-			for (auto& [id, slot] : slots)
-				if constexpr (sizeof...(Args) > 0)
-					slot(std::forward<Args>(args)...);
-				else
-					slot();
+			if (slots.empty()) return;
+			auto values = slots | std::views::values;
+			if constexpr (is_null_param_v)
+			{
+				for (auto& slot : values) slot();
+			}
+			else
+			{
+				for (auto& slot : values | std::views::take(slots.size() - 1))
+					slot(args...);
+				values.back()(std::forward<InArgs>(args)...);
+			}
+			
 		}
-		void operator()(Args&& ...args)
+		template <typename ...InArgs> requires std::is_invocable_v<slot_t, InArgs...>
+		void operator()(InArgs&& ...args)
 		{
-			emit(std::forward<Args>(args)...);
+			emit(std::forward<InArgs>(args)...);
 		}
 		
 		std::mutex mutex;
@@ -67,6 +80,8 @@ export namespace utils
 		using slot_t = std::function<Ret(Args...)>;
 		using id_t = size_t;
 
+		static inline constexpr bool is_null_param_v = sizeof...(Args) == 0;
+
 		struct connection
 		{
 			id_t id;
@@ -77,7 +92,7 @@ export namespace utils
 		{
 			//using ret_t = std::invoke_result_t<Ret, Func, Args...>;
 			std::lock_guard guard(mutex);
-			auto id = id_count++;
+			auto id = _idCount++;
 			slots.emplace(id , [=](Args&& ...args)
 				{
 					if constexpr (sizeof...(Args) > 0)
@@ -93,22 +108,34 @@ export namespace utils
 			std::lock_guard guard(mutex);
 			return slots.erase(connection.id);
 		}
-		auto emit(Args&& ...args) -> std::vector<std::pair<connection, Ret>>
+		template <typename ...InArgs> requires std::is_invocable_v<slot_t, InArgs...>
+		auto emit(InArgs&& ...args) -> std::vector<std::pair<connection, Ret>>
 		{
-			std::vector<std::pair<connection, Ret>> r_vec;
 			std::lock_guard guard(mutex);
-			for (auto& [id, slot] : slots)
-				r_vec.emplace_back(id, slot(std::forward<Args>(args)...));
+			if (slots.empty()) return{};
+			std::vector<std::pair<connection, Ret>> r_vec;
+			auto values = slots | std::views::all;
+			if constexpr (is_null_param_v)
+			{
+				for (auto& [id, slot] : values) r_vec.emplace_back(id, slot()) ;
+			}
+			else
+			{
+				for (auto& [id, slot] : values | std::views::take(slots.size() - 1))
+					r_vec.emplace_back(id, slot(args...));
+				r_vec.emplace_back(values.back().first, values.back().second(std::forward<InArgs>(args)...));
+			}
 			return r_vec;
 		}
-		auto operator()(Args&& ...args) -> std::vector<std::pair<connection, Ret>>
+		template <typename ...InArgs> requires std::is_invocable_v<slot_t, InArgs...>
+		auto operator()(InArgs&& ...args) -> std::vector<std::pair<connection, Ret>>
 		{
-			return emit(std::forward<Args>(args)...);
+			return emit(std::forward<InArgs>(args)...);
 		}
 
-
+	private:
 		std::mutex mutex;
-		id_t id_count = 0;
+		id_t _idCount = 0;
 		std::map<id_t, slot_t> slots;
 	};
 }
