@@ -10,7 +10,7 @@
 #include "camera.h"
 #include "common.h"
 #include "display_window_private.h"
-#include "frame_rate_calc.h"
+
 #include "IlluminantModel.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"

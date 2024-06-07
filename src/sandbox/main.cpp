@@ -30,7 +30,7 @@ import worker;
 
 int main(int argc,char** argv)
 {
-    utils::worker_test();
+    //utils::worker_test();
     //sync::println("hello, world!");
     //delegate_unit_test();
 	//thread_pool_unit_test();
@@ -42,10 +42,10 @@ int main(int argc,char** argv)
     //    std::chrono::system_clock::now() }.get_local_time().time_since_epoch());
     //
     //sync::println("{}:{}:{}", (hh_mm_ss.hours() - std::chrono::duration_cast<std::chrono::days>(hh_mm_ss.hours())).count(), hh_mm_ss.minutes().count(), hh_mm_ss.seconds().count());
-    //DisplayWindow w;
-    //
-    //
-    //w.exec();
+    DisplayWindow w;
+    
+    
+    w.exec();
 
     return 0;
 }
