@@ -31,7 +31,7 @@
    vcpkg install glfw3:x64-windows glm:x64-windows imgui[docking-experimental]:x64-windows ASSIMP:x64-windows
    ```
 
-2. 拉取项目 git clone git@gitee.com:roryspt/opengl-learn.git
+2. 拉取项目 git clone -b develop git@github.com:RorySpt/opengl-learn.git
 
 3. 进入项目文件夹，执行以下命令（将($env:vcpkg_root)改为你的vcpkg项目所在路径）
 
