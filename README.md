@@ -33,7 +33,7 @@
 
 2. 拉取项目 git clone -b develop git@github.com:RorySpt/opengl-learn.git
 
-3. 进入项目文件夹，执行以下命令（将($env:vcpkg_root)改为你的vcpkg项目所在路径）
+3. 进入项目文件夹，执行以下命令（($env:vcpkg_root)为你的vcpkg环境变量，如果不是，将($env:vcpkg_root)改为你的vcpkg项目所在路径）
 
    ```bash
    mkdir .build
