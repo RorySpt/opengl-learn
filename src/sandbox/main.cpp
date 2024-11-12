@@ -1,122 +1,51 @@
-#include <array>
-#include <chrono>
-#include <format>
-#include <functional>
-#include <iostream>
-#include <list>
-#include <map>
-#include <numbers>
-#include <random>
-#include <ranges>
-#include <unordered_map>
-#include <vector>
-#include <Windows.h>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+// ReSharper disable CppClangTidyClangDiagnosticInvalidSourceEncoding
+#include "stdafx.h"
+#include "display_window.h"
+#include "utils/synced_stream.h"
 
-GLFWwindow* window = nullptr;
+#define ENABLE_TEST
+#include "utils/thread_pool.h"
 
-static void cb_frame_buffer_size(GLFWwindow* window, int width, int height)
+void LogPrintEuler(glm::dvec3 euler)
 {
+    auto quat = glm::dquat{ euler };
+    std::cout << std::format("ŷ���ǣ�{: },{: },{: } ��Ӧ����Ԫ����{: 4f},{: 4f},{: 4f},{: 4f}\n"
+        , euler[0], euler[1], euler[2]
+        , quat[0], quat[1], quat[2], quat[3]
+    );
+}
+void LogPrintVec(glm::dvec3 vec)
+{
+    std::cout << std::format("���꣺{: 4f},{: 4f},{: 4f}\n"
+        , vec[0], vec[1], vec[2]
+    );
 }
 
-static void cb_error(int error, const char* description)
-{
-}
+extern void common_unit_testing();
+extern void delegate_unit_test();
 
-static void cb_close(GLFWwindow* glfwWindow)
-{
+import worker;
 
-}
 
-static void cb_key(GLFWwindow* window, int key, int scanCode, int action, int mods)
+
+int main(int argc,char** argv)
 {
-    if(window != ::window){
-        return;
-    }
-    switch (key)
-    {
-    case GLFW_KEY_ESCAPE:
-        {
-            if(action == GLFW_RELEASE){
-                glfwDestroyWindow(window);
-            }
-        }
-        break;
+    //utils::worker_test();
+    //sync::println("hello, world!");
+    //delegate_unit_test();
+	//thread_pool_unit_test();
+    //for(int i = 0;i<argc;++i)
+    //{
+    //    sync::println(comm::GetCurrentTimeString() + ' ' +argv[i]);
+    //}
+    //const std::chrono::hh_mm_ss hh_mm_ss(std::chrono::zoned_time{ std::chrono::current_zone(),
+    //    std::chrono::system_clock::now() }.get_local_time().time_since_epoch());
+    //
+    //sync::println("{}:{}:{}", (hh_mm_ss.hours() - std::chrono::duration_cast<std::chrono::days>(hh_mm_ss.hours())).count(), hh_mm_ss.minutes().count(), hh_mm_ss.seconds().count());
+    DisplayWindow w;
     
-    default:
-        break;
-    }
-}
+    
+    w.exec();
 
-static void cb_mouse_move(GLFWwindow* window, double x_pos, double y_pos)
-{
-}
-
-static void cb_scroll(GLFWwindow* window, double x_offset, double y_offset)
-{
-}
-
-
-
-int main()
-{
-    glfwSetErrorCallback(cb_error);
-	//初始化GLF
-	if (!glfwInit())
-	{
-		throw(std::runtime_error(std::format("{} call glfwInit() failed! ", __FUNCTION__)));
-	}
-	//配置GLFW
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);//设置主版本号为3
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);//设置次版本号为3
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//使用核心模式
-	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-
-	 //创建一个窗口对象
-	//comm::const_cast_ref(d->window)
-	window = glfwCreateWindow(1280, 720, "LearnOpenGL", NULL, NULL);
-	if (window == nullptr)
-	{
-		std::cout << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return 0;
-	}
-	glfwMakeContextCurrent(window);
-	
-	//注册回调函数
-	glfwSetWindowCloseCallback(window, cb_close);
-	glfwSetKeyCallback(window, cb_key);
-
-	//GLAD是用来管理OpenGL的函数指针的，所以在调用任何OpenGL的函数之前初始化GLAD。
-	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
-	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return 0;
-	}
-	
-	//设置窗口的维度
-	glViewport(0, 0, 1280, 720);
-	//对窗口注册一个回调函数(Callback Function)
-	glfwSetFramebufferSizeCallback(window, cb_frame_buffer_size);
-
-	glfwSetCursorPosCallback(window, cb_mouse_move);
-	glfwSetScrollCallback(window, cb_scroll);
-
-	glfwFocusWindow(window);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-
-    while (!glfwWindowShouldClose(window)){
-        glfwPollEvents();
-        glfwSwapBuffers(window);
-    }
-
-
-	return 0;
+    return 0;
 }

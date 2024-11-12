@@ -1,0 +1,11 @@
+{
+    "paths": {
+        "materials-path": "C:/WorkSpace/MyFile/MyCode/OpenGLExample/Materials/materials.txt",
+        "picture-files": {
+            "awe_png": "C:/Users/zhang/Pictures/Applications/OpenGLExample/awesomeface.png",
+            "container_jpg": "C:/Users/zhang/Pictures/Applications/OpenGLExample/awesomeface.png"
+        },
+        "shader": "C:/WorkSpace/MyFile/MyCode/OpenGLExample/Shader"
+        "picture": "C:/WorkSpace/MyFile/MyCode/OpenGLExample/picture"
+    }
+}
